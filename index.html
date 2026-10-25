@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pengelola Keuangan Pribadi (IDR)</title>
+  <title>FinTrack</title>
+  
+  <!-- Favicon Tab Browser (Ikon Dompet Modern) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23059669'/%3E%3Cpath d='M24 11V9a2 2 0 0 0-2-2H8a3 3 0 0 0 0 6h15a1 1 0 0 1 1 1v4h-4a2.5 2.5 0 0 0 0 5h4a1 1 0 0 0 1-1v-3' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 10v13a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='20.5' r='1' fill='%23ffffff'/%3E%3C/svg%3E">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -37,17 +40,16 @@
 <!-- ==================== HEADER (DENGAN RESPONSIVE MENU 3-GARIS) ==================== -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <!-- Logo -->
+	  <!-- Logo & Judul FinTrack -->
       <div class="flex items-center space-x-3">
         <div class="p-2 bg-emerald-600 rounded-lg text-white shadow-sm">
           <i data-lucide="wallet" class="w-6 h-6"></i>
         </div>
         <div>
-          <span class="text-xl font-bold text-slate-900 tracking-tight">KatalogKeuangan</span>
-          <span class="ml-1 text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">IDR</span>
+          <span class="text-xl font-bold text-slate-900 tracking-tight">FinTrack</span>
         </div>
       </div>
-
+	  
       <!-- Navigation Tabs (Tampil di Layar Komputer / Desktop: md:flex) -->
       <nav class="hidden md:flex space-x-1 lg:space-x-2">
         <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab px-3 py-2 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 flex items-center gap-1.5 transition">
@@ -4751,15 +4753,20 @@ async function initFsAutoBackup() {
           const encryptedContent = await res.text();
           const decryptedPayload = await decryptE2EE(encryptedContent, pin);
 
-          // Terapkan data ke state aplikasi
-          if (decryptedPayload && decryptedPayload.data) {
+         // Terapkan data ke state aplikasi
+         if (decryptedPayload && decryptedPayload.data) {
             accounts = decryptedPayload.data.accounts || accounts;
             categories = decryptedPayload.data.categories || categories;
             transactions = decryptedPayload.data.transactions || transactions;
             budgets = decryptedPayload.data.budgets || budgets;
 
+            // Catat waktu sinkronisasi terbaru dari cloud
+            const cloudSyncIso = new Date(cloudModifiedTime).toISOString();
             localStorage.setItem('vf_last_sync_timestamp', String(cloudModifiedTime));
             localStorage.setItem('vf_local_modified_timestamp', String(cloudModifiedTime));
+            localStorage.setItem('vf_gdrive_last_sync', cloudSyncIso);
+            loadGdrivePrefs(); // Perbarui teks label di menu Pengaturan
+
             persistState(false);
             renderAll();
 
@@ -4845,7 +4852,7 @@ async function initFsAutoBackup() {
       if (pin) await executeCloudPush(pin);
     }
 
-    async function resolveConflictKeepCloud() {
+async function resolveConflictKeepCloud() {
       closeModal('sync-conflict-modal');
       const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
       if (pin && pendingConflictPayload) {
@@ -4860,16 +4867,20 @@ async function initFsAutoBackup() {
           categories = decryptedPayload.data.categories || categories;
           transactions = decryptedPayload.data.transactions || transactions;
           budgets = decryptedPayload.data.budgets || budgets;
+
           const cloudTime = new Date(pendingConflictPayload.modifiedTime).getTime();
+          const syncTimeIso = new Date(cloudTime).toISOString();
           localStorage.setItem('vf_last_sync_timestamp', String(cloudTime));
           localStorage.setItem('vf_local_modified_timestamp', String(cloudTime));
+          localStorage.setItem('vf_gdrive_last_sync', syncTimeIso);
+          loadGdrivePrefs();
+
           persistState(false);
           renderAll();
           setSyncBadge('synced');
         }
       }
     }
-
     // Auto-check saat pengguna kembali membuka tab atau aplikasi di HP/PC
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
@@ -4953,7 +4964,7 @@ async function initFsAutoBackup() {
       }
     }
 
-    // UNDUH & DEKRIPSI DARI GOOGLE DRIVE
+// UNDUH & DEKRIPSI DARI GOOGLE DRIVE (MANUAL)
     async function syncDownloadFromGdrive() {
       const pin = document.getElementById('gdrive-encryption-pin')?.value || sessionStorage.getItem('vf_gdrive_pin');
       if (!pin) {
@@ -4966,18 +4977,17 @@ async function initFsAutoBackup() {
       }
 
       try {
-        const fileId = await findGdriveBackupFileId();
-        if (!fileId) {
+        const file = await findGdriveBackupFile();
+        if (!file) {
           alert("Tidak ditemukan berkas cadangan di Google Drive akun ini.");
           return;
         }
 
-        const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
           headers: { Authorization: `Bearer ${gdriveAccessToken}` }
         });
         const encryptedContent = await res.text();
 
-        // Dekripsi menggunakan PIN
         let decryptedPayload;
         try {
           decryptedPayload = await decryptE2EE(encryptedContent, pin);
@@ -4986,7 +4996,13 @@ async function initFsAutoBackup() {
           return;
         }
 
-        // Tampilkan konfirmasi pemulihan
+        // Perbarui label waktu sinkronisasi saat berhasil diunduh
+        const syncTime = file.modifiedTime ? new Date(file.modifiedTime).toISOString() : new Date().toISOString();
+        localStorage.setItem('vf_gdrive_last_sync', syncTime);
+        localStorage.setItem('vf_last_sync_timestamp', String(new Date(syncTime).getTime()));
+        localStorage.setItem('vf_local_modified_timestamp', String(new Date(syncTime).getTime()));
+        loadGdrivePrefs();
+
         promptRestoreConfirmation(decryptedPayload);
       } catch (err) {
         console.error(err);
