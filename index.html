@@ -76,7 +76,13 @@
           <i data-lucide="plus-circle" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Catat Transaksi</span>
         </button>
-
+		
+		<!-- Tombol Indikator Status Cloud Sync (Kecil & Interaktif) -->
+        <button onclick="openSyncBadgeModal()" id="sync-status-badge-btn" title="Klik untuk melihat arti status sinkronisasi" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition shadow-sm bg-slate-50 border-slate-200 text-slate-500">
+          <span id="sync-badge-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+          <span id="sync-badge-text" class="hidden sm:inline">Offline</span>
+        </button>
+		
         <!-- Tombol 3-Garis (Hanya muncul di Layar HP / Ukuran Kecil: md:hidden) -->
         <button onclick="toggleMobileMenu()" id="mobile-menu-btn" title="Menu Navigasi" class="md:hidden p-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 transition">
           <i data-lucide="menu" id="mobile-menu-icon" class="w-5 h-5"></i>
@@ -394,7 +400,24 @@
           <div class="text-xs text-slate-500 mt-1">Beban hidup total periode ini</div>
         </div>
       </div>
+	  
+	  <!-- REKAPITULASI KATEGORI (BULANAN) & ARUS KAS BULAN-KE-BULAN (TAHUNAN) -->
+      <div id="ana-breakdown-container" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <!-- Judul & Keterangan diisi secara dinamis oleh JS -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2" id="ana-breakdown-title">
+              <i data-lucide="table" class="w-4 h-4 text-emerald-600"></i> Rincian Arus Kategori
+            </h3>
+            <p class="text-xs text-slate-500" id="ana-breakdown-subtitle">Perhitungan rinci berdasarkan periode terpilih.</p>
+          </div>
+          <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md" id="ana-breakdown-badge">-</span>
+        </div>
 
+        <!-- Wadah Konten Dinamis -->
+        <div id="ana-breakdown-content"></div>
+      </div>
+	  
       <!-- Expense Structure: Fixed, Periodic, Dynamic -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
@@ -1255,7 +1278,113 @@
       </div>
     </div>
   </div>
+  
+  <!-- MODAL PENJELASAN ARTI WARNA BADGE STATUS SINKRONISASI -->
+  <div id="sync-badge-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+          <i data-lucide="info" class="w-4 h-4 text-emerald-600"></i> Arti Warna Status Sinkronisasi
+        </h3>
+        <button onclick="closeModal('sync-badge-modal')" class="text-slate-400 hover:text-slate-700">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
 
+      <div class="space-y-2.5 text-xs">
+        <div class="flex items-start gap-2.5 p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+          <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0 mt-0.5"></span>
+          <div>
+            <span class="font-bold text-emerald-900 block">Hijau - Tersinkronisasi</span>
+            <span class="text-emerald-700">Seluruh data lokal di perangkat ini sama persis dengan data di Google Drive.</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2 rounded-lg bg-amber-50 border border-amber-200">
+          <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0 mt-0.5"></span>
+          <div>
+            <span class="font-bold text-amber-900 block">Kuning - Menunggu Sinkronisasi</span>
+            <span class="text-amber-700">Ada perubahan lokal baru. Sistem menghitung jeda 60 detik sebelum otomatis mengunggah.</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2 rounded-lg bg-blue-50 border border-blue-200">
+          <span class="w-3 h-3 rounded-full bg-blue-500 animate-pulse shrink-0 mt-0.5"></span>
+          <div>
+            <span class="font-bold text-blue-900 block">Biru - Sedang Memproses</span>
+            <span class="text-blue-700">Sedang mengenkripsi data lokal atau mentransfer berkas ke/dari Google Drive.</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2 rounded-lg bg-purple-50 border border-purple-200">
+          <span class="w-3 h-3 rounded-full bg-purple-500 shrink-0 mt-0.5"></span>
+          <div>
+            <span class="font-bold text-purple-900 block">Ungu - Data Baru Ditemukan</span>
+            <span class="text-purple-700">Perangkat lain telah memperbarui data di Cloud. Data terbaru berhasil dimuat otomatis.</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 p-2 rounded-lg bg-rose-50 border border-rose-200">
+          <span class="w-3 h-3 rounded-full bg-rose-500 shrink-0 mt-0.5"></span>
+          <div>
+            <span class="font-bold text-rose-900 block">Merah - Perlu Perhatian / Konflik</span>
+            <span class="text-rose-700">Sesi Google berakhir atau terjadi perbedaan versi data antara dua perangkat.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-right pt-1">
+        <button onclick="closeModal('sync-badge-modal')" class="px-4 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg">
+          Mengerti
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PENYELESAIAN KONFLIK DATA -->
+  <div id="sync-conflict-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3 text-rose-600">
+        <div class="p-2.5 bg-rose-50 rounded-xl">
+          <i data-lucide="git-merge" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Terdeteksi Konflik Data Cloud!</h3>
+          <p class="text-xs text-slate-500">Data di Cloud telah diubah perangkat lain, sementara perangkat ini juga memiliki perubahan baru.</p>
+        </div>
+      </div>
+
+      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+        <span class="font-bold block">Pilih versi data yang ingin dipertahankan:</span>
+        <p class="text-[11px] text-amber-800">Menimpa data akan mengganti perubahan yang ada di salah satu sisi.</p>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button onclick="resolveConflictKeepLocal()" class="w-full text-left p-3 border-2 border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl transition flex justify-between items-center">
+          <div>
+            <span class="text-xs font-bold text-emerald-950 block">Gunakan Data Perangkat Ini (Lokal)</span>
+            <span class="text-[11px] text-emerald-700">Unggah data perangkat ini dan timpa data di Google Drive.</span>
+          </div>
+          <i data-lucide="cloud-upload" class="w-4 h-4 text-emerald-600"></i>
+        </button>
+
+        <button onclick="resolveConflictKeepCloud()" class="w-full text-left p-3 border-2 border-blue-500 bg-blue-50/50 hover:bg-blue-50 rounded-xl transition flex justify-between items-center">
+          <div>
+            <span class="text-xs font-bold text-blue-950 block">Gunakan Data Cloud (Google Drive)</span>
+            <span class="text-[11px] text-blue-700">Unduh data dari cloud dan batalkan perubahan lokal yang belum tersimpan.</span>
+          </div>
+          <i data-lucide="cloud-download" class="w-4 h-4 text-blue-600"></i>
+        </button>
+      </div>
+
+      <div class="text-right pt-2 border-t">
+        <button onclick="closeModal('sync-conflict-modal')" class="px-4 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-lg">
+          Tutup & Tinjau Nanti
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <!-- ==================== APPLICATION LOGIC ==================== -->
   <script>
     // --- GLOBAL SAFE DOM MANIPULATION HELPERS ---
@@ -2690,6 +2819,7 @@ async function initFsAutoBackup() {
         }
       }
 
+      renderAnalysisSummaryBreakdown(filterPrefix, periodTxs);
       lucide.createIcons();
     }
 
@@ -4407,22 +4537,72 @@ async function initFsAutoBackup() {
       return JSON.parse(new TextDecoder().decode(decryptedBuf));
     }
 
-    // ==================== ENGINE SINKRONISASI GOOGLE DRIVE ====================
+// ==================== ENGINE SINKRONISASI GOOGLE DRIVE (PERSISTENT & AUTO-SYNC) ====================
     let gdriveAccessToken = null;
     let gdriveTokenClient = null;
+    let autoSyncPushTimer = null;
+    let cachedCloudFileId = null;
+    let pendingConflictPayload = null;
+
+    // Status sync: 'synced', 'waiting', 'syncing', 'downloaded', 'error', 'offline'
+    let currentSyncStatus = 'offline';
+
+    function setSyncBadge(status, customText = '') {
+      currentSyncStatus = status;
+      const btn = document.getElementById('sync-status-badge-btn');
+      const dot = document.getElementById('sync-badge-dot');
+      const text = document.getElementById('sync-badge-text');
+      if (!btn || !dot || !text) return;
+
+      const styles = {
+        synced: { dot: 'bg-emerald-500', btn: 'bg-emerald-50 border-emerald-200 text-emerald-800', label: 'Tersinkron' },
+        waiting: { dot: 'bg-amber-500 animate-ping', btn: 'bg-amber-50 border-amber-200 text-amber-800', label: customText || 'Menunggu Jeda 60s' },
+        syncing: { dot: 'bg-blue-500 animate-pulse', btn: 'bg-blue-50 border-blue-200 text-blue-800', label: customText || 'Menyinkronkan...' },
+        downloaded: { dot: 'bg-purple-500', btn: 'bg-purple-50 border-purple-200 text-purple-800', label: 'Data Baru Dimuat' },
+        error: { dot: 'bg-rose-500', btn: 'bg-rose-50 border-rose-200 text-rose-800', label: customText || 'Perlu Login' },
+        offline: { dot: 'bg-slate-400', btn: 'bg-slate-50 border-slate-200 text-slate-500', label: 'Offline' }
+      };
+
+      const cur = styles[status] || styles.offline;
+      dot.className = `w-2.5 h-2.5 rounded-full ${cur.dot}`;
+      btn.className = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition shadow-sm ${cur.btn}`;
+      text.textContent = cur.label;
+    }
+
+    function openSyncBadgeModal() {
+      openModal('sync-badge-modal');
+    }
 
     function saveGdrivePrefs() {
       const clientId = document.getElementById('gdrive-client-id')?.value.trim() || '';
       const pin = document.getElementById('gdrive-encryption-pin')?.value || '';
       localStorage.setItem('vf_gdrive_client_id', clientId);
-      sessionStorage.setItem('vf_gdrive_pin', pin);
+      // Simpan PIN di localStorage agar enkripsi/dekripsi otomatis saat buka aplikasi di perangkat ini
+      localStorage.setItem('vf_gdrive_pin_persistent', pin);
     }
 
     function loadGdrivePrefs() {
       const clientId = localStorage.getItem('vf_gdrive_client_id') || '';
-      const pin = sessionStorage.getItem('vf_gdrive_pin') || '';
+      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin') || '';
       setVal('gdrive-client-id', clientId);
       setVal('gdrive-encryption-pin', pin);
+
+      // Pulihkan token akses jika masih valid (belum 1 jam)
+      const savedToken = localStorage.getItem('vf_gdrive_access_token');
+      const tokenExpiresAt = parseInt(localStorage.getItem('vf_gdrive_token_expires') || '0');
+
+      if (savedToken && Date.now() < tokenExpiresAt) {
+        gdriveAccessToken = savedToken;
+        updateGdriveStatusUI(true);
+        setSyncBadge('synced');
+      } else if (savedToken) {
+        // Token sudah expired
+        setSyncBadge('error', 'Sesi Berakhir');
+        updateGdriveStatusUI(false);
+      } else {
+        setSyncBadge('offline');
+        updateGdriveStatusUI(false);
+      }
 
       const lastSync = localStorage.getItem('vf_gdrive_last_sync');
       if (lastSync) {
@@ -4434,7 +4614,7 @@ async function initFsAutoBackup() {
     function initGdriveAuth(callback) {
       const clientId = document.getElementById('gdrive-client-id')?.value.trim() || localStorage.getItem('vf_gdrive_client_id');
       if (!clientId) {
-        alert("Harap masukkan Google OAuth Client ID terlebih dahulu di form!");
+        alert("Harap masukkan Google OAuth Client ID terlebih dahulu di form Pengaturan!");
         return false;
       }
       if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
@@ -4448,11 +4628,19 @@ async function initFsAutoBackup() {
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
             console.error(tokenResponse);
+            setSyncBadge('error', 'Login Gagal');
             alert("Gagal autentikasi Google: " + tokenResponse.error);
             return;
           }
           gdriveAccessToken = tokenResponse.access_token;
+          // Simpan token ke localStorage beserta masa berlaku (biasanya 3600 detik = 1 jam)
+          const expiresInSec = tokenResponse.expires_in ? parseInt(tokenResponse.expires_in) : 3600;
+          localStorage.setItem('vf_gdrive_access_token', gdriveAccessToken);
+          localStorage.setItem('vf_gdrive_token_expires', String(Date.now() + (expiresInSec * 1000) - 30000)); // buffer 30s
+          
           updateGdriveStatusUI(true);
+          setSyncBadge('synced');
+          saveGdrivePrefs();
           if (callback) callback();
         }
       });
@@ -4460,8 +4648,11 @@ async function initFsAutoBackup() {
     }
 
     function loginGdrive() {
-      if (initGdriveAuth(() => alert("Berhasil login ke Akun Google!"))) {
-        gdriveTokenClient.requestAccessToken({ prompt: 'consent' });
+      if (initGdriveAuth(async () => {
+        // Cek data terbaru dari cloud setelah login
+        await autoPullFromCloud(true);
+      })) {
+        gdriveTokenClient.requestAccessToken({ prompt: '' });
       }
     }
 
@@ -4470,7 +4661,10 @@ async function initFsAutoBackup() {
         google.accounts.oauth2.revoke(gdriveAccessToken, () => {});
       }
       gdriveAccessToken = null;
+      localStorage.removeItem('vf_gdrive_access_token');
+      localStorage.removeItem('vf_gdrive_token_expires');
       updateGdriveStatusUI(false);
+      setSyncBadge('offline');
       alert("Koneksi Google Drive diputuskan.");
     }
 
@@ -4483,7 +4677,7 @@ async function initFsAutoBackup() {
 
       if (isLoggedIn) {
         if (badge) {
-          badge.textContent = 'Terhubung (Siap Sync)';
+          badge.textContent = 'Terhubung & Aktif';
           badge.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 shrink-0';
         }
         if (btnLogin) btnLogin.classList.add('hidden');
@@ -4503,6 +4697,195 @@ async function initFsAutoBackup() {
       lucide.createIcons();
     }
 
+    async function findGdriveBackupFile() {
+      if (!gdriveAccessToken) return null;
+      try {
+        const q = "name = 'katalog_keuangan_secure.backup' and 'appDataFolder' in parents and trashed = false";
+        const res = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime)`, {
+          headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+        });
+        const data = await res.json();
+        if (data.files && data.files.length > 0) {
+          cachedCloudFileId = data.files[0].id;
+          return data.files[0];
+        }
+      } catch (e) {
+        console.warn("Gagal mengecek berkas cloud:", e);
+      }
+      return null;
+    }
+
+    // --- AUTO-PULL (UNDUH OTOMATIS JIKA DATA CLOUD LEBIH BARU) ---
+    async function autoPullFromCloud(isInitial = false) {
+      if (!gdriveAccessToken) return;
+      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
+      if (!pin) return; // Butuh PIN untuk mendekripsi
+
+      try {
+        setSyncBadge('syncing', 'Memeriksa Cloud...');
+        const cloudFile = await findGdriveBackupFile();
+        if (!cloudFile) {
+          setSyncBadge('synced');
+          return;
+        }
+
+        const cloudModifiedTime = new Date(cloudFile.modifiedTime).getTime();
+        const lastSyncTime = parseInt(localStorage.getItem('vf_last_sync_timestamp') || '0');
+        const localModifiedTime = parseInt(localStorage.getItem('vf_local_modified_timestamp') || '0');
+
+        // Jika data cloud lebih baru daripada riwayat sinkron terakhir
+        if (cloudModifiedTime > lastSyncTime) {
+          // Deteksi potensi konflik: data cloud berubah, DAN data lokal juga diedit secara offline
+          if (localModifiedTime > lastSyncTime) {
+            setSyncBadge('error', 'Konflik Data');
+            pendingConflictPayload = cloudFile;
+            openModal('sync-conflict-modal');
+            return;
+          }
+
+          // Unduh dan timpa data lokal secara otomatis
+          setSyncBadge('syncing', 'Mengunduh Data Baru...');
+          const res = await fetch(`https://www.googleapis.com/drive/v3/files/${cloudFile.id}?alt=media`, {
+            headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+          });
+          const encryptedContent = await res.text();
+          const decryptedPayload = await decryptE2EE(encryptedContent, pin);
+
+          // Terapkan data ke state aplikasi
+          if (decryptedPayload && decryptedPayload.data) {
+            accounts = decryptedPayload.data.accounts || accounts;
+            categories = decryptedPayload.data.categories || categories;
+            transactions = decryptedPayload.data.transactions || transactions;
+            budgets = decryptedPayload.data.budgets || budgets;
+
+            localStorage.setItem('vf_last_sync_timestamp', String(cloudModifiedTime));
+            localStorage.setItem('vf_local_modified_timestamp', String(cloudModifiedTime));
+            persistState(false);
+            renderAll();
+
+            setSyncBadge('downloaded');
+            setTimeout(() => setSyncBadge('synced'), 4000);
+          }
+        } else {
+          setSyncBadge('synced');
+        }
+      } catch (err) {
+        console.warn("Auto pull error:", err);
+        setSyncBadge('error', 'Gagal Auto-Pull');
+      }
+    }
+
+    // --- AUTO-PUSH DEBOUNCE (UNGGAH OTOMATIS SETELAH JEDA IDLE 60 DETIK) ---
+    function scheduleCloudAutoPush() {
+      if (!gdriveAccessToken) return;
+      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
+      if (!pin) return;
+
+      // Catat waktu perubahan lokal
+      const nowTs = Date.now();
+      localStorage.setItem('vf_local_modified_timestamp', String(nowTs));
+
+      // Reset timer debounce 60 detik
+      if (autoSyncPushTimer) clearTimeout(autoSyncPushTimer);
+      setSyncBadge('waiting');
+
+      autoSyncPushTimer = setTimeout(async () => {
+        await executeCloudPush(pin);
+      }, 60000); // 60 detik
+    }
+
+    async function executeCloudPush(pin) {
+      if (!gdriveAccessToken) return;
+      try {
+        setSyncBadge('syncing', 'Mengunggah ke Cloud...');
+        const rawPayload = buildBackupPayload();
+        const encryptedBody = await encryptE2EE(rawPayload, pin);
+        const existingFile = await findGdriveBackupFile();
+
+        let uploadRes;
+        if (existingFile) {
+          uploadRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=media`, {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${gdriveAccessToken}`,
+              'Content-Type': 'application/octet-stream'
+            },
+            body: encryptedBody
+          });
+        } else {
+          const metadata = { name: 'katalog_keuangan_secure.backup', parents: ['appDataFolder'] };
+          const form = new FormData();
+          form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+          form.append('file', new Blob([encryptedBody], { type: 'application/octet-stream' }));
+
+          uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${gdriveAccessToken}` },
+            body: form
+          });
+        }
+
+        const dataRes = await uploadRes.json();
+        const serverModifiedTime = dataRes.modifiedTime ? new Date(dataRes.modifiedTime).getTime() : Date.now();
+
+        localStorage.setItem('vf_last_sync_timestamp', String(serverModifiedTime));
+        localStorage.setItem('vf_gdrive_last_sync', new Date().toISOString());
+        loadGdrivePrefs();
+        setSyncBadge('synced');
+      } catch (err) {
+        console.error("Auto push error:", err);
+        setSyncBadge('error', 'Gagal Auto-Push');
+      }
+    }
+
+    // Penanganan saat terjadi konflik
+    async function resolveConflictKeepLocal() {
+      closeModal('sync-conflict-modal');
+      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
+      if (pin) await executeCloudPush(pin);
+    }
+
+    async function resolveConflictKeepCloud() {
+      closeModal('sync-conflict-modal');
+      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
+      if (pin && pendingConflictPayload) {
+        const res = await fetch(`https://www.googleapis.com/drive/v3/files/${pendingConflictPayload.id}?alt=media`, {
+          headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+        });
+        const encryptedContent = await res.text();
+        const decryptedPayload = await decryptE2EE(encryptedContent, pin);
+
+        if (decryptedPayload && decryptedPayload.data) {
+          accounts = decryptedPayload.data.accounts || accounts;
+          categories = decryptedPayload.data.categories || categories;
+          transactions = decryptedPayload.data.transactions || transactions;
+          budgets = decryptedPayload.data.budgets || budgets;
+          const cloudTime = new Date(pendingConflictPayload.modifiedTime).getTime();
+          localStorage.setItem('vf_last_sync_timestamp', String(cloudTime));
+          localStorage.setItem('vf_local_modified_timestamp', String(cloudTime));
+          persistState(false);
+          renderAll();
+          setSyncBadge('synced');
+        }
+      }
+    }
+
+    // Auto-check saat pengguna kembali membuka tab atau aplikasi di HP/PC
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        autoPullFromCloud();
+      }
+    });
+
+    // Modifikasi persistState agar otomatis memicu penghitungan 60 detik
+    const originalPersistState = persistState;
+    persistState = function(triggerAutoBackup = true) {
+      originalPersistState(triggerAutoBackup);
+      if (triggerAutoBackup) {
+        scheduleCloudAutoPush();
+      }
+    };
+	
     // Cari ID berkas yang ada di appDataFolder
     async function findGdriveBackupFileId() {
       const q = "name = 'katalog_keuangan_secure.backup' and 'appDataFolder' in parents and trashed = false";
@@ -4610,6 +4993,157 @@ async function initFsAutoBackup() {
         alert("Gagal mengunduh dari Google Drive: " + err.message);
       }
     }
+	
+	// --- DRILL-DOWN ANALISIS: KLIK BULAN DARI TAMPILAN TAHUNAN ---
+    function drillDownToAnalysisMonth(year, monthNum) {
+      setAnalysisScope('month');
+      const mStr = `${year}-${String(monthNum).padStart(2, '0')}`;
+      setVal('analysis-month-picker', mStr);
+      renderAnalysisView();
+      // Scroll halus ke kartu analisis
+      const card = document.getElementById('ana-breakdown-container');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // --- REKAPITULASI RINCI ANALISIS (BULANAN VS TAHUNAN) ---
+    function renderAnalysisSummaryBreakdown(filterPrefix, periodTxs) {
+      const container = document.getElementById('ana-breakdown-content');
+      const titleEl = document.getElementById('ana-breakdown-title');
+      const subEl = document.getElementById('ana-breakdown-subtitle');
+      const badgeEl = document.getElementById('ana-breakdown-badge');
+      if (!container) return;
+
+      if (analysisScope === 'month') {
+        // Mode Bulanan: Tampilkan Rekapitulasi Jumlah per Kategori
+        const parts = filterPrefix.split('-').map(Number);
+        const selYear = parts[0] || curYear;
+        const selMonth = parts[1] || parseInt(curMonth);
+        const monthLabel = `${monthNamesID[selMonth - 1]} ${selYear}`;
+
+        if (titleEl) titleEl.innerHTML = `<i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rincian Kategori Bulanan (${monthLabel})`;
+        if (subEl) subEl.textContent = 'Daftar total pengeluaran dan pemasukan pada setiap kategori.';
+        if (badgeEl) badgeEl.textContent = 'Mode Bulanan';
+
+        // Hitung total per kategori pengeluaran & pemasukan
+        const catSums = {};
+        let totalExp = 0, totalInc = 0;
+
+        periodTxs.forEach(t => {
+          if (t.type === 'transfer') return;
+          const amt = parseFloat(t.amount) || 0;
+          catSums[t.categoryId] = (catSums[t.categoryId] || 0) + amt;
+          if (t.type === 'expense') totalExp += amt;
+          else if (t.type === 'income') totalInc += amt;
+        });
+
+        const expenseCats = categories.filter(c => c.type === 'expense');
+        const incomeCats = categories.filter(c => c.type === 'income');
+
+        container.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+            <!-- Kolom Pengeluaran per Kategori -->
+            <div class="space-y-2 border border-rose-100 bg-rose-50/20 p-3.5 rounded-xl">
+              <div class="flex items-center justify-between text-xs font-bold text-rose-900 border-b border-rose-100 pb-2">
+                <span>Kategori Pengeluaran</span>
+                <span>Total (${formatCurrency(totalExp)})</span>
+              </div>
+              <div class="divide-y divide-rose-100 text-xs">
+                ${expenseCats.map(c => {
+                  const val = catSums[c.id] || 0;
+                  const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(1) : 0;
+                  return `
+                    <div class="py-2 flex items-center justify-between">
+                      <div>
+                        <span class="font-semibold text-slate-800">${escapeHtml(c.name)}</span>
+                        <span class="text-[10px] text-slate-400 block">${pct}% dari pengeluaran</span>
+                      </div>
+                      <span class="font-bold ${val > 0 ? 'text-rose-600' : 'text-slate-400'}">${formatCurrency(val)}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Kolom Pemasukan per Kategori -->
+            <div class="space-y-2 border border-emerald-100 bg-emerald-50/20 p-3.5 rounded-xl">
+              <div class="flex items-center justify-between text-xs font-bold text-emerald-900 border-b border-emerald-100 pb-2">
+                <span>Kategori Pemasukan</span>
+                <span>Total (${formatCurrency(totalInc)})</span>
+              </div>
+              <div class="divide-y divide-emerald-100 text-xs">
+                ${incomeCats.map(c => {
+                  const val = catSums[c.id] || 0;
+                  const pct = totalInc > 0 ? ((val / totalInc) * 100).toFixed(1) : 0;
+                  return `
+                    <div class="py-2 flex items-center justify-between">
+                      <div>
+                        <span class="font-semibold text-slate-800">${escapeHtml(c.name)}</span>
+                        <span class="text-[10px] text-slate-400 block">${pct}% dari pemasukan</span>
+                      </div>
+                      <span class="font-bold ${val > 0 ? 'text-emerald-600' : 'text-slate-400'}">${formatCurrency(val)}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Mode Tahunan: Tampilkan Daftar 12 Bulan yang Dapat Diklik Langsung
+        const targetYear = filterPrefix || String(curYear);
+        if (titleEl) titleEl.innerHTML = `<i data-lucide="calendar" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rangkuman 12 Bulan (Tahun ${targetYear})`;
+        if (subEl) subEl.textContent = 'Klik pada baris bulan untuk melihat analisis mendalam bulan tersebut.';
+        if (badgeEl) badgeEl.textContent = 'Mode Tahunan (Interaktif)';
+
+        const monthRows = [];
+        for (let m = 1; m <= 12; m++) {
+          const mKey = `${targetYear}-${String(m).padStart(2, '0')}`;
+          let mIn = 0, mOut = 0;
+          transactions.filter(t => t.date && t.date.startsWith(mKey) && t.type !== 'transfer').forEach(t => {
+            const amt = parseFloat(t.amount) || 0;
+            if (t.type === 'income') mIn += amt;
+            else if (t.type === 'expense') mOut += amt;
+          });
+          const mNet = mIn - mOut;
+          monthRows.push({ mNum: m, mName: monthNamesID[m - 1], in: mIn, out: mOut, net: mNet });
+        }
+
+        container.innerHTML = `
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-700">
+              <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 border-b border-slate-200">
+                <tr>
+                  <th class="px-3.5 py-2.5">Bulan</th>
+                  <th class="px-3.5 py-2.5 text-right">Pemasukan</th>
+                  <th class="px-3.5 py-2.5 text-right">Pengeluaran</th>
+                  <th class="px-3.5 py-2.5 text-right">Arus Kas Bersih</th>
+                  <th class="px-3.5 py-2.5 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${monthRows.map(r => `
+                  <tr onclick="drillDownToAnalysisMonth('${targetYear}', ${r.mNum})" class="hover:bg-emerald-50/70 cursor-pointer transition group">
+                    <td class="px-3.5 py-2.5 font-bold text-slate-800 flex items-center gap-1.5">
+                      <span class="group-hover:text-emerald-700">${r.mName}</span>
+                    </td>
+                    <td class="px-3.5 py-2.5 text-right text-emerald-600 font-semibold">+${formatCurrency(r.in)}</td>
+                    <td class="px-3.5 py-2.5 text-right text-rose-600 font-semibold">-${formatCurrency(r.out)}</td>
+                    <td class="px-3.5 py-2.5 text-right font-bold ${r.net >= 0 ? 'text-slate-900' : 'text-rose-600'}">${(r.net >= 0 ? '+' : '') + formatCurrency(r.net)}</td>
+                    <td class="px-3.5 py-2.5 text-center">
+                      <span class="text-[11px] font-semibold text-emerald-600 group-hover:underline flex items-center justify-center gap-0.5">
+                        Buka <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+	
   </script>
 </body>
 </html>
