@@ -40,13 +40,13 @@
 <!-- ==================== HEADER (DENGAN RESPONSIVE MENU 3-GARIS) ==================== -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-	  <!-- Logo & Judul FinTrack -->
-      <div class="flex items-center space-x-3">
-        <div class="p-2 bg-emerald-600 rounded-lg text-white shadow-sm">
+	  <!-- Logo & Judul FinTrack (Klik untuk Kembali ke Dashboard) -->
+      <div onclick="switchTab('dashboard')" class="flex items-center space-x-3 cursor-pointer group" title="Kembali ke Dashboard">
+        <div class="p-2 bg-emerald-600 group-hover:bg-emerald-700 rounded-lg text-white shadow-sm transition">
           <i data-lucide="wallet" class="w-6 h-6"></i>
         </div>
         <div>
-          <span class="text-xl font-bold text-slate-900 tracking-tight">FinTrack</span>
+          <span class="text-xl font-bold text-slate-900 group-hover:text-emerald-700 tracking-tight transition">FinTrack</span>
         </div>
       </div>
 	  
@@ -156,23 +156,41 @@
           <div class="text-xs text-slate-500 mt-1">Akumulasi seluruh rekening</div>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Total Pemasukan</div>
-          <div class="text-2xl font-bold text-emerald-600 mt-2" id="metric-monthly-income">Rp 0</div>
+		<!-- Kartu 2: Total Pemasukan (Default Tersembunyi) -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Total Pemasukan</span>
+            <button onclick="toggleDashCardPrivacy('income')" title="Tampilkan/Sembunyikan Pemasukan" class="text-slate-400 hover:text-emerald-700 p-1">
+              <i data-lucide="eye-off" id="icon-privacy-income" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <div class="text-2xl font-bold text-emerald-600 mt-2" id="metric-monthly-income">Rp ••••••</div>
           <div class="text-xs text-slate-500 mt-1" id="dash-month-lbl1">Bulan Terpilih</div>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Total Pengeluaran</div>
+        <!-- Kartu 3: Total Pengeluaran (Default Terbuka) -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Total Pengeluaran</span>
+            <button onclick="toggleDashCardPrivacy('expense')" title="Tampilkan/Sembunyikan Pengeluaran" class="text-slate-400 hover:text-rose-700 p-1">
+              <i data-lucide="eye" id="icon-privacy-expense" class="w-4 h-4"></i>
+            </button>
+          </div>
           <div class="text-2xl font-bold text-rose-600 mt-2" id="metric-monthly-expense">Rp 0</div>
           <div class="text-xs text-slate-500 mt-1" id="dash-month-lbl2">Bulan Terpilih</div>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Tabungan Bersih</div>
-          <div class="text-2xl font-bold text-blue-600 mt-2" id="metric-monthly-savings">Rp 0</div>
+        <!-- Kartu 4: Tabungan Bersih (Default Tersembunyi) -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Tabungan Bersih</span>
+            <button onclick="toggleDashCardPrivacy('savings')" title="Tampilkan/Sembunyikan Tabungan" class="text-slate-400 hover:text-blue-700 p-1">
+              <i data-lucide="eye-off" id="icon-privacy-savings" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <div class="text-2xl font-bold text-blue-600 mt-2" id="metric-monthly-savings">Rp ••••••</div>
           <div class="text-xs text-slate-500 mt-1">Pemasukan - Pengeluaran</div>
-        </div>
+        </div>		
       </div>
 
       <!-- Money Sources List -->
@@ -228,125 +246,190 @@
     <div id="view-transactions" class="hidden space-y-5">
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         
-        <!-- Period Bar -->
-        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
-              <i data-lucide="calendar-range" class="w-4 h-4"></i> Periode Riwayat:
-            </span>
-            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
-              <input type="checkbox" id="filter-all-time" onchange="togglePeriodFilter()" class="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4" />
-              <label for="filter-all-time" class="text-xs font-semibold text-slate-700 cursor-pointer">Semua Waktu (All Time)</label>
-            </div>
-            
-            <div id="month-selector-wrapper" class="flex items-center gap-1.5">
-              <button onclick="stepFilterMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-600">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-              </button>
-              
-              <input type="month" id="filter-month" onchange="renderTransactions()" class="text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800 w-36" />
-              
-              <button onclick="openCalendarPicker('filter-month', renderTransactions)" title="Pilih dari Kalender" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-emerald-50 hover:text-emerald-700 text-slate-600">
-                <i data-lucide="calendar" class="w-4 h-4"></i>
-              </button>
+			<!-- Period Bar (Responsif & Rapi di Mobile) -->
+			<div class="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 space-y-3">
+			  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+				<div class="flex items-center justify-between w-full sm:w-auto gap-2">
+				  <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+					<i data-lucide="calendar-range" class="w-4 h-4"></i> Periode:
+				  </span>
+				  <!-- Checkbox Semua Waktu di Mobile tetap sejajar -->
+				  <div class="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+					<input type="checkbox" id="filter-all-time" onchange="togglePeriodFilter()" class="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4" />
+					<label for="filter-all-time" class="text-xs font-semibold text-slate-700 cursor-pointer">Semua Waktu</label>
+				  </div>
+				</div>
+				
+				<!-- Baris Pemilih Bulan & Tombol Bulan Ini -->
+				<div id="month-selector-wrapper" class="flex items-center gap-1 w-full sm:w-auto">
+				  <button onclick="stepFilterMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-600 shrink-0">
+					<i data-lucide="chevron-left" class="w-4 h-4"></i>
+				  </button>
+				  
+				  <input type="month" id="filter-month" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2 py-1.5 bg-white font-medium text-slate-800 flex-1 sm:w-36 min-w-0 text-center" />
+				  
+				  <button onclick="openCalendarPicker('filter-month', renderTransactions)" title="Pilih dari Kalender" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 shrink-0">
+					<i data-lucide="calendar" class="w-4 h-4"></i>
+				  </button>
 
-              <button onclick="stepFilterMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-600">
-                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-              </button>
+				  <button onclick="stepFilterMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-600 shrink-0">
+					<i data-lucide="chevron-right" class="w-4 h-4"></i>
+				  </button>
 
-              <button onclick="resetTransactionFilterToCurrent()" title="Kembali ke Bulan & Tahun Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition ml-1 flex items-center gap-1 shadow-sm">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
-              </button>
-            </div>
-          </div>
-          
-          <div id="transaction-period-summary" class="text-xs font-medium text-slate-500"></div>
-        </div>
+				  <!-- Tombol Bulan Ini yang Rapi & Pas di Dalam Kotak -->
+				  <button onclick="resetTransactionFilterToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap">
+					<i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
+				  </button>
+				</div>
+			  </div>
+			  
+			  <!-- Rangkuman Transaksi: 3 Baris Rapi di Ponsel, 1 Baris Sejajar di Desktop -->
+			  <div id="transaction-period-summary" class="text-xs font-medium text-slate-600 border-t border-slate-200/60 pt-2"></div>
+			</div>
 
-        <!-- 1. TOP ROW: IMPORT / EXPORT BUTTONS -->
-        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
-          <div class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-            <i data-lucide="folder-output" class="w-4 h-4 text-emerald-600"></i> Alat Berkas Transaksi:
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-up" class="w-4 h-4 text-emerald-600"></i> Impor Excel
-              <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)" />
-            </label>
-            <button onclick="openExportModal('excel')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Ekspor Excel
-            </button>
-            <button onclick="openExportModal('pdf')" class="bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-text" class="w-4 h-4 text-rose-600"></i> Ekspor PDF
-            </button>
-          </div>
-        </div>
+			<!-- 1. TOOLBAR IMPOR/EKSPOR (Desktop: 3 Tombol | Ponsel: 1 Tombol Dropdown Terpadu) -->
+			<div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+			  <div class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+				<i data-lucide="folder-output" class="w-4 h-4 text-emerald-600"></i> Berkas Transaksi:
+			  </div>
+			  
+			  <!-- Desktop View (Tetap 3 Tombol) -->
+			  <div class="hidden sm:flex items-center gap-2">
+				<label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+				  <i data-lucide="file-up" class="w-4 h-4 text-emerald-600"></i> Impor Excel
+				  <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)" />
+				</label>
+				<button onclick="openExportModal('excel')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+				  <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Ekspor Excel
+				</button>
+				<button onclick="openExportModal('pdf')" class="bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+				  <i data-lucide="file-text" class="w-4 h-4 text-rose-600"></i> Ekspor PDF
+				</button>
+			  </div>
 
-        <!-- 2. BOTTOM ROW: ALL FILTERS IN 1 ROW WITH RESET BUTTON -->
-        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto pb-2">
-          <select id="filter-account" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white whitespace-nowrap min-w-[140px]">
-            <option value="ALL">Semua Rekening</option>
-          </select>
+			  <!-- Mobile View (Gabungan 1 Tombol Menu Praktis) -->
+			  <div class="relative sm:hidden">
+				<button onclick="toggleMobileIoMenu()" id="btn-mobile-io" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition">
+				  <i data-lucide="folder-output" class="w-3.5 h-3.5 text-emerald-600"></i>
+				  <span>Opsi Berkas</span>
+				  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+				</button>
+				<div id="menu-mobile-io" class="hidden absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl z-20 py-1.5 text-xs">
+				  <label class="cursor-pointer hover:bg-slate-50 text-slate-700 px-3 py-2 flex items-center gap-2 transition">
+					<i data-lucide="file-up" class="w-4 h-4 text-emerald-600"></i> Impor Excel
+					<input type="file" id="excel-file-input-mobile" accept=".xlsx, .xls" class="hidden" onchange="toggleMobileIoMenu(); importFromExcel(event)" />
+				  </label>
+				  <button onclick="toggleMobileIoMenu(); openExportModal('excel')" class="w-full text-left hover:bg-slate-50 text-slate-700 px-3 py-2 flex items-center gap-2 transition">
+					<i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Ekspor Excel
+				  </button>
+				  <button onclick="toggleMobileIoMenu(); openExportModal('pdf')" class="w-full text-left hover:bg-slate-50 text-slate-700 px-3 py-2 flex items-center gap-2 transition">
+					<i data-lucide="file-text" class="w-4 h-4 text-rose-600"></i> Ekspor PDF
+				  </button>
+				</div>
+			  </div>
+			</div>
 
-          <select id="filter-category" onchange="onFilterCategoryChange()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white whitespace-nowrap min-w-[140px]">
-            <option value="ALL">Semua Kategori</option>
-          </select>
+			<!-- 2. FILTER TRANSAKSI (Desktop: 1 Baris Sejajar | Ponsel: Grid 2 Kolom Rapi Tanpa Geser Horizontal) -->
+			<!-- 2. PENCARIAN CATATAN & FILTER LENGKAP (NOMINAL, OPERATOR, DROPDOWN & RESET) -->
+			<div class="space-y-2.5 pb-2">
+			  <!-- Baris Atas: Input Pencarian Catatan & Filter Nominal (=, >=, <=) -->
+			  <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+				<!-- Pencarian Catatan Transaksi -->
+				<div class="relative flex-1">
+				  <span class="absolute left-3 top-2.5 text-slate-400 pointer-events-none">
+					<i data-lucide="search" class="w-4 h-4"></i>
+				  </span>
+				  <input type="text" id="filter-search" oninput="renderTransactions()" placeholder="Cari catatan transaksi..." class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm bg-white outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+				</div>
 
-          <select id="filter-subcategory" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white whitespace-nowrap min-w-[150px]">
-            <option value="ALL">Semua Subkategori</option>
-          </select>
+				<!-- Filter Nominal / Nilai Uang (Bisa untuk Pengeluaran, Pemasukan, maupun Transfer) -->
+				<div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-lg border border-slate-200">
+				  <span class="text-[11px] font-bold text-slate-500 px-1 hidden sm:inline">Nominal:</span>
+				  <select id="filter-amount-op" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white font-medium text-slate-700 outline-none">
+					<option value="ALL">Semua</option>
+					<option value="gte">&ge; (Min)</option>
+					<option value="lte">&le; (Maks)</option>
+					<option value="eq">= (Sama)</option>
+				  </select>
+				  <div class="relative">
+					<span class="absolute left-2 top-1.5 text-[11px] text-slate-400 font-bold">Rp</span>
+					<input type="number" id="filter-amount-val" oninput="renderTransactions()" placeholder="0" class="w-24 sm:w-28 pl-7 pr-2 py-1 border border-slate-300 rounded-lg text-xs sm:text-sm bg-white font-semibold outline-none focus:ring-2 focus:ring-emerald-500" />
+				  </div>
+				</div>
+			  </div>
 
-          <select id="filter-type" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white whitespace-nowrap min-w-[130px]">
-            <option value="ALL">Semua Tipe</option>
-            <option value="expense">Pengeluaran</option>
-            <option value="income">Pemasukan</option>
-            <option value="transfer">Transfer Antar Rekening</option>
-          </select>
+			  <!-- Baris Bawah: Rekening, Kategori, Subkategori, Tipe, Klasifikasi, dan Reset Filter -->
+			  <div class="grid grid-cols-2 gap-2 md:flex md:flex-nowrap md:items-center">
+				<select id="filter-account" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
+				  <option value="ALL">Semua Rekening</option>
+				</select>
 
-          <select id="filter-expense-class" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-emerald-800 whitespace-nowrap min-w-[150px]">
-            <option value="ALL">Semua Klasifikasi</option>
-            <option value="fixed">Tetap (Fixed)</option>
-            <option value="periodic">Berkala (Periodic)</option>
-            <option value="dynamic">Dinamis (Dynamic)</option>
-          </select>
+				<select id="filter-category" onchange="onFilterCategoryChange()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
+				  <option value="ALL">Semua Kategori</option>
+				</select>
 
-          <button onclick="resetTransactionFilters()" title="Kembalikan semua filter ke awal" class="text-xs sm:text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-lg transition whitespace-nowrap flex items-center gap-1">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Filter
-          </button>
-        </div>
+				<select id="filter-subcategory" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
+				  <option value="ALL">Semua Subkategori</option>
+				</select>
 
-        <!-- Transactions Table -->
-        <div class="overflow-x-auto mt-2">
-          <table class="w-full text-left text-sm text-slate-600">
-            <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
-              <tr>
-                <th class="px-3 py-3">Tanggal</th>
-                <th class="px-3 py-3">Sumber Dana</th>
-                <th class="px-3 py-3">Kategori</th>
-                <th class="px-3 py-3">Subkategori</th>
-                <th class="px-3 py-3 min-w-[180px]">Catatan</th>
-                <th class="px-3 py-3 text-right">Nominal</th>
-                <th class="px-3 py-3 text-center">Aksi / Urutan</th>
-              </tr>
-            </thead>
-            <tbody id="transaction-table-body" class="divide-y divide-slate-100"></tbody>
-          </table>
-          <div id="no-tx-msg" class="py-12 text-center text-slate-400 hidden">Tidak ada transaksi yang cocok dengan filter ini.</div>
-        </div>
-      </div>
+				<select id="filter-type" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
+				  <option value="ALL">Semua Tipe</option>
+				  <option value="expense">Pengeluaran</option>
+				  <option value="income">Pemasukan</option>
+				  <option value="transfer">Transfer</option>
+				</select>
+
+				<select id="filter-expense-class" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-emerald-800 w-full md:w-auto">
+				  <option value="ALL">Semua Klasifikasi</option>
+				  <option value="fixed">Tetap (Fixed)</option>
+				  <option value="periodic">Berkala (Periodic)</option>
+				  <option value="dynamic">Dinamis (Dynamic)</option>
+				</select>
+
+				<button onclick="resetTransactionFilters()" title="Kembalikan semua filter ke awal" class="text-xs sm:text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-lg transition flex items-center justify-center gap-1 w-full md:w-auto shrink-0 shadow-sm">
+				  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Filter
+				</button>
+			  </div>
+			</div>			
+
+			<!-- TAMPILAN DESKTOP: TABEL BIASA (Tetap tidak berubah) -->
+			<div class="hidden md:block overflow-x-auto mt-2">
+			  <table class="w-full text-left text-sm text-slate-600">
+				<thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+				  <tr>
+					<th class="px-3 py-3">Tanggal</th>
+					<th class="px-3 py-3">Sumber Dana</th>
+					<th class="px-3 py-3">Kategori</th>
+					<th class="px-3 py-3">Subkategori</th>
+					<th class="px-3 py-3 min-w-[180px]">Catatan</th>
+					<th class="px-3 py-3 text-right">Nominal</th>
+					<th class="px-3 py-3 text-center">Aksi / Urutan</th>
+				  </tr>
+				</thead>
+				<tbody id="transaction-table-body" class="divide-y divide-slate-100"></tbody>
+			  </table>
+			</div>
+
+			<!-- TAMPILAN PONSEL (MOBILE): DAFTAR KARTU MODERN (Tanpa Geser Horizontal) -->
+			<div class="block md:hidden space-y-2.5 mt-2" id="transaction-mobile-cards"></div>
+
+			<div id="no-tx-msg" class="py-12 text-center text-slate-400 hidden">Tidak ada transaksi yang cocok dengan filter ini.</div>
+		</div>
     </div>
 
     <!-- ==================== TAB 3: SMART OVERVIEW ANALYSIS ==================== -->
     <div id="view-analysis" class="hidden space-y-6">
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+	  <!-- Header Menu Analisis Responsif -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
             <i data-lucide="brain-circuit" class="w-5 h-5 text-emerald-600"></i> Analisis Finansial & Rasio Tabungan
           </h2>
           <p class="text-xs text-slate-500">Evaluasi arus kas, biaya tetap, pengeluaran periodik/dinamis, dan rasio tabungan.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="flex items-center bg-slate-100 p-1 rounded-lg">
+        
+        <div class="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+          <div class="flex items-center bg-slate-100 p-1 rounded-lg shrink-0">
             <button id="btn-ana-scope-month" onclick="setAnalysisScope('month')" class="px-3 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition">
               Bulanan
             </button>
@@ -355,24 +438,36 @@
             </button>
           </div>
           
-          <div id="ana-month-wrap" class="flex items-center gap-1">
-            <input type="month" id="analysis-month-picker" onchange="renderAnalysisView()" class="text-sm font-semibold border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-36" />
-            <button onclick="openCalendarPicker('analysis-month-picker', renderAnalysisView)" title="Buka Kalender" class="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-emerald-50 text-slate-600">
+		  <div id="ana-month-wrap" class="flex items-center gap-1 flex-1 sm:flex-none justify-end">
+            <!-- Tombol Bulan Sebelumnya -->
+            <button onclick="stepAnalysisMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 shrink-0">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            
+            <input type="month" id="analysis-month-picker" onchange="renderAnalysisView()" class="text-xs sm:text-sm font-semibold border border-slate-300 rounded-lg px-2 py-1.5 bg-white flex-1 sm:w-36 min-w-0" />
+            
+            <button onclick="openCalendarPicker('analysis-month-picker', renderAnalysisView)" title="Buka Kalender" class="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-emerald-50 text-slate-600 shrink-0">
               <i data-lucide="calendar" class="w-4 h-4"></i>
             </button>
-            <button onclick="resetAnalysisMonthToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm ml-0.5">
+
+            <!-- Tombol Bulan Berikutnya -->
+            <button onclick="stepAnalysisMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 shrink-0">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+
+            <button onclick="resetAnalysisMonthToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap">
               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
             </button>
           </div>
           
-          <div id="ana-year-wrap" class="hidden flex items-center gap-1">
-            <button onclick="stepAnalysisYear(-1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
-            <input type="number" id="analysis-year-picker" onchange="renderAnalysisView()" class="text-sm font-semibold border border-slate-300 rounded-lg px-2 py-1 bg-white w-20 text-center" />
-            <button onclick="stepAnalysisYear(1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+          <div id="ana-year-wrap" class="hidden flex items-center gap-1 flex-1 sm:flex-none justify-end">
+            <button onclick="stepAnalysisYear(-1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 shrink-0"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+            <input type="number" id="analysis-year-picker" onchange="renderAnalysisView()" class="text-xs sm:text-sm font-semibold border border-slate-300 rounded-lg px-2 py-1 bg-white w-20 text-center" />
+            <button onclick="stepAnalysisYear(1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 shrink-0"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
           </div>
         </div>
       </div>
-
+	  
       <!-- Financial Health Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
@@ -491,27 +586,45 @@
 
     <!-- ==================== TAB 4: BUDGETS ==================== -->
     <div id="view-budgets" class="hidden space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">Anggaran Bulanan & Analisis Historis</h2>
-          <p class="text-sm text-slate-500">Pantau limit pengeluaran dengan acuan historis (Bulan 1–3: tahun lalu, Bulan 4+: tahun ini).</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <input type="month" id="budget-month-selector" onchange="renderBudgets()" class="border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white font-medium w-36" />
-          <button onclick="openCalendarPicker('budget-month-selector', renderBudgets)" title="Buka Kalender" class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-emerald-50 text-slate-600">
-            <i data-lucide="calendar" class="w-4 h-4"></i>
-          </button>
-          <button onclick="resetBudgetMonthToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-2 rounded-lg transition flex items-center gap-1 shadow-sm">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
-          </button>
-          <button onclick="openSetBudgetModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 ml-1">
-            <i data-lucide="sliders" class="w-4 h-4"></i> Atur Limit
-          </button>
-        </div>
-      </div>
+		<!-- Header Menu Anggaran: Judul Tetap Ada + Kontrol Bulan Lengkap (< dan >) -->
+		  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+			<!-- Judul & Keterangan Menu (Tetap Ada) -->
+			<div>
+			  <h2 class="text-xl font-bold text-slate-900">Anggaran Bulanan & Analisis Historis</h2>
+			  <p class="text-sm text-slate-500">Pantau limit pengeluaran dengan acuan historis (Bulan 1–3: tahun lalu, Bulan 4+: tahun ini).</p>
+			</div>
+
+			<!-- Kontrol Pemilih Bulan Lengkap dengan Tombol < dan > -->
+			<div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+			  <!-- Tombol Bulan Sebelumnya (<) -->
+			  <button onclick="stepBudgetMonth(-1)" title="Bulan Sebelumnya" class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-600 shrink-0">
+				<i data-lucide="chevron-left" class="w-4 h-4"></i>
+			  </button>
+			  
+			  <input type="month" id="budget-month-selector" onchange="renderBudgets()" class="border border-slate-300 rounded-lg px-2.5 py-2 text-sm bg-white font-medium w-36" />
+			  
+			  <button onclick="openCalendarPicker('budget-month-selector', renderBudgets)" title="Buka Kalender" class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-emerald-50 text-slate-600 shrink-0">
+				<i data-lucide="calendar" class="w-4 h-4"></i>
+			  </button>
+
+			  <!-- Tombol Bulan Berikutnya (>) -->
+			  <button onclick="stepBudgetMonth(1)" title="Bulan Berikutnya" class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-600 shrink-0">
+				<i data-lucide="chevron-right" class="w-4 h-4"></i>
+			  </button>
+
+			  <!-- Tombol Bulan Ini -->
+			  <button onclick="resetBudgetMonthToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-2 rounded-lg transition flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap">
+				<i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
+			  </button>
+
+			  <button onclick="openSetBudgetModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 ml-1 shrink-0 whitespace-nowrap shadow-sm">
+				<i data-lucide="sliders" class="w-4 h-4"></i> Atur Limit
+			  </button>
+			</div>
+		  </div>
       <div id="budget-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
     </div>
-
+		
     <!-- ==================== TAB 5: TRENDS ==================== -->
     <div id="view-trends" class="hidden space-y-6">
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
@@ -767,6 +880,44 @@
             </div>
           </div>
         </div>
+
+	  <!-- PENGATURAN KUNCI LAYAR PIN & INACTIVITY LOCK -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i> Kunci Layar Aplikasi (PIN AppLock)
+            </h3>
+            <p class="text-xs text-slate-500">Kunci otomatis aplikasi saat ditinggal agar tidak dibuka orang lain saat akun Google tetap terhubung.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold" id="applock-status-badge">Nonaktif</span>
+            <input type="checkbox" id="applock-toggle" onchange="toggleAppLockEnable()" class="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+          </div>
+        </div>
+
+        <div id="applock-settings-detail" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Ubah / Pasang PIN Baru (4-6 Angka):</label>
+            <div class="flex gap-2">
+              <input type="password" id="applock-new-pin" maxlength="6" placeholder="Masukkan 4-6 angka" class="border border-slate-300 rounded-lg px-3 py-1.5 w-full font-mono text-center tracking-widest text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+              <button onclick="saveAppLockPin()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-sm">
+                Simpan PIN
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Kunci Otomatis Saat Tidak Ada Aktivitas (Idle):</label>
+            <select id="applock-timeout-select" onchange="updateAppLockTimeout()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="1">1 Menit Tanpa Aktivitas</option>
+              <option value="2">2 Menit Tanpa Aktivitas</option>
+              <option value="5">5 Menit Tanpa Aktivitas</option>
+              <option value="10">10 Menit Tanpa Aktivitas</option>
+              <option value="15">15 Menit Tanpa Aktivitas</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       <!-- 4. BACKUP & RESTORE SECTION WITH FILE EXPLORER AUTO-SYNC -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
@@ -1059,11 +1210,23 @@
         </div>
 
         <!-- Transfer Destination Account (Visible ONLY when transfer is selected) -->
-        <div id="tx-transfer-dest-wrap" class="hidden">
-          <label class="text-xs font-semibold text-blue-700 block mb-1">Rekening Tujuan (Ke Rekening Mana?)</label>
-          <select id="tx-to-account" tabindex="4" class="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-slate-800 text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none"></select>
-        </div>
-
+		<!-- Transfer Destination Account -->
+		<div id="tx-transfer-dest-wrap" class="hidden space-y-3">
+		  <div>
+			<label class="text-xs font-semibold text-blue-700 block mb-1">Rekening Tujuan (Ke Rekening Mana?)</label>
+			<select id="tx-to-account" tabindex="4" class="w-full px-3 py-2 border-2 border-blue-200 rounded-lg text-slate-800 text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none"></select>
+		  </div>
+		  <!-- Parameter Biaya Admin Transfer -->
+		  <div>
+			<label class="text-xs font-semibold text-rose-600 block mb-1">Biaya Admin Transfer (Rp) <span class="text-[10px] text-slate-400 font-normal">(Opsional)</span></label>
+			<div class="relative">
+			  <span class="absolute left-3 top-2 text-slate-400 font-bold text-xs">Rp</span>
+			  <input type="number" step="100" id="tx-admin-fee" value="0" placeholder="0" class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-slate-900 font-semibold text-sm outline-none focus:ring-2 focus:ring-rose-500" />
+			</div>
+			<span class="text-[10px] text-slate-400 mt-0.5 block">Biaya admin dipotong dari rekening asal dan dicatat sebagai beban pengeluaran.</span>
+		  </div>
+		</div>
+		
         <!-- 4. Category & Subcategory (Hidden when transfer is selected) -->
         <div class="grid grid-cols-2 gap-3" id="tx-cat-subcat-wrap">
           <div>
@@ -1872,6 +2035,7 @@ async function initFsAutoBackup() {
       updateCompareSelectors();
       await initFsAutoBackup();
       checkPeriodicAutoBackup();
+	  checkAppLockOnStartup();
       renderAll();
     });
 
@@ -1930,6 +2094,26 @@ async function initFsAutoBackup() {
     function resetAnalysisMonthToCurrent() {
       setVal('analysis-month-picker', `${curYear}-${curMonth}`);
       renderAnalysisView();
+    }
+	
+	function stepAnalysisMonth(delta) {
+      const input = document.getElementById('analysis-month-picker');
+      if (!input) return;
+      const val = input.value || dashboardSelectedMonth;
+      const parts = val.split('-').map(Number);
+      const d = new Date(parts[0] || curYear, (parts[1] || 1) - 1 + delta, 1);
+      input.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      renderAnalysisView();
+    }
+
+    function stepBudgetMonth(delta) {
+      const input = document.getElementById('budget-month-selector');
+      if (!input) return;
+      const val = input.value || dashboardSelectedMonth;
+      const parts = val.split('-').map(Number);
+      const d = new Date(parts[0] || curYear, (parts[1] || 1) - 1 + delta, 1);
+      input.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      renderBudgets();
     }
 
     function resetBudgetMonthToCurrent() {
@@ -2060,10 +2244,15 @@ async function initFsAutoBackup() {
           if (accountBalances[tx.accountId] !== undefined) accountBalances[tx.accountId] += amt;
         } else if (tx.type === 'expense') {
           if (accountBalances[tx.accountId] !== undefined) accountBalances[tx.accountId] -= amt;
-        } else if (tx.type === 'transfer') {
-          if (accountBalances[tx.accountId] !== undefined) accountBalances[tx.accountId] -= amt;
-          if (accountBalances[tx.toAccountId] !== undefined) accountBalances[tx.toAccountId] += amt;
-        }
+		} else if (tx.type === 'transfer') {
+        const fee = parseFloat(tx.adminFee) || 0;
+        if (accountBalances[tx.accountId] !== undefined) accountBalances[tx.accountId] -= (amt + fee);
+        if (accountBalances[tx.toAccountId] !== undefined) accountBalances[tx.toAccountId] += amt;
+        // Biaya admin dicatat sebagai beban pengeluaran riil bulan berjalan
+		if (tx.date && tx.date.startsWith(selectedMonthVal) && fee > 0) {
+			monthlyExpense += fee;
+			}
+		}
 
         // Monthly Stats (Transfers are excluded from monthly income and expense totals)
         if (tx.date && tx.date.startsWith(selectedMonthVal)) {
@@ -2079,10 +2268,20 @@ async function initFsAutoBackup() {
       totalNetWorth = Object.values(accountBalances).reduce((a, b) => a + b, 0);
 
       setText('metric-total-balance', isNetWorthHidden ? 'Rp ••••••' : formatCurrency(totalNetWorth));
-      setText('metric-monthly-income', `+${formatCurrency(monthlyIncome)}`);
-      setText('metric-monthly-expense', `-${formatCurrency(monthlyExpense)}`);
-      setText('metric-monthly-savings', formatCurrency(monthlyIncome - monthlyExpense));
+	  
+	  // Perbarui nilai kartu dengan privasi mandiri masing-masing
+      setText('metric-monthly-income', dashPrivacy.income ? 'Rp ••••••' : `+${formatCurrency(monthlyIncome)}`);
+      setText('metric-monthly-expense', dashPrivacy.expense ? 'Rp ••••••' : `-${formatCurrency(monthlyExpense)}`);
+      setText('metric-monthly-savings', dashPrivacy.savings ? 'Rp ••••••' : formatCurrency(monthlyIncome - monthlyExpense));
 
+      // Ikon eye / eye-off
+      const iconInc = document.getElementById('icon-privacy-income');
+      const iconExp = document.getElementById('icon-privacy-expense');
+      const iconSav = document.getElementById('icon-privacy-savings');
+      if (iconInc) iconInc.setAttribute('data-lucide', dashPrivacy.income ? 'eye-off' : 'eye');
+      if (iconExp) iconExp.setAttribute('data-lucide', dashPrivacy.expense ? 'eye-off' : 'eye');
+      if (iconSav) iconSav.setAttribute('data-lucide', dashPrivacy.savings ? 'eye-off' : 'eye');
+	  
       const accContainer = document.getElementById('dashboard-accounts-list');
       if (accContainer) {
         accContainer.innerHTML = accounts.map(a => {
@@ -2251,6 +2450,9 @@ async function initFsAutoBackup() {
     }
 
     function resetTransactionFilters() {
+      setVal('filter-search', '');
+      setVal('filter-amount-op', 'ALL');
+      setVal('filter-amount-val', '');
       setVal('filter-account', 'ALL');
       setVal('filter-category', 'ALL');
       setVal('filter-type', 'ALL');
@@ -2337,11 +2539,18 @@ async function initFsAutoBackup() {
       }
     }
 
+	// Pembantu menu impor/ekspor terpadu di ponsel
+    function toggleMobileIoMenu() {
+      const menu = document.getElementById('menu-mobile-io');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
     function renderTransactions() {
       const tbody = document.getElementById('transaction-table-body');
+      const mobileCards = document.getElementById('transaction-mobile-cards');
       const noTx = document.getElementById('no-tx-msg');
-      if (!tbody) return;
-      tbody.innerHTML = '';
+      if (tbody) tbody.innerHTML = '';
+      if (mobileCards) mobileCards.innerHTML = '';
 
       const isAllTime = document.getElementById('filter-all-time')?.checked;
       const selectedMonth = document.getElementById('filter-month')?.value;
@@ -2350,6 +2559,12 @@ async function initFsAutoBackup() {
       const subFilter = document.getElementById('filter-subcategory')?.value || 'ALL';
       const typeFilter = document.getElementById('filter-type')?.value || 'ALL';
       const expClassFilter = document.getElementById('filter-expense-class')?.value || 'ALL';
+
+      // Parameter Filter Baru: Pencarian Catatan & Perbandingan Nominal
+      const searchQuery = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
+      const amountOp = document.getElementById('filter-amount-op')?.value || 'ALL';
+      const amountValRaw = document.getElementById('filter-amount-val')?.value;
+      const targetAmount = (amountValRaw !== '' && !isNaN(parseFloat(amountValRaw))) ? Math.abs(parseFloat(amountValRaw)) : null;
 
       let periodInflow = 0;
       let periodOutflow = 0;
@@ -2368,6 +2583,20 @@ async function initFsAutoBackup() {
           if (cls !== expClassFilter) return false;
         }
 
+        // 1. Filter Pencarian Catatan
+        if (searchQuery) {
+          const noteText = String(tx.note || '').toLowerCase();
+          if (!noteText.includes(searchQuery)) return false;
+        }
+
+        // 2. Filter Perbandingan Nominal (Bekerja akurat pada Pengeluaran, Pemasukan, dan Transfer)
+        if (amountOp !== 'ALL' && targetAmount !== null) {
+          const txAmount = Math.abs(parseFloat(tx.amount) || 0);
+          if (amountOp === 'eq' && Math.abs(txAmount - targetAmount) > 0.01) return false;
+          if (amountOp === 'gte' && txAmount < targetAmount) return false;
+          if (amountOp === 'lte' && txAmount > targetAmount) return false;
+        }
+
         return true;
       });
 
@@ -2382,9 +2611,20 @@ async function initFsAutoBackup() {
       const summaryEl = document.getElementById('transaction-period-summary');
       if (summaryEl) {
         summaryEl.innerHTML = `
-          Total Transaksi: <strong class="text-slate-800">${filtered.length}</strong> | 
-          Masuk: <strong class="text-emerald-600">+${formatCurrency(periodInflow)}</strong> | 
-          Keluar: <strong class="text-rose-600">-${formatCurrency(periodOutflow)}</strong>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 w-full">
+            <div class="flex justify-between sm:justify-start items-center gap-1.5 py-0.5 border-b border-slate-200/50 sm:border-none">
+              <span class="text-slate-500">Total Transaksi:</span>
+              <strong class="text-slate-800">${filtered.length} transaksi</strong>
+            </div>
+            <div class="flex justify-between sm:justify-start items-center gap-1.5 py-0.5 border-b border-slate-200/50 sm:border-none">
+              <span class="text-slate-500">Total Pemasukan:</span>
+              <strong class="text-emerald-600">+${formatCurrency(periodInflow)}</strong>
+            </div>
+            <div class="flex justify-between sm:justify-start items-center gap-1.5 py-0.5">
+              <span class="text-slate-500">Total Pengeluaran:</span>
+              <strong class="text-rose-600">-${formatCurrency(periodOutflow)}</strong>
+            </div>
+          </div>
         `;
       }
 
@@ -2397,7 +2637,6 @@ async function initFsAutoBackup() {
       filtered.forEach((tx, idx) => {
         const acc = accounts.find(a => a.id === tx.accountId)?.name || 'Tidak Diketahui';
         const isExpense = tx.type === 'expense';
-        const isIncome = tx.type === 'income';
         const isTransfer = tx.type === 'transfer';
 
         let sourceColHtml = escapeHtml(acc);
@@ -2406,7 +2645,8 @@ async function initFsAutoBackup() {
         let amountColHtml = '';
 
         if (isTransfer) {
-          const toAcc = accounts.find(a => a.id === tx.toAccountId)?.name || 'Tidak Diketahui';
+		  const toAcc = accounts.find(a => a.id === tx.toAccountId)?.name || 'Tidak Diketahui';
+          const fee = parseFloat(tx.adminFee) || 0;
           sourceColHtml = `
             <span class="flex items-center gap-1 font-semibold text-slate-800">
               ${escapeHtml(acc)} <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-blue-500 inline shrink-0"></i> ${escapeHtml(toAcc)}
@@ -2414,8 +2654,11 @@ async function initFsAutoBackup() {
           `;
           categoryColHtml = `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">Transfer</span>`;
           subcatColHtml = `<span class="text-slate-400">Pindah Dana</span>`;
-          amountColHtml = `<span class="text-blue-600 font-bold whitespace-nowrap">⇄ ${formatCurrency(tx.amount)}</span>`;
-        } else {
+          amountColHtml = `
+            <span class="text-blue-600 font-bold whitespace-nowrap">⇄ ${formatCurrency(tx.amount)}</span>
+            ${fee > 0 ? `<div class="text-[10px] text-rose-500 font-semibold mt-0.5">(Admin: ${formatCurrency(fee)})</div>` : ''}
+          `;        
+		} else {
           const cat = categories.find(c => c.id === tx.categoryId)?.name || 'Kategori Lain';
           categoryColHtml = `<span class="px-2 py-0.5 rounded-full text-xs font-semibold ${isExpense ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">${escapeHtml(cat)}</span>`;
           amountColHtml = `<span class="${isExpense ? 'text-rose-600' : 'text-emerald-600'} font-bold whitespace-nowrap">${isExpense ? '-' : '+'}${formatCurrency(tx.amount)}</span>`;
@@ -2455,52 +2698,124 @@ async function initFsAutoBackup() {
           }
         }
 
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-        tr.innerHTML = `
-          <td class="px-3 py-3 whitespace-nowrap text-slate-600 font-medium">${escapeHtml(tx.date)}</td>
-          <td class="px-3 py-3">${sourceColHtml}</td>
-          <td class="px-3 py-3">${categoryColHtml}</td>
-          <td class="px-3 py-3 text-slate-500">${subcatColHtml}</td>
-          <td class="px-3 py-3">${noteHtml}</td>
-          <td class="px-3 py-3 text-right">
-            ${amountColHtml}
-          </td>
-          <td class="px-3 py-3 text-center whitespace-nowrap">
-            <div class="flex items-center justify-center gap-1">
-              ${canMoveUp ? `
-                <button onclick="moveTransaction('${tx.id}', 'up')" title="Pindahkan ke atas (Hari yang sama)" class="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition">
-                  <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+        // Tampilan Baris Tabel Desktop
+        if (tbody) {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          tr.innerHTML = `
+            <td class="px-3 py-3 whitespace-nowrap text-slate-600 font-medium">${escapeHtml(tx.date)}</td>
+            <td class="px-3 py-3">${sourceColHtml}</td>
+            <td class="px-3 py-3">${categoryColHtml}</td>
+            <td class="px-3 py-3 text-slate-500">${subcatColHtml}</td>
+            <td class="px-3 py-3">${noteHtml}</td>
+            <td class="px-3 py-3 text-right">${amountColHtml}</td>
+            <td class="px-3 py-3 text-center whitespace-nowrap">
+              <div class="flex items-center justify-center gap-1">
+                ${canMoveUp ? `
+                  <button onclick="moveTransaction('${tx.id}', 'up')" title="Pindahkan ke atas" class="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : `
+                  <button disabled class="p-1 text-slate-200 cursor-not-allowed">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                  </button>
+                `}
+                ${canMoveDown ? `
+                  <button onclick="moveTransaction('${tx.id}', 'down')" title="Pindahkan ke bawah" class="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : `
+                  <button disabled class="p-1 text-slate-200 cursor-not-allowed">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                  </button>
+                `}
+                <button onclick="editTransaction('${tx.id}')" title="Ubah Transaksi" class="text-slate-400 hover:text-emerald-600 p-1 transition ml-0.5">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
                 </button>
-              ` : `
-                <button disabled class="p-1 text-slate-200 cursor-not-allowed">
-                  <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                <button onclick="deleteTransaction('${tx.id}')" title="Hapus Transaksi" class="text-slate-400 hover:text-rose-600 p-1 transition">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
-              `}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
 
-              ${canMoveDown ? `
-                <button onclick="moveTransaction('${tx.id}', 'down')" title="Pindahkan ke bawah (Hari yang sama)" class="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition">
-                  <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
-                </button>
-              ` : `
-                <button disabled class="p-1 text-slate-200 cursor-not-allowed">
-                  <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
-                </button>
-              `}
-
-              <button onclick="editTransaction('${tx.id}')" title="Ubah Transaksi" class="text-slate-400 hover:text-emerald-600 p-1 transition ml-0.5">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
-              </button>
-              <button onclick="deleteTransaction('${tx.id}')" title="Hapus Transaksi" class="text-slate-400 hover:text-rose-600 p-1 transition">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+        // Tampilan Kartu Mobile
+        if (mobileCards) {
+          const card = document.createElement('div');
+          card.className = "bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-sm space-y-2.5";
+          card.innerHTML = `
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span class="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                <i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${escapeHtml(tx.date)}
+              </span>
+              <div>${categoryColHtml}</div>
             </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Sumber / Rekening</span>
+                <div class="text-xs font-bold text-slate-800">${sourceColHtml}</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 uppercase font-bold block">Nominal</span>
+                <div class="text-sm font-extrabold">${amountColHtml}</div>
+              </div>
+            </div>
+
+            ${tx.subcategory && !isTransfer ? `
+              <div class="text-[11px] text-slate-500 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md">
+                <span class="text-slate-400">Subkategori:</span>
+                <span class="font-semibold text-slate-700">${escapeHtml(tx.subcategory)}</span>
+              </div>
+            ` : ''}
+
+            ${rawNote.trim() !== '' ? `
+              <div class="text-xs bg-slate-50/70 p-2 rounded-lg border border-slate-100">
+                ${noteHtml}
+              </div>
+            ` : ''}
+
+            <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] font-semibold text-slate-400 mr-1">Urutan:</span>
+                ${canMoveUp ? `
+                  <button onclick="moveTransaction('${tx.id}', 'up')" class="p-1 rounded bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : `
+                  <button disabled class="p-1 rounded bg-slate-50 text-slate-200 border border-slate-100 cursor-not-allowed">
+                    <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                  </button>
+                `}
+                ${canMoveDown ? `
+                  <button onclick="moveTransaction('${tx.id}', 'down')" class="p-1 rounded bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : `
+                  <button disabled class="p-1 rounded bg-slate-50 text-slate-200 border border-slate-100 cursor-not-allowed">
+                    <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+                  </button>
+                `}
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button onclick="editTransaction('${tx.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition flex items-center gap-1">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Ubah
+                </button>
+                <button onclick="deleteTransaction('${tx.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition flex items-center gap-1">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
+                </button>
+              </div>
+            </div>
+          `;
+          mobileCards.appendChild(card);
+        }
       });
+
       lucide.createIcons();
-    }
+    }	
 
     // OPEN TRANSACTION MODAL WITH TRANSFER & CATEGORY CONTROLS
     function openTransactionModal(editId = null) {
@@ -2525,10 +2840,12 @@ async function initFsAutoBackup() {
 
         if (tx.type === 'transfer') {
           setVal('tx-to-account', tx.toAccountId || '');
+		  setVal('tx-admin-fee', tx.adminFee || 0);
         } else {
           setVal('tx-category', tx.categoryId);
           populateSubcategoriesDropdown();
           setVal('tx-subcategory', tx.subcategory || '');
+		  setVal('tx-admin-fee', 0);
         }
         setVal('tx-note', tx.note || '');
       } else {
@@ -2578,6 +2895,7 @@ async function initFsAutoBackup() {
       const categoryId = document.getElementById('tx-category')?.value;
       const subcategory = document.getElementById('tx-subcategory')?.value || '';
       const note = document.getElementById('tx-note')?.value || '';
+	  const adminFee = (type === 'transfer') ? (parseFloat(document.getElementById('tx-admin-fee')?.value) || 0) : 0;
 
       if (type === 'transfer') {
         if (!toAccountId || accountId === toAccountId) {
@@ -2598,6 +2916,7 @@ async function initFsAutoBackup() {
             toAccountId: type === 'transfer' ? toAccountId : null, 
             categoryId: type === 'transfer' ? '' : categoryId, 
             subcategory: type === 'transfer' ? '' : subcategory, 
+			adminFee: adminFee,
             note 
           };
         }
@@ -2611,6 +2930,7 @@ async function initFsAutoBackup() {
           toAccountId: type === 'transfer' ? toAccountId : null,
           categoryId: type === 'transfer' ? '' : categoryId,
           subcategory: type === 'transfer' ? '' : subcategory,
+		  adminFee: adminFee,
           note
         });
       }
@@ -5022,6 +5342,25 @@ async function resolveConflictKeepCloud() {
     }
 
     // --- REKAPITULASI RINCI ANALISIS (BULANAN VS TAHUNAN) ---
+    // Menyimpan ID kategori yang sedang dibuka rincian subkategorinya (hanya 1 kategori dalam satu waktu)
+    let activeExpandedAnalysisCatId = null;
+
+    function toggleAnalysisCategoryExpand(catId) {
+      // Jika kategori yang sama diklik kembali, tutup (minimize). Jika kategori lain diklik, buka yang baru dan otomatis tutup yang lama.
+      activeExpandedAnalysisCatId = (activeExpandedAnalysisCatId === catId) ? null : catId;
+
+      let filterPrefix = '';
+      if (analysisScope === 'month') {
+        filterPrefix = document.getElementById('analysis-month-picker')?.value || dashboardSelectedMonth;
+      } else {
+        filterPrefix = document.getElementById('analysis-year-picker')?.value || String(curYear);
+      }
+
+      const periodTxs = transactions.filter(t => t.date && t.date.startsWith(filterPrefix) && t.type !== 'transfer');
+      renderAnalysisSummaryBreakdown(filterPrefix, periodTxs);
+      lucide.createIcons();
+    }
+
     function renderAnalysisSummaryBreakdown(filterPrefix, periodTxs) {
       const container = document.getElementById('ana-breakdown-content');
       const titleEl = document.getElementById('ana-breakdown-title');
@@ -5030,18 +5369,18 @@ async function resolveConflictKeepCloud() {
       if (!container) return;
 
       if (analysisScope === 'month') {
-        // Mode Bulanan: Tampilkan Rekapitulasi Jumlah per Kategori
+        // Mode Bulanan: Rincian Kategori & Subkategori (Akordeon Interaktif)
         const parts = filterPrefix.split('-').map(Number);
         const selYear = parts[0] || curYear;
         const selMonth = parts[1] || parseInt(curMonth);
         const monthLabel = `${monthNamesID[selMonth - 1]} ${selYear}`;
 
-        if (titleEl) titleEl.innerHTML = `<i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rincian Kategori Bulanan (${monthLabel})`;
-        if (subEl) subEl.textContent = 'Daftar total pengeluaran dan pemasukan pada setiap kategori.';
+        if (titleEl) titleEl.innerHTML = `<i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rincian Kategori & Subkategori (${monthLabel})`;
+        if (subEl) subEl.textContent = 'Klik ikon panah bawah pada kategori untuk melihat total uang subkategorinya.';
         if (badgeEl) badgeEl.textContent = 'Mode Bulanan';
 
-        // Hitung total per kategori pengeluaran & pemasukan
         const catSums = {};
+        const catSubSums = {}; // { [catId]: { [subName]: total } }
         let totalExp = 0, totalInc = 0;
 
         periodTxs.forEach(t => {
@@ -5050,10 +5389,60 @@ async function resolveConflictKeepCloud() {
           catSums[t.categoryId] = (catSums[t.categoryId] || 0) + amt;
           if (t.type === 'expense') totalExp += amt;
           else if (t.type === 'income') totalInc += amt;
+
+          if (!catSubSums[t.categoryId]) catSubSums[t.categoryId] = {};
+          const subKey = (t.subcategory && t.subcategory.trim()) ? t.subcategory.trim() : 'Tanpa Subkategori';
+          catSubSums[t.categoryId][subKey] = (catSubSums[t.categoryId][subKey] || 0) + amt;
         });
 
         const expenseCats = categories.filter(c => c.type === 'expense');
         const incomeCats = categories.filter(c => c.type === 'income');
+
+        // Fungsi pembantu render baris kategori dengan tombol panah bawah
+        const renderCategoryBlock = (cats, totalAmount, isExpense) => {
+          return cats.map(c => {
+            const val = catSums[c.id] || 0;
+            const pct = totalAmount > 0 ? ((val / totalAmount) * 100).toFixed(1) : 0;
+            const isExpanded = (activeExpandedAnalysisCatId === c.id);
+            const subMap = catSubSums[c.id] || {};
+            const subKeys = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
+
+            return `
+              <div class="py-2 border-b border-slate-100 last:border-b-0">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <!-- Tombol Panah Bawah / Atas untuk Rincian Subkategori -->
+                    <button type="button" onclick="toggleAnalysisCategoryExpand('${c.id}')" title="${isExpanded ? 'Tutup subkategori' : 'Lihat subkategori'}" class="p-1 rounded-md hover:bg-slate-200 text-slate-500 transition shrink-0">
+                      <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-emerald-600"></i>
+                    </button>
+                    <div>
+                      <span class="font-semibold text-slate-800">${escapeHtml(c.name)}</span>
+                      <span class="text-[10px] text-slate-400 block">${pct}% dari total</span>
+                    </div>
+                  </div>
+                  <span class="font-bold ${val > 0 ? (isExpense ? 'text-rose-600' : 'text-emerald-600') : 'text-slate-400'}">${formatCurrency(val)}</span>
+                </div>
+
+                <!-- Kontainer Rincian Subkategori (Hanya Muncul saat Kategori ini Aktif) -->
+                ${isExpanded ? `
+                  <div class="mt-2 ml-7 pl-3 border-l-2 border-emerald-400 bg-white p-2.5 rounded-lg border border-slate-200 text-xs space-y-1.5 shadow-sm">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Rincian Subkategori (${escapeHtml(c.name)}):</div>
+                    ${subKeys.length > 0 ? subKeys.map(subKey => {
+                      const subVal = subMap[subKey];
+                      const subPct = val > 0 ? ((subVal / val) * 100).toFixed(1) : 0;
+                      return `
+                        <div class="flex items-center justify-between text-[11px] py-0.5">
+                          <span class="text-slate-600">${escapeHtml(subKey)} <span class="text-[10px] text-slate-400">(${subPct}%)</span></span>
+                          <span class="font-semibold text-slate-800">${formatCurrency(subVal)}</span>
+                        </div>
+                      `;
+                    }).join('') : `<div class="text-[11px] text-slate-400 italic">Belum ada transaksi di subkategori ini.</div>`}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+        };
 
         container.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
@@ -5063,20 +5452,8 @@ async function resolveConflictKeepCloud() {
                 <span>Kategori Pengeluaran</span>
                 <span>Total (${formatCurrency(totalExp)})</span>
               </div>
-              <div class="divide-y divide-rose-100 text-xs">
-                ${expenseCats.map(c => {
-                  const val = catSums[c.id] || 0;
-                  const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(1) : 0;
-                  return `
-                    <div class="py-2 flex items-center justify-between">
-                      <div>
-                        <span class="font-semibold text-slate-800">${escapeHtml(c.name)}</span>
-                        <span class="text-[10px] text-slate-400 block">${pct}% dari pengeluaran</span>
-                      </div>
-                      <span class="font-bold ${val > 0 ? 'text-rose-600' : 'text-slate-400'}">${formatCurrency(val)}</span>
-                    </div>
-                  `;
-                }).join('')}
+              <div class="text-xs">
+                ${renderCategoryBlock(expenseCats, totalExp, true)}
               </div>
             </div>
 
@@ -5086,26 +5463,14 @@ async function resolveConflictKeepCloud() {
                 <span>Kategori Pemasukan</span>
                 <span>Total (${formatCurrency(totalInc)})</span>
               </div>
-              <div class="divide-y divide-emerald-100 text-xs">
-                ${incomeCats.map(c => {
-                  const val = catSums[c.id] || 0;
-                  const pct = totalInc > 0 ? ((val / totalInc) * 100).toFixed(1) : 0;
-                  return `
-                    <div class="py-2 flex items-center justify-between">
-                      <div>
-                        <span class="font-semibold text-slate-800">${escapeHtml(c.name)}</span>
-                        <span class="text-[10px] text-slate-400 block">${pct}% dari pemasukan</span>
-                      </div>
-                      <span class="font-bold ${val > 0 ? 'text-emerald-600' : 'text-slate-400'}">${formatCurrency(val)}</span>
-                    </div>
-                  `;
-                }).join('')}
+              <div class="text-xs">
+                ${renderCategoryBlock(incomeCats, totalInc, false)}
               </div>
             </div>
           </div>
         `;
       } else {
-        // Mode Tahunan: Tampilkan Daftar 12 Bulan yang Dapat Diklik Langsung
+        // Mode Tahunan: Tampilkan Rekapitulasi Mutasi 12 Bulan yang Dapat Diklik Langsung (Drill-Down)
         const targetYear = filterPrefix || String(curYear);
         if (titleEl) titleEl.innerHTML = `<i data-lucide="calendar" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rangkuman 12 Bulan (Tahun ${targetYear})`;
         if (subEl) subEl.textContent = 'Klik pada baris bulan untuk melihat analisis mendalam bulan tersebut.';
@@ -5160,6 +5525,263 @@ async function resolveConflictKeepCloud() {
       lucide.createIcons();
     }
 	
+	// --- STATE PRIVASI MANDIRI DASHBOARD (INCOME, EXPENSE, SAVINGS) ---
+    let dashPrivacy = JSON.parse(localStorage.getItem('vf_dash_privacy')) || {
+      income: true,   // Default: Tersembunyi (Rp ••••••)
+      expense: false, // Default: Terbuka
+      savings: true   // Default: Tersembunyi (Rp ••••••)
+    };
+
+    function toggleDashCardPrivacy(type) {
+      if (dashPrivacy[type] !== undefined) {
+        dashPrivacy[type] = !dashPrivacy[type];
+        localStorage.setItem('vf_dash_privacy', JSON.stringify(dashPrivacy));
+        renderDashboard();
+      }
+    }
+	
+	// ==================== APP PIN LOCK & INACTIVITY LOCK ENGINE ====================
+    let appLockConfig = JSON.parse(localStorage.getItem('vf_app_lock_config')) || {
+      enabled: false,
+      pinHash: '',
+      salt: '',
+      idleMinutes: 2
+    };
+
+    let lastUserActionTimestamp = Date.now();
+    let isAppCurrentlyLocked = false;
+
+    // Hash PIN dengan SHA-256 + Salt lokal
+    async function hashPin(pin, salt) {
+      const enc = new TextEncoder();
+      const data = enc.encode(salt + pin);
+      const hashBuf = await crypto.subtle.digest("SHA-256", data);
+      return btoa(String.fromCharCode(...new Uint8Array(hashBuf)));
+    }
+
+    function checkAppLockOnStartup() {
+      if (appLockConfig.enabled && appLockConfig.pinHash) {
+        lockApp();
+      }
+      initInactivityListeners();
+      renderAppLockSettingsUI();
+    }
+
+    function lockApp() {
+      isAppCurrentlyLocked = true;
+      const overlay = document.getElementById('app-lock-overlay');
+      const pinInput = document.getElementById('applock-input-pin');
+      if (overlay) overlay.classList.remove('hidden');
+      if (pinInput) {
+        pinInput.value = '';
+        setTimeout(() => pinInput.focus(), 100);
+      }
+      lucide.createIcons();
+    }
+
+    async function verifyUnlockPin() {
+      const input = document.getElementById('applock-input-pin')?.value.trim();
+      if (!input) return;
+
+      const hashed = await hashPin(input, appLockConfig.salt);
+      if (hashed === appLockConfig.pinHash) {
+        isAppCurrentlyLocked = false;
+        document.getElementById('app-lock-overlay')?.classList.add('hidden');
+        lastUserActionTimestamp = Date.now();
+      } else {
+        alert("PIN salah! Silakan coba lagi.");
+        const pinInput = document.getElementById('applock-input-pin');
+        if (pinInput) {
+          pinInput.value = '';
+          pinInput.focus();
+        }
+      }
+    }
+
+    // Inactivity listener: Reset timer pada setiap interaksi pengguna
+    function initInactivityListeners() {
+      const resetIdle = () => { lastUserActionTimestamp = Date.now(); };
+      ['mousedown', 'mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+        window.addEventListener(evt, resetIdle, { passive: true });
+      });
+
+      // Cek timer setiap 5 detik
+      setInterval(() => {
+        if (appLockConfig.enabled && appLockConfig.pinHash && !isAppCurrentlyLocked) {
+          const timeoutMs = (appLockConfig.idleMinutes || 2) * 60 * 1000;
+          if (Date.now() - lastUserActionTimestamp >= timeoutMs) {
+            lockApp();
+          }
+        }
+      }, 5000);
+    }
+
+    // Lupa PIN: Reset Menggunakan Autentikasi Google
+    function forgotPinViaGoogle() {
+      const clientId = localStorage.getItem('vf_gdrive_client_id');
+      if (!clientId) {
+        alert("Aplikasi belum terhubung dengan Google Client ID di Pengaturan.");
+        return;
+      }
+
+      if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+        alert("Pustaka Google API belum termuat. Periksa koneksi internet Anda.");
+        return;
+      }
+
+      // Minta otentikasi akun Google resmi
+      const tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/drive.appdata',
+        callback: (res) => {
+          if (res.access_token) {
+            // Verifikasi Google sukses -> Buka modal buat PIN baru
+            document.getElementById('app-lock-overlay')?.classList.add('hidden');
+            openModal('applock-reset-modal');
+            lucide.createIcons();
+          } else {
+            alert("Autentikasi akun Google gagal.");
+          }
+        }
+      });
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
+    }
+
+    async function submitResetNewPin() {
+      const newPin = document.getElementById('reset-new-pin-val')?.value.trim();
+      if (!newPin || newPin.length < 4) {
+        alert("PIN minimal 4 angka.");
+        return;
+      }
+
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const saltB64 = btoa(String.fromCharCode(...salt));
+      const hashed = await hashPin(newPin, saltB64);
+
+      appLockConfig.enabled = true;
+      appLockConfig.salt = saltB64;
+      appLockConfig.pinHash = hashed;
+      localStorage.setItem('vf_app_lock_config', JSON.stringify(appLockConfig));
+
+      closeModal('applock-reset-modal');
+      isAppCurrentlyLocked = false;
+      renderAppLockSettingsUI();
+      alert("PIN berhasil direset! Aplikasi telah terbuka.");
+    }
+
+    // UI Pengaturan AppLock di Tab Settings
+    function renderAppLockSettingsUI() {
+      const chk = document.getElementById('applock-toggle');
+      const badge = document.getElementById('applock-status-badge');
+      const detail = document.getElementById('applock-settings-detail');
+      const select = document.getElementById('applock-timeout-select');
+
+      if (chk) chk.checked = appLockConfig.enabled;
+      if (select) select.value = String(appLockConfig.idleMinutes || 2);
+
+      if (appLockConfig.enabled) {
+        if (badge) {
+          badge.textContent = 'Aktif';
+          badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+        }
+        if (detail) detail.classList.remove('hidden');
+      } else {
+        if (badge) {
+          badge.textContent = 'Nonaktif';
+          badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500';
+        }
+        if (detail) detail.classList.add('hidden');
+      }
+    }
+
+    async function toggleAppLockEnable() {
+      const isChecked = document.getElementById('applock-toggle')?.checked;
+      if (isChecked && !appLockConfig.pinHash) {
+        const pin = prompt("Buat 4-6 angka PIN pengaman aplikasi:");
+        if (!pin || pin.length < 4) {
+          alert("PIN minimal 4 angka.");
+          document.getElementById('applock-toggle').checked = false;
+          return;
+        }
+        const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+        appLockConfig.pinHash = await hashPin(pin, salt);
+        appLockConfig.salt = salt;
+      }
+      appLockConfig.enabled = isChecked;
+      localStorage.setItem('vf_app_lock_config', JSON.stringify(appLockConfig));
+      renderAppLockSettingsUI();
+    }
+
+    async function saveAppLockPin() {
+      const pin = document.getElementById('applock-new-pin')?.value.trim();
+      if (!pin || pin.length < 4) {
+        alert("PIN minimal 4 angka.");
+        return;
+      }
+      const salt = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+      appLockConfig.pinHash = await hashPin(pin, salt);
+      appLockConfig.salt = salt;
+      appLockConfig.enabled = true;
+      localStorage.setItem('vf_app_lock_config', JSON.stringify(appLockConfig));
+      setVal('applock-new-pin', '');
+      renderAppLockSettingsUI();
+      alert("PIN pengunci aplikasi berhasil diperbarui!");
+    }
+
+    function updateAppLockTimeout() {
+      const mins = parseInt(document.getElementById('applock-timeout-select')?.value) || 2;
+      appLockConfig.idleMinutes = mins;
+      localStorage.setItem('vf_app_lock_config', JSON.stringify(appLockConfig));
+    }
+	
   </script>
+  
+  <!-- LAYAR KUNCI APLIKASI (APP LOCK OVERLAY) -->
+  <div id="app-lock-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl text-center space-y-5 border border-slate-100">
+      <div class="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="shield-check" class="w-7 h-7"></i>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">FinTrack Terkunci</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Masukkan PIN Anda untuk membuka aplikasi</p>
+      </div>
+
+      <div class="space-y-3">
+        <input type="password" id="applock-input-pin" maxlength="6" placeholder="• • • • • •" class="w-full text-center tracking-[0.4em] font-mono text-2xl py-2 px-3 border-2 border-emerald-500 rounded-xl outline-none focus:ring-4 focus:ring-emerald-500/20" onkeyup="if(event.key==='Enter') verifyUnlockPin()" />
+        <button onclick="verifyUnlockPin()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-600/20 transition">
+          Buka Kunci
+        </button>
+      </div>
+
+      <!-- Tombol Lupa PIN Menggunakan Google Re-Authentication -->
+      <div class="pt-2 border-t border-slate-100">
+        <button onclick="forgotPinViaGoogle()" class="text-xs font-bold text-blue-600 hover:text-blue-800 transition flex items-center justify-center gap-1 mx-auto">
+          <i data-lucide="key" class="w-3.5 h-3.5"></i> Lupa PIN? Reset via Akun Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL BUAT PIN BARU SETELAH VERIFIKASI GOOGLE BERHASIL -->
+  <div id="applock-reset-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+      <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center mx-auto">
+        <i data-lucide="unlock" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Verifikasi Google Berhasil!</h3>
+        <p class="text-xs text-slate-500 mt-1">Identitas Anda terkonfirmasi. Silakan buat PIN baru (4-6 angka):</p>
+      </div>
+      <input type="password" id="reset-new-pin-val" maxlength="6" placeholder="Masukkan PIN baru" class="w-full border-2 border-blue-400 rounded-xl px-3 py-2 text-center text-lg font-mono tracking-widest outline-none" />
+      <div class="flex gap-2 pt-2">
+        <button onclick="submitResetNewPin()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm">
+          Simpan PIN & Buka Kunci
+        </button>
+      </div>
+    </div>
+  </div>
+  
 </body>
 </html>
