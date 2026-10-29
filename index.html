@@ -2096,7 +2096,6 @@ async function initFsAutoBackup() {
 
     // --- STARTUP WITH FALLSAFE INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
-      window.addEventListener('DOMContentLoaded', async () => {
       // Set state awal history ke dashboard
       if (!history.state || !history.state.tab) {
         history.replaceState({ tab: 'dashboard' }, '');
