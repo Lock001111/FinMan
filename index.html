@@ -620,6 +620,12 @@
 			  <button onclick="openSetBudgetModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 ml-1 shrink-0 whitespace-nowrap shadow-sm">
 				<i data-lucide="sliders" class="w-4 h-4"></i> Atur Limit
 			  </button>
+			  
+			  <!-- Tombol Riwayat Limit Anggaran -->
+			  <button onclick="openBudgetHistoryModal()" title="Lihat riwayat kenaikan/penurunan limit anggaran" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 border border-slate-300 transition shrink-0 shadow-sm">
+				<i data-lucide="history" class="w-4 h-4 text-emerald-600"></i> Riwayat Limit
+			  </button>
+			  
 			</div>
 		  </div>
       <div id="budget-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
@@ -629,18 +635,36 @@
     <div id="view-trends" class="hidden space-y-6">
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
         
+		<!-- Header Tren: Tombol Mode Rapi & Toggle Garis Acuan -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div>
             <h2 class="text-xl font-bold text-slate-900">Analisis Tren & Perbandingan</h2>
-            <p class="text-xs text-slate-500">Eksplorasi tren berkala atau bandingkan 2 periode waktu berbeda.</p>
+            <p class="text-xs text-slate-500">Eksplorasi tren berkala, garis anggaran, dan rata-rata pengeluaran.</p>
           </div>
-          <div class="flex items-center bg-slate-100 p-1 rounded-xl">
-            <button id="btn-trend-mode-standard" onclick="setTrendMode('standard')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition">
-              Tren Standar
-            </button>
-            <button id="btn-trend-mode-compare" onclick="setTrendMode('compare')" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
-              <i data-lucide="git-compare" class="w-3.5 h-3.5"></i> Mode Perbandingan
-            </button>
+          
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Toggle Tampilkan Garis Rata-rata & Anggaran -->
+            <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+              <label class="flex items-center gap-1 cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900">
+                <input type="checkbox" id="trend-toggle-avg" checked onchange="toggleTrendLine('avg')" class="rounded text-amber-500 h-3.5 w-3.5" />
+                <span>Rata-rata</span>
+              </label>
+              <span class="text-slate-300">|</span>
+              <label class="flex items-center gap-1 cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900">
+                <input type="checkbox" id="trend-toggle-budget" checked onchange="toggleTrendLine('budget')" class="rounded text-rose-500 h-3.5 w-3.5" />
+                <span>Batas Limit</span>
+              </label>
+            </div>
+
+            <!-- Tombol Mode (Lebar Pas & Rapi: w-fit inline-flex) -->
+            <div class="inline-flex w-fit items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 shadow-inner">
+              <button id="btn-trend-mode-standard" onclick="setTrendMode('standard')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition whitespace-nowrap">
+                Tren Standar
+              </button>
+              <button id="btn-trend-mode-compare" onclick="setTrendMode('compare')" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1 whitespace-nowrap">
+                <i data-lucide="git-compare" class="w-3.5 h-3.5"></i> Mode Perbandingan
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1550,8 +1574,51 @@
     </div>
   </div>
   
+  <!-- MODAL RIWAYAT PERUBAHAN LIMIT ANGGARAN -->
+  <div id="budget-history-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="history" class="w-5 h-5 text-emerald-600"></i> Riwayat Perubahan Limit Anggaran
+        </h3>
+        <button onclick="closeModal('budget-history-modal')" class="text-slate-400 hover:text-slate-700">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto max-h-80 border border-slate-200 rounded-xl">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 sticky top-0 border-b border-slate-200">
+            <tr>
+              <th class="px-3.5 py-2.5">Waktu</th>
+              <th class="px-3.5 py-2.5">Kategori</th>
+              <th class="px-3.5 py-2.5">Bulan</th>
+              <th class="px-3.5 py-2.5 text-right">Perubahan Limit</th>
+            </tr>
+          </thead>
+          <tbody id="budget-history-tbody" class="divide-y divide-slate-100 bg-white font-medium"></tbody>
+        </table>
+        <div id="no-budget-history-msg" class="py-10 text-center text-slate-400 text-xs hidden">Belum ada catatan perubahan limit.</div>
+      </div>
+
+      <div class="text-right pt-2 border-t">
+        <button onclick="closeModal('budget-history-modal')" class="px-4 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <!-- ==================== APPLICATION LOGIC ==================== -->
   <script>
+    // Riwayat perubahan limit anggaran
+    let budgetHistory = JSON.parse(localStorage.getItem('vf_budget_history')) || [];
+    // Toggle garis rata-rata & limit di grafik tren
+    let trendShowAvg = true;
+    let trendShowBudget = true;
+    // Pengurutan rata-rata tahunan di menu analisis
+    let yearlyCatSort = { by: 'nominal', dir: 'desc' };
+  
     // --- GLOBAL SAFE DOM MANIPULATION HELPERS ---
     function setText(id, txt) {
       const el = document.getElementById(id);
@@ -2029,7 +2096,13 @@ async function initFsAutoBackup() {
 
     // --- STARTUP WITH FALLSAFE INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
-      sanitizeState();
+      window.addEventListener('DOMContentLoaded', async () => {
+      // Set state awal history ke dashboard
+      if (!history.state || !history.state.tab) {
+        history.replaceState({ tab: 'dashboard' }, '');
+      }
+	  
+	  sanitizeState();
       initPickers();
       initNoteKeydownListener();
       updateCompareSelectors();
@@ -2978,7 +3051,7 @@ async function initFsAutoBackup() {
       }
     }
 
-    function renderAnalysisView() {
+function renderAnalysisView() {
       let filterPrefix = '';
       if (analysisScope === 'month') {
         filterPrefix = document.getElementById('analysis-month-picker')?.value || dashboardSelectedMonth;
@@ -2986,13 +3059,13 @@ async function initFsAutoBackup() {
         filterPrefix = document.getElementById('analysis-year-picker')?.value || String(curYear);
       }
 
-      const periodTxs = transactions.filter(t => t.date && t.date.startsWith(filterPrefix) && t.type !== 'transfer');
+      // Ambil seluruh transaksi termasuk transfer
+      const periodTxs = transactions.filter(t => t.date && t.date.startsWith(filterPrefix));
 
       let totalInflow = 0;
       let totalOutflow = 0;
       let fixedIncome = 0;
       let dynamicIncome = 0;
-
       let fixedExpense = 0;
       let periodicExpense = 0;
       let dynamicExpense = 0;
@@ -3011,27 +3084,42 @@ async function initFsAutoBackup() {
           if (cls === 'fixed') fixedExpense += amt;
           else if (cls === 'periodic') periodicExpense += amt;
           else dynamicExpense += amt;
+        } else if (t.type === 'transfer') {
+          // BIAYA ADMIN DARI TRANSFER DIHITUNG SEBAGAI PENGELUARAN DINAMIS
+          const fee = parseFloat(t.adminFee) || 0;
+          if (fee > 0) {
+            totalOutflow += fee;
+            dynamicExpense += fee;
+          }
         }
       });
 
       const netCashFlow = totalInflow - totalOutflow;
       const savingRatio = totalInflow > 0 ? ((netCashFlow / totalInflow) * 100) : 0;
 
+      // PRIVASI SESUAI DASHBOARD (dashPrivacy.income & dashPrivacy.expense)
       const netEl = document.getElementById('ana-net-cashflow');
       if (netEl) {
-        netEl.textContent = (netCashFlow >= 0 ? '+' : '') + formatCurrency(netCashFlow);
-        netEl.className = `text-2xl font-bold mt-2 ${netCashFlow >= 0 ? 'text-slate-900' : 'text-rose-600'}`;
+        if (dashPrivacy.income || dashPrivacy.expense) {
+          netEl.textContent = 'Rp ••••••';
+          netEl.className = 'text-2xl font-bold mt-2 text-slate-800';
+        } else {
+          netEl.textContent = (netCashFlow >= 0 ? '+' : '') + formatCurrency(netCashFlow);
+          netEl.className = `text-2xl font-bold mt-2 ${netCashFlow >= 0 ? 'text-slate-900' : 'text-rose-600'}`;
+        }
       }
 
-      setText('ana-total-inflow', `+${formatCurrency(totalInflow)}`);
-      setText('ana-inflow-fixed-desc', `Tetap: ${formatCurrency(fixedIncome)} | Dinamis: ${formatCurrency(dynamicIncome)}`);
-      setText('ana-total-outflow', `-${formatCurrency(totalOutflow)}`);
+      setText('ana-total-inflow', dashPrivacy.income ? 'Rp ••••••' : `+${formatCurrency(totalInflow)}`);
+      setText('ana-inflow-fixed-desc', dashPrivacy.income ? 'Tetap: Rp •••••• | Dinamis: Rp ••••••' : `Tetap: ${formatCurrency(fixedIncome)} | Dinamis: ${formatCurrency(dynamicIncome)}`);
+      setText('ana-total-outflow', dashPrivacy.expense ? 'Rp ••••••' : `-${formatCurrency(totalOutflow)}`);
 
       const savingRatioEl = document.getElementById('ana-saving-ratio');
       const badgeEl = document.getElementById('ana-saving-badge');
       const descEl = document.getElementById('ana-saving-desc');
 
-      if (savingRatioEl) savingRatioEl.textContent = `${savingRatio.toFixed(1)}%`;
+      if (savingRatioEl) {
+        savingRatioEl.textContent = (dashPrivacy.income || dashPrivacy.expense) ? '••%' : `${savingRatio.toFixed(1)}%`;
+      }
       if (badgeEl && descEl) {
         if (savingRatio >= 30) {
           badgeEl.textContent = 'Sangat Sehat';
@@ -3060,11 +3148,11 @@ async function initFsAutoBackup() {
       const periodicPct = totalOutflow > 0 ? ((periodicExpense / totalOutflow) * 100).toFixed(1) : 0;
       const dynamicPct = totalOutflow > 0 ? ((dynamicExpense / totalOutflow) * 100).toFixed(1) : 0;
 
-      setText('ana-fixed-exp', formatCurrency(fixedExpense));
+      setText('ana-fixed-exp', dashPrivacy.expense ? 'Rp ••••••' : formatCurrency(fixedExpense));
       setText('ana-fixed-pct', `${fixedPct}% dari pengeluaran`);
-      setText('ana-periodic-exp', formatCurrency(periodicExpense));
+      setText('ana-periodic-exp', dashPrivacy.expense ? 'Rp ••••••' : formatCurrency(periodicExpense));
       setText('ana-periodic-pct', `${periodicPct}% dari pengeluaran`);
-      setText('ana-dynamic-exp', formatCurrency(dynamicExpense));
+      setText('ana-dynamic-exp', dashPrivacy.expense ? 'Rp ••••••' : formatCurrency(dynamicExpense));
       setText('ana-dynamic-pct', `${dynamicPct}% dari pengeluaran`);
 
       const setWidth = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = `${pct}%`; };
@@ -3072,7 +3160,7 @@ async function initFsAutoBackup() {
       setWidth('bar-periodic', periodicPct);
       setWidth('bar-dynamic', dynamicPct);
 
-      // Top 5 Rankings (Expense only)
+      // Top 5 Rankings (Hanya Pengeluaran)
       const expenseTxs = periodTxs.filter(t => t.type === 'expense');
       const rankedList = [...expenseTxs].sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)).slice(0, 5);
       const rankContainer = document.getElementById('analysis-ranking-list');
@@ -3103,7 +3191,7 @@ async function initFsAutoBackup() {
         }
       }
 
-      // Anomaly Detection
+      // Anomali Pengeluaran
       const categoryAverages = {};
       categories.filter(c => c.type === 'expense').forEach(c => {
         const catTxs = transactions.filter(t => t.type === 'expense' && t.categoryId === c.id);
@@ -3144,7 +3232,7 @@ async function initFsAutoBackup() {
       renderAnalysisSummaryBreakdown(filterPrefix, periodTxs);
       lucide.createIcons();
     }
-
+	
     // ==================== UNIFIED EXPORT LOGIC ====================
     function openExportModal(format) {
       setVal('export-target-format', format);
@@ -3657,6 +3745,7 @@ async function initFsAutoBackup() {
       setText('budget-ref-avg', formatCurrency(ana.avgSpend));
     }
 
+    // Render Kartu Anggaran: Menampilkan persentase lebih dari 100% secara utuh
     function renderBudgets() {
       const monthInput = document.getElementById('budget-month-selector');
       const month = monthInput?.value || dashboardSelectedMonth;
@@ -3677,13 +3766,23 @@ async function initFsAutoBackup() {
       expenseCats.forEach(cat => {
         const budgetLimit = monthBudgets[cat.id] || 0;
         const spent = spending[cat.id] || 0;
-        const percentage = budgetLimit > 0 ? Math.min(Math.round((spent / budgetLimit) * 100), 100) : 0;
+
+        // PERSENTASE ASLI (DAPAT LEBIH DARI 100%)
+        const realPercentage = budgetLimit > 0 ? Math.round((spent / budgetLimit) * 100) : 0;
+        // Lebar progress bar maksimal 100% agar tidak keluar wadah CSS
+        const barWidth = Math.min(realPercentage, 100);
         
         let barColor = 'bg-emerald-500';
-        if (percentage >= 80 && percentage < 100) barColor = 'bg-amber-500';
-        else if (spent > budgetLimit && budgetLimit > 0) barColor = 'bg-rose-500';
+        let badgeStyle = 'bg-slate-100 text-slate-600';
 
-        // Historical Benchmark Analytics
+        if (realPercentage > 100) {
+          barColor = 'bg-rose-500';
+          badgeStyle = 'bg-rose-100 text-rose-700 font-extrabold animate-pulse';
+        } else if (realPercentage >= 80) {
+          barColor = 'bg-amber-500';
+          badgeStyle = 'bg-amber-100 text-amber-800 font-bold';
+        }
+
         const ana = calculateCategoryAnalytics(cat.id, month);
 
         const card = document.createElement('div');
@@ -3692,8 +3791,9 @@ async function initFsAutoBackup() {
           <div>
             <div class="flex items-center justify-between mb-2">
               <h4 class="font-bold text-slate-800">${escapeHtml(cat.name)}</h4>
-              <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${spent > budgetLimit && budgetLimit > 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'}">
-                ${budgetLimit > 0 ? `${percentage}% Terpakai` : 'Tanpa Limit'}
+              <!-- Tampilkan persentase utuh (misal: 135% Terpakai) -->
+              <span class="text-xs px-2 py-0.5 rounded-full ${badgeStyle}">
+                ${budgetLimit > 0 ? `${realPercentage}% Terpakai` : 'Tanpa Limit'}
               </span>
             </div>
 
@@ -3703,10 +3803,9 @@ async function initFsAutoBackup() {
             </div>
 
             <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-3">
-              <div class="${barColor} h-2.5 rounded-full transition-all duration-300" style="width: ${budgetLimit > 0 ? percentage : 0}%"></div>
+              <div class="${barColor} h-2.5 rounded-full transition-all duration-300" style="width: ${budgetLimit > 0 ? barWidth : 0}%"></div>
             </div>
 
-            <!-- Historical Analytics Widget -->
             <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70 text-[11px] space-y-1 mb-2">
               <div class="flex items-center justify-between text-slate-500 font-semibold text-[10px]">
                 <span>Data Acuan Limit:</span>
@@ -3760,6 +3859,7 @@ async function initFsAutoBackup() {
       openModal('budget-modal');
     }
 
+    // Simpan Limit Anggaran & Catat Riwayat Perubahannya (History Log)
     function saveBudget(e) {
       e.preventDefault();
       const monthInput = document.getElementById('budget-month-selector');
@@ -3772,23 +3872,83 @@ async function initFsAutoBackup() {
       const scope = document.querySelector('input[name="budget-apply-scope"]:checked')?.value || 'single';
 
       if (catId) {
+        const cat = categories.find(c => c.id === catId);
+        const oldLimit = budgets[targetMonthStr]?.[catId] || 0;
+
         if (scope === 'year') {
-          // Apply to all 12 months of that year
           for (let m = 1; m <= 12; m++) {
             const mKey = `${selYear}-${String(m).padStart(2, '0')}`;
             if (!budgets[mKey]) budgets[mKey] = {};
             budgets[mKey][catId] = amount;
           }
+          // Catat riwayat perubahan tahunan
+          budgetHistory.unshift({
+            id: 'bh-' + Date.now(),
+            timestamp: new Date().toISOString(),
+            categoryName: cat?.name || 'Kategori',
+            period: `Tahun ${selYear} (12 Bulan)`,
+            oldLimit: oldLimit,
+            newLimit: amount
+          });
         } else {
-          // Single month only
           if (!budgets[targetMonthStr]) budgets[targetMonthStr] = {};
           budgets[targetMonthStr][catId] = amount;
+
+          // Catat riwayat perubahan bulanan
+          budgetHistory.unshift({
+            id: 'bh-' + Date.now(),
+            timestamp: new Date().toISOString(),
+            categoryName: cat?.name || 'Kategori',
+            period: targetMonthStr,
+            oldLimit: oldLimit,
+            newLimit: amount
+          });
         }
+
+        // Batasi riwayat maksimal 50 catatan terakhir
+        if (budgetHistory.length > 50) budgetHistory = budgetHistory.slice(0, 50);
+        localStorage.setItem('vf_budget_history', JSON.stringify(budgetHistory));
 
         persistState(true);
         closeModal('budget-modal');
         renderBudgets();
       }
+    }
+	
+	// Modal Riwayat Perubahan Limit Anggaran
+    function openBudgetHistoryModal() {
+      const tbody = document.getElementById('budget-history-tbody');
+      const noMsg = document.getElementById('no-budget-history-msg');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (budgetHistory.length === 0) {
+        if (noMsg) noMsg.classList.remove('hidden');
+      } else {
+        if (noMsg) noMsg.classList.add('hidden');
+        tbody.innerHTML = budgetHistory.map(item => {
+          const t = new Date(item.timestamp).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+          const diff = item.newLimit - item.oldLimit;
+          const isRaised = diff > 0;
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-3.5 py-2.5 text-slate-500 whitespace-nowrap">${t}</td>
+              <td class="px-3.5 py-2.5 font-bold text-slate-800">${escapeHtml(item.categoryName)}</td>
+              <td class="px-3.5 py-2.5 text-slate-600 whitespace-nowrap">${escapeHtml(item.period)}</td>
+              <td class="px-3.5 py-2.5 text-right whitespace-nowrap">
+                <span class="text-slate-400 line-through text-[10px] mr-1">${formatCurrency(item.oldLimit)}</span>
+                <span class="font-bold text-slate-900">${formatCurrency(item.newLimit)}</span>
+                <span class="text-[9px] font-extrabold ml-1 px-1.5 py-0.5 rounded ${isRaised ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                  ${isRaised ? `+${formatCurrency(diff)}` : formatCurrency(diff)}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      openModal('budget-history-modal');
+      lucide.createIcons();
     }
 
     // ==================== TRENDS VIEW ====================
@@ -3938,6 +4098,15 @@ async function initFsAutoBackup() {
       }
     }
 
+function toggleTrendLine(type) {
+      if (type === 'avg') {
+        trendShowAvg = document.getElementById('trend-toggle-avg')?.checked ?? true;
+      } else {
+        trendShowBudget = document.getElementById('trend-toggle-budget')?.checked ?? true;
+      }
+      renderTrendsChart();
+    }
+
     function renderStandardTrendsChart() {
       const canvas = document.getElementById('trendsChart');
       if (!canvas) return;
@@ -3991,6 +4160,7 @@ async function initFsAutoBackup() {
 
       const datasets = [];
       let colorIndex = 0;
+      let allPeriodValues = [];
 
       seriesItems.forEach(item => {
         const dataPoints = timeKeys.map(timeKey => {
@@ -4024,8 +4194,72 @@ async function initFsAutoBackup() {
             pointRadius: 3
           });
           colorIndex++;
+          allPeriodValues = allPeriodValues.concat(dataPoints);
         }
       });
+
+      // GARIS RATA-RATA & GARIS BATAS ANGGARAN (JIKA TREN TAHUNAN & TOGGLE AKTIF)
+      if (trendScope === 'year') {
+        const year = document.getElementById('trend-year-select')?.value || curYear;
+
+        // 1. Dataset Garis Rata-rata Pengeluaran
+        if (trendShowAvg && datasets.length > 0) {
+          let avgVal = 0;
+          if (catFilter !== 'ALL') {
+            const totalCat = transactions.reduce((sum, tx) => {
+              if (tx.type === 'expense' && tx.categoryId === catFilter && tx.date && tx.date.startsWith(year)) {
+                return sum + (parseFloat(tx.amount) || 0);
+              }
+              return sum;
+            }, 0);
+            avgVal = totalCat / 12;
+          } else {
+            const totalAll = transactions.reduce((sum, tx) => {
+              if (tx.type === 'expense' && tx.date && tx.date.startsWith(year)) {
+                return sum + (parseFloat(tx.amount) || 0);
+              }
+              return sum;
+            }, 0);
+            avgVal = totalAll / 12;
+          }
+
+          datasets.push({
+            label: `Rata-rata (${formatCurrency(avgVal)})`,
+            data: new Array(12).fill(avgVal),
+            borderColor: '#f59e0b', // Warna Kuning/Amber
+            borderDash: [5, 5],
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false
+          });
+        }
+
+        // 2. Dataset Garis Batas Anggaran (Budget Limit Line)
+        if (trendShowBudget) {
+          const budgetData = timeKeys.map(timeKey => {
+            const monthBudgets = budgets[timeKey] || {};
+            if (catFilter !== 'ALL') {
+              return monthBudgets[catFilter] || 0;
+            } else {
+              return Object.values(monthBudgets).reduce((a, b) => a + b, 0);
+            }
+          });
+
+          const hasAnyBudget = budgetData.some(v => v > 0);
+          if (hasAnyBudget) {
+            datasets.push({
+              label: 'Batas Anggaran (Limit)',
+              data: budgetData,
+              borderColor: '#f43f5e', // Warna Merah Rose
+              borderDash: [3, 3],
+              borderWidth: 2,
+              pointRadius: 2,
+              pointBackgroundColor: '#f43f5e',
+              fill: false
+            });
+          }
+        }
+      }
 
       if (trendsChartInstance) trendsChartInstance.destroy();
 
@@ -4060,7 +4294,7 @@ async function initFsAutoBackup() {
         }
       });
     }
-
+	
     function renderComparisonChart() {
       const canvas = document.getElementById('trendsChart');
       if (!canvas) return;
@@ -4715,15 +4949,49 @@ async function initFsAutoBackup() {
       }
     }
 
-    // --- MODAL UTILITIES ---
-    function openModal(id) { 
-      const el = document.getElementById(id); 
-      if (el) el.classList.remove('hidden'); 
-    }
     
-    function closeModal(id) { 
-      const el = document.getElementById(id); 
-      if (el) el.classList.add('hidden'); 
+	// ==================== NAVIGASI TOMBOL BACK HP (POPSTATE & MODAL HANDLER) ====================
+    const allModalIds = [
+      'transaction-modal',
+      'account-modal',
+      'category-modal',
+      'budget-modal',
+      'restore-confirm-modal',
+      'export-options-modal',
+      'calendar-picker-modal',
+      'sync-badge-modal',
+      'sync-conflict-modal',
+      'budget-history-modal',
+      'applock-reset-modal'
+    ];
+
+    // Stack riwayat navigasi menu untuk mencegah infinite loop
+    let navStack = ['dashboard'];
+    let currentActiveTab = 'dashboard';
+    let suppressNextPopstate = false;
+
+	// --- MODAL UTILITIES ---
+    // Ganti fungsi openModal agar mendaftarkan state ke riwayat browser
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('hidden');
+        // Daftarkan pop-up ke history agar tombol Back HP bisa menangkapnya
+        history.pushState({ modalId: id }, '');
+      }
+    }
+
+    // Ganti fungsi closeModal agar menyinkronkan state browser jika ditutup via tombol UI
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('hidden');
+      }
+      // Jika penutupan dilakukan via tombol (Batal/X), bersihkan history state terkait
+      if (history.state && history.state.modalId === id) {
+        suppressNextPopstate = true;
+        history.back();
+      }
     }
 
     // --- KONTROL MENU RESPONSIF (HP / LAYAR KECIL) ---
@@ -4753,7 +5021,31 @@ async function initFsAutoBackup() {
       }
     }
 
-    function switchTab(tabName) {
+// Ganti fungsi switchTab dengan penanganan Backstack pintar (Anti-Infinite Loop)
+    function switchTab(tabName, isBackNavigation = false) {
+      if (!tabName) tabName = 'dashboard';
+      if (currentActiveTab === tabName && !isBackNavigation) return;
+
+      if (!isBackNavigation) {
+        if (tabName === 'dashboard') {
+          // Jika pengguna membuka Dashboard, reset tumpukan agar Dashboard selalu menjadi akar utama
+          navStack = ['dashboard'];
+        } else {
+          // Hapus tab jika sudah ada di antrean sebelumnya untuk mencegah loop berputar (A -> B -> A -> B)
+          const existingIdx = navStack.indexOf(tabName);
+          if (existingIdx !== -1) {
+            navStack = navStack.slice(0, existingIdx + 1);
+          } else {
+            navStack.push(tabName);
+          }
+        }
+        // Daftarkan tab ke history browser
+        history.pushState({ tab: tabName }, '');
+      }
+
+      currentActiveTab = tabName;
+
+      // Perbarui tampilan tab
       const tabs = ['dashboard', 'transactions', 'analysis', 'budgets', 'trends', 'settings'];
       tabs.forEach(t => {
         const viewEl = document.getElementById(`view-${t}`);
@@ -4762,13 +5054,10 @@ async function initFsAutoBackup() {
 
         if (viewEl) viewEl.classList.add('hidden');
 
-        // Reset styling desktop
         if (btnEl) {
           btnEl.classList.remove('text-emerald-700', 'bg-emerald-50');
           btnEl.classList.add('text-slate-600');
         }
-
-        // Reset styling menu HP
         if (mobBtnEl) {
           mobBtnEl.classList.remove('text-emerald-700', 'bg-emerald-50');
           mobBtnEl.classList.add('text-slate-600');
@@ -4780,18 +5069,15 @@ async function initFsAutoBackup() {
       const activeMobBtn = document.getElementById(`mob-tab-${tabName}`);
 
       if (activeView) activeView.classList.remove('hidden');
-
       if (activeBtn) {
         activeBtn.classList.add('text-emerald-700', 'bg-emerald-50');
         activeBtn.classList.remove('text-slate-600');
       }
-
       if (activeMobBtn) {
         activeMobBtn.classList.add('text-emerald-700', 'bg-emerald-50');
         activeMobBtn.classList.remove('text-slate-600');
       }
 
-      // Otomatis tutup menu HP setelah memilih tab
       closeMobileMenu();
 
       if (tabName === 'analysis') renderAnalysisView();
@@ -4803,6 +5089,50 @@ async function initFsAutoBackup() {
       }
       lucide.createIcons();
     }
+
+    // LISTENER TOMBOL BACK HP (POPSTATE EVENT)
+    window.addEventListener('popstate', (e) => {
+      // Jika flag penekanan tombol tutup internal aktif, lewati
+      if (suppressNextPopstate) {
+        suppressNextPopstate = false;
+        return;
+      }
+
+      // 1. Prioritas Pertama: Tutup menu navigasi HP jika sedang terbuka
+      const mobMenu = document.getElementById('mobile-menu');
+      if (mobMenu && !mobMenu.classList.contains('hidden')) {
+        closeMobileMenu();
+        return;
+      }
+
+      // 2. Prioritas Kedua: Tutup Pop-up / Modal yang sedang aktif
+      let modalWasClosed = false;
+      allModalIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('hidden')) {
+          el.classList.add('hidden');
+          modalWasClosed = true;
+        }
+      });
+
+      if (modalWasClosed) {
+        lucide.createIcons();
+        return; // Tombol back selesai diserap oleh penutupan pop-up
+      }
+
+      // 3. Prioritas Ketiga: Navigasi mundur antar-menu (Mundur ke menu sebelumnya sampai ke Dashboard)
+      if (currentActiveTab !== 'dashboard') {
+        navStack.pop(); // Buang menu aktif saat ini
+        const prevTab = navStack.length > 0 ? navStack[navStack.length - 1] : 'dashboard';
+        if (navStack.length === 0) navStack = ['dashboard'];
+        
+        switchTab(prevTab, true);
+        return;
+      }
+
+      // 4. Jika sudah di Dashboard: biarkan browser melakukan aksi default (keluar dari aplikasi/kembali ke web sebelumnya)
+    });
+	
     // ==================== LAPISAN KEAMANAN ENKRIPSI E2EE (AES-GCM 256-BIT) ====================
     async function deriveAesKey(password, salt) {
       const enc = new TextEncoder();
@@ -5361,6 +5691,17 @@ async function resolveConflictKeepCloud() {
       lucide.createIcons();
     }
 
+// Pengurutan Rata-rata Kategori Tahunan
+    function sortYearlyAnalysisCategories(by) {
+      if (yearlyCatSort.by === by) {
+        yearlyCatSort.dir = yearlyCatSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        yearlyCatSort.by = by;
+        yearlyCatSort.dir = 'desc';
+      }
+      renderAnalysisView();
+    }
+
     function renderAnalysisSummaryBreakdown(filterPrefix, periodTxs) {
       const container = document.getElementById('ana-breakdown-content');
       const titleEl = document.getElementById('ana-breakdown-title');
@@ -5369,18 +5710,18 @@ async function resolveConflictKeepCloud() {
       if (!container) return;
 
       if (analysisScope === 'month') {
-        // Mode Bulanan: Rincian Kategori & Subkategori (Akordeon Interaktif)
+        // ================= MODE BULANAN =================
         const parts = filterPrefix.split('-').map(Number);
         const selYear = parts[0] || curYear;
         const selMonth = parts[1] || parseInt(curMonth);
         const monthLabel = `${monthNamesID[selMonth - 1]} ${selYear}`;
 
         if (titleEl) titleEl.innerHTML = `<i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rincian Kategori & Subkategori (${monthLabel})`;
-        if (subEl) subEl.textContent = 'Klik ikon panah bawah pada kategori untuk melihat total uang subkategorinya.';
+        if (subEl) subEl.textContent = 'Klik pada baris kategori mana pun untuk membuka/menutup rincian subkategori.';
         if (badgeEl) badgeEl.textContent = 'Mode Bulanan';
 
         const catSums = {};
-        const catSubSums = {}; // { [catId]: { [subName]: total } }
+        const catSubSums = {};
         let totalExp = 0, totalInc = 0;
 
         periodTxs.forEach(t => {
@@ -5398,7 +5739,7 @@ async function resolveConflictKeepCloud() {
         const expenseCats = categories.filter(c => c.type === 'expense');
         const incomeCats = categories.filter(c => c.type === 'income');
 
-        // Fungsi pembantu render baris kategori dengan tombol panah bawah
+        // Seluruh baris kategori dapat diklik (cursor-pointer & onclick pada pembungkus)
         const renderCategoryBlock = (cats, totalAmount, isExpense) => {
           return cats.map(c => {
             const val = catSums[c.id] || 0;
@@ -5408,24 +5749,26 @@ async function resolveConflictKeepCloud() {
             const subKeys = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
 
             return `
-              <div class="py-2 border-b border-slate-100 last:border-b-0">
-                <div class="flex items-center justify-between">
+              <div class="py-1.5 border-b border-slate-100 last:border-b-0">
+                <!-- SELURUH BARIS BISA DIKLIK UNTUK EXPAND/MINIMIZE -->
+                <div onclick="toggleAnalysisCategoryExpand('${c.id}')" class="flex items-center justify-between cursor-pointer select-none p-1.5 -mx-1.5 rounded-lg hover:bg-slate-100/70 transition">
                   <div class="flex items-center gap-2">
-                    <!-- Tombol Panah Bawah / Atas untuk Rincian Subkategori -->
-                    <button type="button" onclick="toggleAnalysisCategoryExpand('${c.id}')" title="${isExpanded ? 'Tutup subkategori' : 'Lihat subkategori'}" class="p-1 rounded-md hover:bg-slate-200 text-slate-500 transition shrink-0">
+                    <span class="p-1 rounded-md text-slate-400 group-hover:text-emerald-600 transition shrink-0">
                       <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-emerald-600"></i>
-                    </button>
+                    </span>
                     <div>
-                      <span class="font-semibold text-slate-800">${escapeHtml(c.name)}</span>
+                      <span class="font-semibold text-slate-800 text-xs sm:text-sm">${escapeHtml(c.name)}</span>
                       <span class="text-[10px] text-slate-400 block">${pct}% dari total</span>
                     </div>
                   </div>
-                  <span class="font-bold ${val > 0 ? (isExpense ? 'text-rose-600' : 'text-emerald-600') : 'text-slate-400'}">${formatCurrency(val)}</span>
+                  <span class="font-bold text-xs sm:text-sm ${val > 0 ? (isExpense ? 'text-rose-600' : 'text-emerald-600') : 'text-slate-400'}">
+                    ${dashPrivacy[isExpense ? 'expense' : 'income'] ? 'Rp ••••••' : formatCurrency(val)}
+                  </span>
                 </div>
 
-                <!-- Kontainer Rincian Subkategori (Hanya Muncul saat Kategori ini Aktif) -->
+                <!-- Kontainer Subkategori (Hanya Terbuka untuk 1 Kategori Aktif) -->
                 ${isExpanded ? `
-                  <div class="mt-2 ml-7 pl-3 border-l-2 border-emerald-400 bg-white p-2.5 rounded-lg border border-slate-200 text-xs space-y-1.5 shadow-sm">
+                  <div class="mt-1 ml-6 pl-3 border-l-2 border-emerald-400 bg-slate-50/80 p-2.5 rounded-lg border border-slate-200 text-xs space-y-1.5 shadow-sm">
                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Rincian Subkategori (${escapeHtml(c.name)}):</div>
                     ${subKeys.length > 0 ? subKeys.map(subKey => {
                       const subVal = subMap[subKey];
@@ -5433,7 +5776,7 @@ async function resolveConflictKeepCloud() {
                       return `
                         <div class="flex items-center justify-between text-[11px] py-0.5">
                           <span class="text-slate-600">${escapeHtml(subKey)} <span class="text-[10px] text-slate-400">(${subPct}%)</span></span>
-                          <span class="font-semibold text-slate-800">${formatCurrency(subVal)}</span>
+                          <span class="font-semibold text-slate-800">${dashPrivacy[isExpense ? 'expense' : 'income'] ? 'Rp ••••••' : formatCurrency(subVal)}</span>
                         </div>
                       `;
                     }).join('') : `<div class="text-[11px] text-slate-400 italic">Belum ada transaksi di subkategori ini.</div>`}
@@ -5446,22 +5789,20 @@ async function resolveConflictKeepCloud() {
 
         container.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
-            <!-- Kolom Pengeluaran per Kategori -->
             <div class="space-y-2 border border-rose-100 bg-rose-50/20 p-3.5 rounded-xl">
               <div class="flex items-center justify-between text-xs font-bold text-rose-900 border-b border-rose-100 pb-2">
                 <span>Kategori Pengeluaran</span>
-                <span>Total (${formatCurrency(totalExp)})</span>
+                <span>Total (${dashPrivacy.expense ? 'Rp ••••••' : formatCurrency(totalExp)})</span>
               </div>
               <div class="text-xs">
                 ${renderCategoryBlock(expenseCats, totalExp, true)}
               </div>
             </div>
 
-            <!-- Kolom Pemasukan per Kategori -->
             <div class="space-y-2 border border-emerald-100 bg-emerald-50/20 p-3.5 rounded-xl">
               <div class="flex items-center justify-between text-xs font-bold text-emerald-900 border-b border-emerald-100 pb-2">
                 <span>Kategori Pemasukan</span>
-                <span>Total (${formatCurrency(totalInc)})</span>
+                <span>Total (${dashPrivacy.income ? 'Rp ••••••' : formatCurrency(totalInc)})</span>
               </div>
               <div class="text-xs">
                 ${renderCategoryBlock(incomeCats, totalInc, false)}
@@ -5470,26 +5811,52 @@ async function resolveConflictKeepCloud() {
           </div>
         `;
       } else {
-        // Mode Tahunan: Tampilkan Rekapitulasi Mutasi 12 Bulan yang Dapat Diklik Langsung (Drill-Down)
+        // ================= MODE TAHUNAN: 12 BULAN + RATA-RATA KATEGORI DENGAN FITUR SORTING =================
         const targetYear = filterPrefix || String(curYear);
-        if (titleEl) titleEl.innerHTML = `<i data-lucide="calendar" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rangkuman 12 Bulan (Tahun ${targetYear})`;
+        if (titleEl) titleEl.innerHTML = `<i data-lucide="calendar" class="w-4 h-4 text-emerald-600 inline mr-1"></i> Rangkuman Arus Kas 12 Bulan (Tahun ${targetYear})`;
         if (subEl) subEl.textContent = 'Klik pada baris bulan untuk melihat analisis mendalam bulan tersebut.';
-        if (badgeEl) badgeEl.textContent = 'Mode Tahunan (Interaktif)';
+        if (badgeEl) badgeEl.textContent = 'Mode Tahunan';
 
         const monthRows = [];
         for (let m = 1; m <= 12; m++) {
           const mKey = `${targetYear}-${String(m).padStart(2, '0')}`;
           let mIn = 0, mOut = 0;
-          transactions.filter(t => t.date && t.date.startsWith(mKey) && t.type !== 'transfer').forEach(t => {
+          transactions.filter(t => t.date && t.date.startsWith(mKey)).forEach(t => {
             const amt = parseFloat(t.amount) || 0;
             if (t.type === 'income') mIn += amt;
             else if (t.type === 'expense') mOut += amt;
+            else if (t.type === 'transfer') {
+              const fee = parseFloat(t.adminFee) || 0;
+              mOut += fee;
+            }
           });
           const mNet = mIn - mOut;
           monthRows.push({ mNum: m, mName: monthNamesID[m - 1], in: mIn, out: mOut, net: mNet });
         }
 
+        // Hitung Rata-Rata per Kategori untuk Tahun Ini (Total dibagi 12 bulan)
+        const catAverages = categories.map(c => {
+          const totalCatSpend = transactions.reduce((sum, tx) => {
+            if (tx.type === c.type && tx.categoryId === c.id && tx.date && tx.date.startsWith(targetYear)) {
+              return sum + (parseFloat(tx.amount) || 0);
+            }
+            return sum;
+          }, 0);
+          const avg = totalCatSpend / 12;
+          return { id: c.id, name: c.name, type: c.type, total: totalCatSpend, avg: avg };
+        });
+
+        // Terapkan Pengurutan (Sorting)
+        catAverages.sort((a, b) => {
+          if (yearlyCatSort.by === 'name') {
+            return yearlyCatSort.dir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+          } else {
+            return yearlyCatSort.dir === 'asc' ? a.avg - b.avg : b.avg - a.avg;
+          }
+        });
+
         container.innerHTML = `
+          <!-- 1. TABEL ARUS KAS 12 BULAN (KLIK UNTUK DRILL-DOWN KE BULAN TERSEBUT) -->
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs text-slate-700">
               <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 border-b border-slate-200">
@@ -5507,9 +5874,9 @@ async function resolveConflictKeepCloud() {
                     <td class="px-3.5 py-2.5 font-bold text-slate-800 flex items-center gap-1.5">
                       <span class="group-hover:text-emerald-700">${r.mName}</span>
                     </td>
-                    <td class="px-3.5 py-2.5 text-right text-emerald-600 font-semibold">+${formatCurrency(r.in)}</td>
-                    <td class="px-3.5 py-2.5 text-right text-rose-600 font-semibold">-${formatCurrency(r.out)}</td>
-                    <td class="px-3.5 py-2.5 text-right font-bold ${r.net >= 0 ? 'text-slate-900' : 'text-rose-600'}">${(r.net >= 0 ? '+' : '') + formatCurrency(r.net)}</td>
+                    <td class="px-3.5 py-2.5 text-right text-emerald-600 font-semibold">${dashPrivacy.income ? 'Rp ••••••' : `+${formatCurrency(r.in)}`}</td>
+                    <td class="px-3.5 py-2.5 text-right text-rose-600 font-semibold">${dashPrivacy.expense ? 'Rp ••••••' : `-${formatCurrency(r.out)}`}</td>
+                    <td class="px-3.5 py-2.5 text-right font-bold ${r.net >= 0 ? 'text-slate-900' : 'text-rose-600'}">${(dashPrivacy.income || dashPrivacy.expense) ? 'Rp ••••••' : (r.net >= 0 ? '+' : '') + formatCurrency(r.net)}</td>
                     <td class="px-3.5 py-2.5 text-center">
                       <span class="text-[11px] font-semibold text-emerald-600 group-hover:underline flex items-center justify-center gap-0.5">
                         Buka <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
@@ -5519,6 +5886,46 @@ async function resolveConflictKeepCloud() {
                 `).join('')}
               </tbody>
             </table>
+          </div>
+
+          <!-- 2. TABEL RATA-RATA PENGELUARAN & PEMASUKAN TAHUNAN DENGAN FITUR SORTING -->
+          <div class="pt-4 border-t border-slate-100 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <i data-lucide="calculator" class="w-4 h-4 text-emerald-600"></i> Rata-Rata Kategori per Bulan (Tahun ${targetYear})
+                </h4>
+                <p class="text-[11px] text-slate-400">Total nominal tahunan dibagi 12 bulan sebagai referensi anggaran.</p>
+              </div>
+
+              <!-- Tombol Pengurutan (Sorting) -->
+              <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-[11px] font-semibold self-start sm:self-auto">
+                <span class="text-slate-400 px-1.5">Urutkan:</span>
+                <button onclick="sortYearlyAnalysisCategories('name')" class="px-2 py-1 rounded ${yearlyCatSort.by === 'name' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'}">
+                  Nama ${yearlyCatSort.by === 'name' ? (yearlyCatSort.dir === 'asc' ? '↑' : '↓') : ''}
+                </button>
+                <button onclick="sortYearlyAnalysisCategories('nominal')" class="px-2 py-1 rounded ${yearlyCatSort.by === 'nominal' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'}">
+                  Nominal ${yearlyCatSort.by === 'nominal' ? (yearlyCatSort.dir === 'asc' ? '↑' : '↓') : ''}
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              ${catAverages.map(c => `
+                <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                  <div>
+                    <span class="text-xs font-bold text-slate-800 block truncate max-w-[130px]">${escapeHtml(c.name)}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold ${c.type === 'income' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${c.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs font-bold ${c.type === 'income' ? 'text-emerald-600' : 'text-rose-600'} block">
+                      ${dashPrivacy[c.type === 'income' ? 'income' : 'expense'] ? 'Rp ••••••' : formatCurrency(c.avg)}
+                    </span>
+                    <span class="text-[9px] text-slate-400">per bulan</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
           </div>
         `;
       }
