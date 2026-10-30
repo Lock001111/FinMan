@@ -632,32 +632,90 @@
     </div>
 		
     <!-- ==================== TAB 5: TRENDS ==================== -->
-    <div id="view-trends" class="hidden space-y-6">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-        
-		<!-- Header Tren: Tombol Mode Rapi & Toggle Garis Acuan -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Analisis Tren & Perbandingan</h2>
-            <p class="text-xs text-slate-500">Eksplorasi tren berkala, garis anggaran, dan rata-rata pengeluaran.</p>
+    <!-- ==================== TAB 5: TRENDS (3 COLLAPSIBLE SECTIONS) ==================== -->
+    <div id="view-trends" class="hidden space-y-5">
+      
+      <!-- TREN 1: BERDASARKAN SUMBER DANA (DEFAULT: COLLAPSED / TERTUTUP) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Header Akordeon -->
+        <div onclick="toggleTrendAccordion('source')" class="p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-slate-50/70 hover:bg-slate-100/60 transition">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 bg-emerald-100 text-emerald-700 rounded-lg shrink-0">
+              <i data-lucide="landmark" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900">1. Tren Saldo Sumber Dana (Rekening)</h3>
+              <p class="text-xs text-slate-500">Pantau perkembangan saldo akhir setiap rekening sumber dana di setiap bulan.</p>
+            </div>
           </div>
-          
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- Toggle Tampilkan Garis Rata-rata & Anggaran -->
+          <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition">
+            <i data-lucide="chevron-down" id="icon-chevron-trend-source" class="w-5 h-5 transition-transform duration-200"></i>
+          </button>
+        </div>
+
+        <!-- Badan Konten Tren 1 -->
+        <div id="trend-source-body" class="hidden p-5 sm:p-6 border-t border-slate-100 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <!-- Pilihan Rekening -->
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-semibold text-slate-600">Pilih Rekening:</label>
+              <select id="trend-source-select" onchange="renderSourceTrendChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="ALL">Semua Rekening (Tampilkan Semua)</option>
+              </select>
+            </div>
+
+            <!-- Pemilih Tahun Sumber Dana -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-slate-600">Tahun:</span>
+              <button onclick="stepSourceTrendYear(-1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+              <input type="number" id="trend-source-year" onchange="renderSourceTrendChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white font-bold w-20 text-center outline-none" />
+              <button onclick="stepSourceTrendYear(1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+
+          <div class="h-80 relative">
+            <canvas id="sourceTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TREN 2: TREN KATEGORI & SUBKATEGORI (DEFAULT: EXPANDED / TERBUKA) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Header Akordeon -->
+        <div onclick="toggleTrendAccordion('category')" class="p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-slate-50/70 hover:bg-slate-100/60 transition">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 bg-indigo-100 text-indigo-700 rounded-lg shrink-0">
+              <i data-lucide="pie-chart" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900">2. Tren Kategori & Subkategori (Analisis & Perbandingan)</h3>
+              <p class="text-xs text-slate-500">Eksplorasi tren pengeluaran berkala per kategori, rata-rata, batas anggaran, atau perbandingan.</p>
+            </div>
+          </div>
+          <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition">
+            <i data-lucide="chevron-up" id="icon-chevron-trend-category" class="w-5 h-5 transition-transform duration-200"></i>
+          </button>
+        </div>
+
+        <!-- Badan Konten Tren 2 -->
+        <div id="trend-category-body" class="p-5 sm:p-6 border-t border-slate-100 space-y-4">
+          <!-- Toolbar Mode & Garis Toggle -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <!-- Toggle Garis Rata-rata & Anggaran -->
             <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
               <label class="flex items-center gap-1 cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900">
                 <input type="checkbox" id="trend-toggle-avg" checked onchange="toggleTrendLine('avg')" class="rounded text-amber-500 h-3.5 w-3.5" />
                 <span>Rata-rata</span>
               </label>
               <span class="text-slate-300">|</span>
-              <label class="flex items-center gap-1 cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900">
+              <label id="trend-toggle-budget-label" class="flex items-center gap-1 cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900 transition">
                 <input type="checkbox" id="trend-toggle-budget" checked onchange="toggleTrendLine('budget')" class="rounded text-rose-500 h-3.5 w-3.5" />
                 <span>Batas Limit</span>
               </label>
             </div>
 
-            <!-- Tombol Mode (Lebar Pas & Rapi: w-fit inline-flex) -->
-            <div class="inline-flex w-fit items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 shadow-inner">
+            <!-- Tombol Mode Rapi & Pas Ukurannya -->
+            <div class="inline-flex w-fit items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 shadow-inner self-start sm:self-auto">
               <button id="btn-trend-mode-standard" onclick="setTrendMode('standard')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-slate-800 shadow-sm transition whitespace-nowrap">
                 Tren Standar
               </button>
@@ -666,123 +724,170 @@
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Standard Controls -->
-        <div id="trend-standard-controls" class="space-y-4">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-wrap items-center gap-3">
-              <div class="flex items-center bg-slate-100 p-1 rounded-lg">
-                <button id="btn-trend-scope-year" onclick="setTrendScope('year')" class="px-3 py-1 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm">
-                  Tahunan (12 Bulan)
-                </button>
-                <button id="btn-trend-scope-month" onclick="setTrendScope('month')" class="px-3 py-1 text-xs font-bold rounded-md text-slate-600 hover:text-slate-900">
-                  Bulanan (Per Hari)
-                </button>
+          <!-- Standard Controls -->
+          <div id="trend-standard-controls" class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center bg-slate-100 p-1 rounded-lg">
+                  <button id="btn-trend-scope-year" onclick="setTrendScope('year')" class="px-3 py-1 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm">
+                    Tahunan (12 Bulan)
+                  </button>
+                  <button id="btn-trend-scope-month" onclick="setTrendScope('month')" class="px-3 py-1 text-xs font-bold rounded-md text-slate-600 hover:text-slate-900">
+                    Bulanan (Per Hari)
+                  </button>
+                </div>
+
+                <div id="trend-year-selector-wrap" class="flex items-center gap-1">
+                  <button onclick="stepTrendYear(-1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+                  <input type="number" id="trend-year-select" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white font-medium w-20 text-center" />
+                  <button onclick="stepTrendYear(1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                </div>
+
+                <div id="trend-month-selector-wrap" class="hidden flex items-center gap-1.5">
+                  <button onclick="stepTrendMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50">
+                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <input type="month" id="trend-month-input" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1 bg-white font-medium w-36" />
+                  <button onclick="openCalendarPicker('trend-month-input', renderTrendsChart)" title="Pilih dari Kalender" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-emerald-50 text-slate-600">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button onclick="stepTrendMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50">
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button onclick="resetTrendMonthToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-lg transition flex items-center gap-1 shadow-sm ml-0.5">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button id="btn-trend-entity-cat" onclick="setTrendEntity('category')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition">
+                    Kategori
+                  </button>
+                  <button id="btn-trend-entity-sub" onclick="setTrendEntity('subcategory')" class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition">
+                    Subkategori
+                  </button>
+                </div>
               </div>
 
-              <!-- Year selector with manual typing + prev/next without spinner -->
-              <div id="trend-year-selector-wrap" class="flex items-center gap-1">
-                <button onclick="stepTrendYear(-1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
-                <input type="number" id="trend-year-select" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white font-medium w-20 text-center" />
-                <button onclick="stepTrendYear(1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
-              </div>
-
-              <!-- Month selector with Outer 'Bulan Ini' button -->
-              <div id="trend-month-selector-wrap" class="hidden flex items-center gap-1.5">
-                <button onclick="stepTrendMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50">
-                  <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
-                </button>
-                <input type="month" id="trend-month-input" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1 bg-white font-medium w-36" />
-                <button onclick="openCalendarPicker('trend-month-input', renderTrendsChart)" title="Pilih dari Kalender" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-emerald-50 text-slate-600">
-                  <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                </button>
-                <button onclick="stepTrendMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50">
-                  <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-                </button>
-                <button onclick="resetTrendMonthToCurrent()" title="Kembali ke Bulan Saat Ini" class="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-lg transition flex items-center gap-1 shadow-sm ml-0.5">
-                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Bulan Ini
-                </button>
-              </div>
-
-              <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
-                <button id="btn-trend-entity-cat" onclick="setTrendEntity('category')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition">
-                  Kategori
-                </button>
-                <button id="btn-trend-entity-sub" onclick="setTrendEntity('subcategory')" class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition">
-                  Subkategori
-                </button>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <label class="text-xs font-semibold text-slate-500">Filter Kategori:</label>
-              <select id="trend-category-filter" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white font-medium">
-                <option value="ALL">Semua Kategori</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Comparison Controls -->
-        <div id="trend-compare-controls" class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-700">Tipe Perbandingan:</span>
-              <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200">
-                <button id="btn-cmp-type-month" onclick="setCompareType('month')" class="px-3 py-1 text-xs font-bold rounded bg-emerald-600 text-white">
-                  Bandingkan 2 Bulan
-                </button>
-                <button id="btn-cmp-type-year" onclick="setCompareType('year')" class="px-3 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
-                  Bandingkan 2 Tahun
-                </button>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-700">Tampilan:</span>
-              <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200">
-                <button id="btn-cmp-entity-cat" onclick="setCompareEntity('category')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white">
-                  Per Kategori
-                </button>
-                <button id="btn-cmp-entity-sub" onclick="setCompareEntity('subcategory')" class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
-                  Per Subkategori
-                </button>
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-semibold text-slate-500">Filter Kategori:</label>
+                <select id="trend-category-filter" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white font-medium">
+                  <option value="ALL">Semua Kategori</option>
+                </select>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <div class="bg-white p-3 rounded-lg border border-blue-200 shadow-sm flex items-center justify-between">
-              <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Periode Pertama (A)</span>
-                <div class="mt-1" id="cmp-period1-selector-wrap"></div>
+          <!-- Comparison Controls -->
+          <div id="trend-compare-controls" class="hidden space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-700">Tipe Perbandingan:</span>
+                <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200">
+                  <button id="btn-cmp-type-month" onclick="setCompareType('month')" class="px-3 py-1 text-xs font-bold rounded bg-emerald-600 text-white">
+                    Bandingkan 2 Bulan
+                  </button>
+                  <button id="btn-cmp-type-year" onclick="setCompareType('year')" class="px-3 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
+                    Bandingkan 2 Tahun
+                  </button>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="text-xs text-slate-400">Total Pengeluaran:</span>
-                <div class="text-base font-bold text-slate-800" id="cmp-p1-total">Rp 0</div>
+
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-700">Tampilan:</span>
+                <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200">
+                  <button id="btn-cmp-entity-cat" onclick="setCompareEntity('category')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white">
+                    Per Kategori
+                  </button>
+                  <button id="btn-cmp-entity-sub" onclick="setCompareEntity('subcategory')" class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900">
+                    Per Subkategori
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex items-center justify-between">
-              <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Periode Pembanding (B)</span>
-                <div class="mt-1" id="cmp-period2-selector-wrap"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div class="bg-white p-3 rounded-lg border border-blue-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Periode Pertama (A)</span>
+                  <div class="mt-1" id="cmp-period1-selector-wrap"></div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs text-slate-400">Total Pengeluaran:</span>
+                  <div class="text-base font-bold text-slate-800" id="cmp-p1-total">Rp 0</div>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="text-xs text-slate-400">Total Pengeluaran:</span>
-                <div class="text-base font-bold text-slate-800" id="cmp-p2-total">Rp 0</div>
+
+              <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Periode Pembanding (B)</span>
+                  <div class="mt-1" id="cmp-period2-selector-wrap"></div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs text-slate-400">Total Pengeluaran:</span>
+                  <div class="text-base font-bold text-slate-800" id="cmp-p2-total">Rp 0</div>
+                </div>
               </div>
             </div>
+
+            <div id="cmp-delta-banner" class="p-3 rounded-lg text-xs font-medium flex items-center justify-between bg-white border border-slate-200"></div>
           </div>
 
-          <div id="cmp-delta-banner" class="p-3 rounded-lg text-xs font-medium flex items-center justify-between bg-white border border-slate-200"></div>
-        </div>
-
-        <div class="h-96 relative">
-          <canvas id="trendsChart"></canvas>
+          <div class="h-96 relative">
+            <canvas id="trendsChart"></canvas>
+          </div>
         </div>
       </div>
+
+      <!-- TREN 3: BERDASARKAN KLASIFIKASI BIAYA (DEFAULT: COLLAPSED / TERTUTUP) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Header Akordeon -->
+        <div onclick="toggleTrendAccordion('class')" class="p-4 sm:p-5 flex items-center justify-between cursor-pointer select-none bg-slate-50/70 hover:bg-slate-100/60 transition">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 bg-amber-100 text-amber-700 rounded-lg shrink-0">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900">3. Tren Klasifikasi Biaya (Tetap, Berkala & Dinamis)</h3>
+              <p class="text-xs text-slate-500">Analisis pergeseran porsi pengeluaran wajib (Fixed), rutin (Periodic), dan gaya hidup (Dynamic).</p>
+            </div>
+          </div>
+          <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition">
+            <i data-lucide="chevron-down" id="icon-chevron-trend-class" class="w-5 h-5 transition-transform duration-200"></i>
+          </button>
+        </div>
+
+        <!-- Badan Konten Tren 3 -->
+        <div id="trend-class-body" class="hidden p-5 sm:p-6 border-t border-slate-100 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-600">Tipe Visualisasi:</span>
+              <div class="flex items-center bg-slate-100 p-1 rounded-lg">
+                <button id="btn-trend-class-stacked" onclick="setTrendClassChartType('bar')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition">
+                  Stacked Bar (Tumpuk)
+                </button>
+                <button id="btn-trend-class-line" onclick="setTrendClassChartType('line')" class="px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition">
+                  Garis (Line)
+                </button>
+              </div>
+            </div>
+
+            <!-- Pemilih Tahun Klasifikasi Biaya -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-slate-600">Tahun:</span>
+              <button onclick="stepClassTrendYear(-1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+              <input type="number" id="trend-class-year" onchange="renderClassTrendChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white font-bold w-20 text-center outline-none" />
+              <button onclick="stepClassTrendYear(1)" class="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+
+          <div class="h-80 relative">
+            <canvas id="classTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ==================== TAB 6: SETTINGS ==================== -->
@@ -790,14 +895,28 @@
       
       <!-- 1. MANAGE MONEY SOURCES WITH INDEPENDENT PRIVACY -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
             <h3 class="text-lg font-bold text-slate-900">Rekening & Sumber Dana (Money Source)</h3>
             <p class="text-xs text-slate-500">Kendali privasi dikelola secara independen di sini. Klik ikon mata untuk membuka/menutup saldo.</p>
           </div>
-          <button onclick="openAccountModal()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 self-start sm:self-auto">
-            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Rekening
-          </button>
+          
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <!-- Pilihan Sorting Sumber Dana -->
+            <div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 text-xs">
+              <span class="text-slate-400 font-semibold">Urutkan:</span>
+              <select id="setting-account-sort" onchange="changeAccountSort(this.value)" class="bg-white border border-slate-300 rounded px-2 py-0.5 font-medium text-slate-700 outline-none">
+                <option value="default">Default (Urutan Input)</option>
+                <option value="name-asc">Nama (A &rarr; Z)</option>
+                <option value="name-desc">Nama (Z &rarr; A)</option>
+                <option value="type-asc">Jenis / Tipe</option>
+              </select>
+            </div>
+
+            <button onclick="openAccountModal()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 transition">
+              <i data-lucide="plus" class="w-4 h-4"></i> Tambah Rekening
+            </button>
+          </div>
         </div>
 
         <!-- Net Worth Global Privacy Setting -->
@@ -817,21 +936,35 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="text-lg font-bold text-slate-900">Kategori & Subkategori Kustom</h3>
-            <p class="text-xs text-slate-500">Kelompokkan pengeluaran dan pemasukan. Ekspor atau impor daftar kategori dengan tabel Excel.</p>
+            <p class="text-xs text-slate-500">Subkategori otomatis terurut A-Z. Urutkan kategori berdasarkan nama atau klasifikasi.</p>
           </div>
+          
           <div class="flex flex-wrap items-center gap-2">
-            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-up" class="w-3.5 h-3.5 text-emerald-600"></i> Impor Kategori
+            <!-- Pilihan Sorting Kategori -->
+            <div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 text-xs">
+              <span class="text-slate-400 font-semibold">Urutkan:</span>
+              <select id="setting-category-sort" onchange="changeCategorySort(this.value)" class="bg-white border border-slate-300 rounded px-2 py-0.5 font-medium text-slate-700 outline-none">
+                <option value="default">Default (Urutan Input)</option>
+                <option value="name-asc">Nama (A &rarr; Z)</option>
+                <option value="name-desc">Nama (Z &rarr; A)</option>
+                <option value="class-fixed">Tipe (Tetap &rarr; Berkala &rarr; Dinamis)</option>
+                <option value="class-dynamic">Tipe (Dinamis &rarr; Berkala &rarr; Tetap)</option>
+              </select>
+            </div>
+
+            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+              <i data-lucide="file-up" class="w-3.5 h-3.5 text-emerald-600"></i> Impor
               <input type="file" id="category-excel-input" accept=".xlsx, .xls" class="hidden" onchange="importCategoriesFromExcel(event)" />
             </label>
-            <button onclick="exportCategoriesToExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Ekspor Kategori
+            <button onclick="exportCategoriesToExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Ekspor
             </button>
             <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Kategori
             </button>
           </div>
-        </div>
+        </div>		
+		
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="category-settings-list"></div>
       </div>
 
@@ -1611,7 +1744,22 @@
   
   <!-- ==================== APPLICATION LOGIC ==================== -->
   <script>
-    // Riwayat perubahan limit anggaran
+    // --- STATE 3 AKORDEON TREN (HANYA KATEGORI YANG DEFAULT EXPANDED) ---
+    let trendAccordionState = {
+      source: false,   // Tren 1 (Default Tertutup)
+      category: true,  // Tren 2 (Default Terbuka)
+      class: false     // Tren 3 (Default Tertutup)
+    };
+
+    let sourceTrendChartInstance = null;
+    let classTrendChartInstance = null;
+    let trendClassChartType = 'bar'; // 'bar' (stacked) | 'line'
+
+    // State Sorting Pengaturan
+    let settingAccountSortBy = 'default';
+    let settingCategorySortBy = 'default';
+	
+	// Riwayat perubahan limit anggaran
     let budgetHistory = JSON.parse(localStorage.getItem('vf_budget_history')) || [];
     // Toggle garis rata-rata & limit di grafik tren
     let trendShowAvg = true;
@@ -2130,6 +2278,8 @@ async function initFsAutoBackup() {
       setVal('backup-retention-select', backupConfig.retention || 'auto_remove');
       setVal('backup-limit-select', backupConfig.retentionLimit || 5);
       setVal('fs-delay-select', fsBackupConfig.delaySeconds || 60);
+	  setVal('trend-source-year', curYear);
+      setVal('trend-class-year', curYear);
       toggleRetentionLimitUI();
       loadGdrivePrefs();
     }
@@ -4097,11 +4247,15 @@ function renderAnalysisView() {
       }
     }
 
-function toggleTrendLine(type) {
+	function toggleTrendLine(type) {
       if (type === 'avg') {
         trendShowAvg = document.getElementById('trend-toggle-avg')?.checked ?? true;
       } else {
-        trendShowBudget = document.getElementById('trend-toggle-budget')?.checked ?? true;
+        const chk = document.getElementById('trend-toggle-budget');
+        // Hanya ubah status jika tombol tidak dalam keadaan disabled
+        if (chk && !chk.disabled) {
+          trendShowBudget = chk.checked;
+        }
       }
       renderTrendsChart();
     }
@@ -4115,15 +4269,17 @@ function toggleTrendLine(type) {
 
       let timeLabels = [];
       let timeKeys = [];
+      let yearVal = curYear;
+      let monthVal = dashboardSelectedMonth;
 
       if (trendScope === 'year') {
-        const year = document.getElementById('trend-year-select')?.value || curYear;
+        yearVal = document.getElementById('trend-year-select')?.value || curYear;
         timeLabels = monthShortID;
         for (let m = 1; m <= 12; m++) {
-          timeKeys.push(`${year}-${String(m).padStart(2, '0')}`);
+          timeKeys.push(`${yearVal}-${String(m).padStart(2, '0')}`);
         }
       } else {
-        const monthVal = document.getElementById('trend-month-input')?.value || dashboardSelectedMonth;
+        monthVal = document.getElementById('trend-month-input')?.value || dashboardSelectedMonth;
         let y = curYear, m = parseInt(curMonth);
         if (monthVal && monthVal.includes('-')) {
           const parts = monthVal.split('-').map(Number);
@@ -4137,6 +4293,50 @@ function toggleTrendLine(type) {
           timeKeys.push(`${monthVal}-${dayStr}`);
         }
       }
+
+      // ==================== VALIDASI OTOMATIS LIMIT ANGGARAN ====================
+      // Kumpulkan daftar bulan yang perlu dicek apakah sudah diatur limit anggarannya
+      const budgetCheckMonths = (trendScope === 'year') 
+        ? Array.from({ length: 12 }, (_, i) => `${yearVal}-${String(i + 1).padStart(2, '0')}`)
+        : [monthVal];
+
+      let hasBudgetConfigured = false;
+      for (const mKey of budgetCheckMonths) {
+        const monthBudgets = budgets[mKey];
+        if (monthBudgets) {
+          if (catFilter !== 'ALL') {
+            if (parseFloat(monthBudgets[catFilter]) > 0) {
+              hasBudgetConfigured = true;
+              break;
+            }
+          } else {
+            const anyCatBudget = Object.values(monthBudgets).some(v => parseFloat(v) > 0);
+            if (anyCatBudget) {
+              hasBudgetConfigured = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Kunci/Nonaktifkan tombol jika limit belum diatur pada periode/bulan tersebut
+      const budgetCheckbox = document.getElementById('trend-toggle-budget');
+      const budgetLabel = document.getElementById('trend-toggle-budget-label');
+
+      if (budgetCheckbox && budgetLabel) {
+        if (!hasBudgetConfigured) {
+          budgetCheckbox.disabled = true;
+          budgetCheckbox.checked = false;
+          budgetLabel.classList.add('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
+          budgetLabel.title = "Belum ada limit anggaran yang diatur untuk periode/kategori ini";
+        } else {
+          budgetCheckbox.disabled = false;
+          budgetCheckbox.checked = trendShowBudget;
+          budgetLabel.classList.remove('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
+          budgetLabel.removeAttribute('title');
+        }
+      }
+      // =========================================================================
 
       let seriesItems = [];
 
@@ -4159,7 +4359,6 @@ function toggleTrendLine(type) {
 
       const datasets = [];
       let colorIndex = 0;
-      let allPeriodValues = [];
 
       seriesItems.forEach(item => {
         const dataPoints = timeKeys.map(timeKey => {
@@ -4193,15 +4392,14 @@ function toggleTrendLine(type) {
             pointRadius: 3
           });
           colorIndex++;
-          allPeriodValues = allPeriodValues.concat(dataPoints);
         }
       });
 
-      // GARIS RATA-RATA & GARIS BATAS ANGGARAN (JIKA TREN TAHUNAN & TOGGLE AKTIF)
+      // GARIS RATA-RATA & GARIS BATAS ANGGARAN
       if (trendScope === 'year') {
-        const year = document.getElementById('trend-year-select')?.value || curYear;
+        const year = yearVal;
 
-        // 1. Dataset Garis Rata-rata Pengeluaran
+        // 1. Garis Rata-rata Pengeluaran
         if (trendShowAvg && datasets.length > 0) {
           let avgVal = 0;
           if (catFilter !== 'ALL') {
@@ -4225,7 +4423,7 @@ function toggleTrendLine(type) {
           datasets.push({
             label: `Rata-rata (${formatCurrency(avgVal)})`,
             data: new Array(12).fill(avgVal),
-            borderColor: '#f59e0b', // Warna Kuning/Amber
+            borderColor: '#f59e0b',
             borderDash: [5, 5],
             borderWidth: 2,
             pointRadius: 0,
@@ -4233,30 +4431,27 @@ function toggleTrendLine(type) {
           });
         }
 
-        // 2. Dataset Garis Batas Anggaran (Budget Limit Line)
-        if (trendShowBudget) {
+        // 2. Garis Batas Anggaran (Hanya ditampilkan jika ada limit yang diatur dan toggle aktif)
+        if (hasBudgetConfigured && trendShowBudget) {
           const budgetData = timeKeys.map(timeKey => {
             const monthBudgets = budgets[timeKey] || {};
             if (catFilter !== 'ALL') {
               return monthBudgets[catFilter] || 0;
             } else {
-              return Object.values(monthBudgets).reduce((a, b) => a + b, 0);
+              return Object.values(monthBudgets).reduce((a, b) => a + (parseFloat(b) || 0), 0);
             }
           });
 
-          const hasAnyBudget = budgetData.some(v => v > 0);
-          if (hasAnyBudget) {
-            datasets.push({
-              label: 'Batas Anggaran (Limit)',
-              data: budgetData,
-              borderColor: '#f43f5e', // Warna Merah Rose
-              borderDash: [3, 3],
-              borderWidth: 2,
-              pointRadius: 2,
-              pointBackgroundColor: '#f43f5e',
-              fill: false
-            });
-          }
+          datasets.push({
+            label: 'Batas Anggaran (Limit)',
+            data: budgetData,
+            borderColor: '#f43f5e',
+            borderDash: [3, 3],
+            borderWidth: 2,
+            pointRadius: 2,
+            pointBackgroundColor: '#f43f5e',
+            fill: false
+          });
         }
       }
 
@@ -4532,7 +4727,18 @@ function toggleTrendLine(type) {
       }
     }
 
+    function changeAccountSort(val) {
+      settingAccountSortBy = val;
+      renderSettings();
+    }
+
+    function changeCategorySort(val) {
+      settingCategorySortBy = val;
+      renderSettings();
+    }
+
     function renderSettings() {
+      // 1. Status Tombol Net Worth
       const nwBtn = document.getElementById('btn-settings-nw-toggle');
       if (nwBtn) {
         if (isNetWorthHidden) {
@@ -4544,9 +4750,19 @@ function toggleTrendLine(type) {
         }
       }
 
+      // 2. Sorting Sumber Dana (Default: Urutan Input / Newest Last)
+      let displayAccounts = [...accounts];
+      if (settingAccountSortBy === 'name-asc') {
+        displayAccounts.sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      } else if (settingAccountSortBy === 'name-desc') {
+        displayAccounts.sort((a, b) => b.name.localeCompare(a.name, 'id'));
+      } else if (settingAccountSortBy === 'type-asc') {
+        displayAccounts.sort((a, b) => a.type.localeCompare(b.type, 'id') || a.name.localeCompare(b.name, 'id'));
+      }
+
       const accList = document.getElementById('accounts-settings-list');
       if (accList) {
-        accList.innerHTML = accounts.map(a => {
+        accList.innerHTML = displayAccounts.map(a => {
           const isHidden = a.isHidden ?? true;
           return `
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
@@ -4573,9 +4789,23 @@ function toggleTrendLine(type) {
         }).join('');
       }
 
+      // 3. Sorting Kategori (Default: Urutan Input)
+      let displayCategories = [...categories];
+      if (settingCategorySortBy === 'name-asc') {
+        displayCategories.sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      } else if (settingCategorySortBy === 'name-desc') {
+        displayCategories.sort((a, b) => b.name.localeCompare(a.name, 'id'));
+      } else if (settingCategorySortBy === 'class-fixed') {
+        const order = { 'fixed': 1, 'periodic': 2, 'dynamic': 3 };
+        displayCategories.sort((a, b) => (order[a.expenseClass || 'dynamic'] - order[b.expenseClass || 'dynamic']) || a.name.localeCompare(b.name, 'id'));
+      } else if (settingCategorySortBy === 'class-dynamic') {
+        const order = { 'dynamic': 1, 'periodic': 2, 'fixed': 3 };
+        displayCategories.sort((a, b) => (order[a.expenseClass || 'dynamic'] - order[b.expenseClass || 'dynamic']) || a.name.localeCompare(b.name, 'id'));
+      }
+
       const catList = document.getElementById('category-settings-list');
       if (catList) {
-        catList.innerHTML = categories.map(c => {
+        catList.innerHTML = displayCategories.map(c => {
           let classLabel = 'Dinamis';
           let classBadge = 'bg-slate-100 text-slate-700';
           if (c.expenseClass === 'fixed') {
@@ -4585,6 +4815,9 @@ function toggleTrendLine(type) {
             classLabel = 'Berkala (Periodic)';
             classBadge = 'bg-amber-100 text-amber-800';
           }
+
+          // SUBKATEGORI OTOMATIS TERURUT A-Z
+          const sortedSubs = [...(c.subcategories || [])].sort((a, b) => a.localeCompare(b, 'id'));
 
           return `
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between">
@@ -4599,8 +4832,8 @@ function toggleTrendLine(type) {
                   </div>
                 </div>
                 <div class="flex flex-wrap gap-1 mt-2">
-                  ${(c.subcategories || []).length > 0 
-                    ? c.subcategories.map(sub => `<span class="text-[11px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md">${escapeHtml(sub)}</span>`).join('') 
+                  ${sortedSubs.length > 0 
+                    ? sortedSubs.map(sub => `<span class="text-[11px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md">${escapeHtml(sub)}</span>`).join('') 
                     : `<span class="text-xs text-slate-400 italic">Belum ada subkategori</span>`}
                 </div>
               </div>
@@ -4893,7 +5126,13 @@ function toggleTrendLine(type) {
         prefCat.value = categories.some(c => c.id === txPreferences.defaultCategoryId) ? txPreferences.defaultCategoryId : (categories[0]?.id || '');
       }
 
-      const budgetCatSelect = document.getElementById('budget-cat-select');
+      const trendSourceSelect = document.getElementById('trend-source-select');
+      if (trendSourceSelect) {
+        trendSourceSelect.innerHTML = `<option value="ALL">Semua Rekening (Akumulasi)</option>` + 
+          accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.type)})</option>`).join('');
+      }
+	  
+	  const budgetCatSelect = document.getElementById('budget-cat-select');
       if (budgetCatSelect) budgetCatSelect.innerHTML = categories.filter(c => c.type === 'expense').map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
 
       onFilterCategoryChange();
@@ -4942,7 +5181,9 @@ function toggleTrendLine(type) {
       if (!subSelect) return;
       const cat = categories.find(c => c.id === catId);
       if (cat && cat.subcategories && cat.subcategories.length > 0) {
-        subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>` + cat.subcategories.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        // Otomatis terurut A-Z
+        const sorted = [...cat.subcategories].sort((a, b) => a.localeCompare(b, 'id'));
+        subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>` + sorted.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
       } else {
         subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>`;
       }
@@ -5020,7 +5261,7 @@ function toggleTrendLine(type) {
       }
     }
 
-// Ganti fungsi switchTab dengan penanganan Backstack pintar (Anti-Infinite Loop)
+	// Ganti fungsi switchTab dengan penanganan Backstack pintar (Anti-Infinite Loop)
     function switchTab(tabName, isBackNavigation = false) {
       if (!tabName) tabName = 'dashboard';
       if (currentActiveTab === tabName && !isBackNavigation) return;
@@ -5078,6 +5319,12 @@ function toggleTrendLine(type) {
       }
 
       closeMobileMenu();
+	
+	  if (tabName === 'trends') {
+        if (trendAccordionState.source) renderSourceTrendChart();
+        if (trendAccordionState.category) renderTrendsChart();
+        if (trendAccordionState.class) renderClassTrendChart();
+      }
 
       if (tabName === 'analysis') renderAnalysisView();
       if (tabName === 'trends') renderTrendsChart();
@@ -5188,7 +5435,7 @@ function toggleTrendLine(type) {
       return JSON.parse(new TextDecoder().decode(decryptedBuf));
     }
 
-// ==================== ENGINE SINKRONISASI GOOGLE DRIVE (PERSISTENT & AUTO-SYNC) ====================
+	// ==================== ENGINE SINKRONISASI GOOGLE DRIVE (PERSISTENT & AUTO-SYNC) ====================
     let gdriveAccessToken = null;
     let gdriveTokenClient = null;
     let autoSyncPushTimer = null;
@@ -5501,7 +5748,7 @@ function toggleTrendLine(type) {
       if (pin) await executeCloudPush(pin);
     }
 
-async function resolveConflictKeepCloud() {
+	async function resolveConflictKeepCloud() {
       closeModal('sync-conflict-modal');
       const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
       if (pin && pendingConflictPayload) {
@@ -5613,7 +5860,7 @@ async function resolveConflictKeepCloud() {
       }
     }
 
-// UNDUH & DEKRIPSI DARI GOOGLE DRIVE (MANUAL)
+	// UNDUH & DEKRIPSI DARI GOOGLE DRIVE (MANUAL)
     async function syncDownloadFromGdrive() {
       const pin = document.getElementById('gdrive-encryption-pin')?.value || sessionStorage.getItem('vf_gdrive_pin');
       if (!pin) {
@@ -5690,7 +5937,7 @@ async function resolveConflictKeepCloud() {
       lucide.createIcons();
     }
 
-// Pengurutan Rata-rata Kategori Tahunan
+	// Pengurutan Rata-rata Kategori Tahunan
     function sortYearlyAnalysisCategories(by) {
       if (yearlyCatSort.by === by) {
         yearlyCatSort.dir = yearlyCatSort.dir === 'asc' ? 'desc' : 'asc';
@@ -6138,6 +6385,275 @@ async function resolveConflictKeepCloud() {
       const mins = parseInt(document.getElementById('applock-timeout-select')?.value) || 2;
       appLockConfig.idleMinutes = mins;
       localStorage.setItem('vf_app_lock_config', JSON.stringify(appLockConfig));
+    }
+	
+	// --- PENGENDALI BUKA/TUTUP AKORDEON TREN (BISA DIBUKA BERSAMAAN) ---
+    function toggleTrendAccordion(section) {
+      trendAccordionState[section] = !trendAccordionState[section];
+      const bodyEl = document.getElementById(`trend-${section}-body`);
+      const iconEl = document.getElementById(`icon-chevron-trend-${section}`);
+
+      if (bodyEl) {
+        if (trendAccordionState[section]) {
+          bodyEl.classList.remove('hidden');
+          if (iconEl) iconEl.setAttribute('data-lucide', 'chevron-up');
+        } else {
+          bodyEl.classList.add('hidden');
+          if (iconEl) iconEl.setAttribute('data-lucide', 'chevron-down');
+        }
+      }
+
+      // Render chart saat akordeon dibuka
+      if (trendAccordionState[section]) {
+        if (section === 'source') renderSourceTrendChart();
+        else if (section === 'category') renderTrendsChart();
+        else if (section === 'class') renderClassTrendChart();
+      }
+      lucide.createIcons();
+    }
+
+    // --- TREN 1: LOGIKA CHART SUMBER DANA ---
+    function stepSourceTrendYear(delta) {
+      const input = document.getElementById('trend-source-year');
+      if (input) {
+        input.value = parseInt(input.value || curYear) + delta;
+        renderSourceTrendChart();
+      }
+    }
+
+    // --- TREN 1: LOGIKA CHART SALDO SUMBER DANA PER BULAN ---
+    function renderSourceTrendChart() {
+      if (!trendAccordionState.source) return;
+      const canvas = document.getElementById('sourceTrendChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const sourceId = document.getElementById('trend-source-select')?.value || 'ALL';
+      const year = parseInt(document.getElementById('trend-source-year')?.value || curYear) || curYear;
+      const palette = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e', '#8b5cf6', '#06b6d4', '#64748b'];
+
+      // Kunci bulan 1 s.d. 12 (YYYY-01 s.d. YYYY-12)
+      const timeKeys = [];
+      for (let m = 1; m <= 12; m++) {
+        timeKeys.push(`${year}-${String(m).padStart(2, '0')}`);
+      }
+
+      // Tentukan rekening yang ditampilkan (semua atau rekening pilihan)
+      const targetAccounts = (sourceId === 'ALL')
+        ? accounts
+        : accounts.filter(a => a.id === sourceId);
+
+      const datasets = [];
+
+      targetAccounts.forEach((acc, idx) => {
+        const color = palette[idx % palette.length];
+
+        // Hitung akumulasi saldo akhir di setiap akhir bulan
+        const dataPoints = timeKeys.map(mKey => {
+          let bal = parseFloat(acc.initialBalance) || 0;
+
+          transactions.forEach(tx => {
+            if (!tx.date) return;
+            // Akumulasi seluruh transaksi sampai akhir bulan tersebut
+            if (tx.date.substring(0, 7) <= mKey) {
+              const amt = parseFloat(tx.amount) || 0;
+              const fee = parseFloat(tx.adminFee) || 0;
+
+              if (tx.accountId === acc.id) {
+                if (tx.type === 'income') bal += amt;
+                else if (tx.type === 'expense') bal -= amt;
+                else if (tx.type === 'transfer') bal -= (amt + fee);
+              }
+              if (tx.type === 'transfer' && tx.toAccountId === acc.id) {
+                bal += amt;
+              }
+            }
+          });
+
+          return bal;
+        });
+
+        datasets.push({
+          label: acc.name,
+          data: dataPoints,
+          borderColor: color,
+          backgroundColor: color,
+          fill: false,
+          tension: 0.25,
+          pointRadius: 3.5,
+          pointHoverRadius: 6
+        });
+      });
+
+      // Jika memilih "Semua Rekening", tambahkan garis putus-putus untuk Total Seluruh Saldo
+      if (sourceId === 'ALL' && targetAccounts.length > 1) {
+        const totalBalances = timeKeys.map((_, mIdx) => {
+          return datasets.reduce((sum, ds) => sum + ds.data[mIdx], 0);
+        });
+
+        datasets.push({
+          label: 'Total Seluruh Saldo',
+          data: totalBalances,
+          borderColor: '#0f172a',
+          backgroundColor: '#0f172a',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          pointRadius: 2,
+          fill: false
+        });
+      }
+
+      if (sourceTrendChartInstance) sourceTrendChartInstance.destroy();
+
+      sourceTrendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: monthShortID,
+          datasets: datasets.length > 0 ? datasets : [{
+            label: 'Tidak ada data rekening',
+            data: new Array(12).fill(0),
+            borderColor: '#cbd5e1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { 
+              position: 'bottom',
+              labels: { boxWidth: 12, font: { size: 11 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              ticks: { callback: (val) => 'Rp ' + Number(val).toLocaleString('id-ID') }
+            }
+          }
+        }
+      });
+    }
+
+    // --- TREN 3: LOGIKA CHART KLASIFIKASI BIAYA (TETAP, BERKALA, DINAMIS) ---
+    function setTrendClassChartType(type) {
+      trendClassChartType = type;
+      const btnBar = document.getElementById('btn-trend-class-stacked');
+      const btnLine = document.getElementById('btn-trend-class-line');
+      if (type === 'bar') {
+        if (btnBar) btnBar.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition';
+        if (btnLine) btnLine.className = 'px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition';
+      } else {
+        if (btnLine) btnLine.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition';
+        if (btnBar) btnBar.className = 'px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition';
+      }
+      renderClassTrendChart();
+    }
+
+    function stepClassTrendYear(delta) {
+      const input = document.getElementById('trend-class-year');
+      if (input) {
+        input.value = parseInt(input.value || curYear) + delta;
+        renderClassTrendChart();
+      }
+    }
+
+    function renderClassTrendChart() {
+      if (!trendAccordionState.class) return;
+      const canvas = document.getElementById('classTrendChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const year = parseInt(document.getElementById('trend-class-year')?.value || curYear) || curYear;
+
+      const fixedSpend = new Array(12).fill(0);
+      const periodicSpend = new Array(12).fill(0);
+      const dynamicSpend = new Array(12).fill(0);
+
+      transactions.forEach(tx => {
+        if (!tx.date || !tx.date.startsWith(String(year))) return;
+        const d = new Date(tx.date);
+        const m = d.getMonth();
+        if (m < 0 || m >= 12) return;
+
+        const amt = parseFloat(tx.amount) || 0;
+        const fee = parseFloat(tx.adminFee) || 0;
+
+        if (tx.type === 'expense') {
+          const cat = categories.find(c => c.id === tx.categoryId);
+          const cls = cat?.expenseClass || 'dynamic';
+          if (cls === 'fixed') fixedSpend[m] += amt;
+          else if (cls === 'periodic') periodicSpend[m] += amt;
+          else dynamicSpend[m] += amt;
+        } else if (tx.type === 'transfer' && fee > 0) {
+          dynamicSpend[m] += fee; // fee admin dihitung dinamis
+        }
+      });
+
+      if (classTrendChartInstance) classTrendChartInstance.destroy();
+
+      const isStackedBar = (trendClassChartType === 'bar');
+
+      classTrendChartInstance = new Chart(ctx, {
+        type: isStackedBar ? 'bar' : 'line',
+        data: {
+          labels: monthShortID,
+          datasets: [
+            {
+              label: 'Biaya Tetap (Fixed)',
+              data: fixedSpend,
+              backgroundColor: isStackedBar ? '#6366f1' : 'rgba(99, 102, 241, 0.1)',
+              borderColor: '#6366f1',
+              fill: !isStackedBar,
+              tension: 0.25,
+              borderRadius: isStackedBar ? 4 : 0
+            },
+            {
+              label: 'Biaya Berkala (Periodic)',
+              data: periodicSpend,
+              backgroundColor: isStackedBar ? '#f59e0b' : 'rgba(245, 158, 11, 0.1)',
+              borderColor: '#f59e0b',
+              fill: !isStackedBar,
+              tension: 0.25,
+              borderRadius: isStackedBar ? 4 : 0
+            },
+            {
+              label: 'Biaya Dinamis (Dynamic)',
+              data: dynamicSpend,
+              backgroundColor: isStackedBar ? '#f43f5e' : 'rgba(244, 63, 94, 0.1)',
+              borderColor: '#f43f5e',
+              fill: !isStackedBar,
+              tension: 0.25,
+              borderRadius: isStackedBar ? 4 : 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: { stacked: isStackedBar },
+            y: {
+              stacked: isStackedBar,
+              beginAtZero: true,
+              ticks: { callback: (val) => 'Rp ' + Number(val).toLocaleString('id-ID') }
+            }
+          }
+        }
+      });
     }
 	
   </script>
