@@ -628,6 +628,40 @@
 			  
 			</div>
 		  </div>
+		  <!-- Toolbar Sort & Filter Menu Anggaran (Tanpa Mengubah Tampilan Kartu Kategori) -->
+		  <!-- Toolbar Sort & Filter Menu Anggaran dengan Tombol Reset -->
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Filter Klasifikasi Finansial Kategori -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-500 font-semibold">Filter Klasifikasi:</span>
+            <select id="budget-filter-class" onchange="renderBudgets()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="ALL">Semua Klasifikasi</option>
+              <option value="fixed">Tetap (Fixed)</option>
+              <option value="periodic">Berkala (Periodic)</option>
+              <option value="dynamic">Dinamis (Dynamic)</option>
+            </select>
+          </div>
+
+          <!-- Sort Berdasarkan Nama Kategori -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-500 font-semibold">Urutkan Nama:</span>
+            <select id="budget-sort-name" onchange="renderBudgets()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="default">Default</option>
+              <option value="name-asc">Nama (A &rarr; Z)</option>
+              <option value="name-desc">Nama (Z &rarr; A)</option>
+            </select>
+          </div>
+
+          <!-- Tombol Reset Filter & Sort Anggaran -->
+          <button onclick="resetBudgetFilterAndSort()" title="Kembalikan filter & urutan anggaran ke awal" class="text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+          </button>
+        </div>
+
+        <div id="budget-filter-count" class="text-slate-400 text-[11px] font-medium"></div>
+      </div>
+		  
       <div id="budget-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
     </div>
 		
@@ -895,17 +929,40 @@
       
       <!-- 1. MANAGE MONEY SOURCES WITH INDEPENDENT PRIVACY -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <!-- Baris 1: Judul & Tombol Tambah Rekening -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">Rekening & Sumber Dana (Money Source)</h3>
-            <p class="text-xs text-slate-500">Kendali privasi dikelola secara independen di sini. Klik ikon mata untuk membuka/menutup saldo.</p>
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="landmark" class="w-5 h-5 text-emerald-600"></i> Rekening & Sumber Dana (Money Source)
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Kendali privasi dikelola secara independen di sini. Klik ikon mata untuk membuka/menutup saldo.</p>
           </div>
           
-          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-            <!-- Pilihan Sorting Sumber Dana -->
-            <div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 text-xs">
-              <span class="text-slate-400 font-semibold">Urutkan:</span>
-              <select id="setting-account-sort" onchange="changeAccountSort(this.value)" class="bg-white border border-slate-300 rounded px-2 py-0.5 font-medium text-slate-700 outline-none">
+          <button onclick="openAccountModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition self-start sm:self-auto">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Tambah Rekening</span>
+          </button>
+        </div>
+
+        <!-- Baris 2: Bilah Toolbar Khusus Filter, Sortir & Reset Sumber Dana -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Filter Jenis -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold">Jenis:</span>
+              <select id="setting-account-filter-type" onchange="changeAccountFilter(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                <option value="ALL">Semua Jenis</option>
+                <option value="Bank">Bank</option>
+                <option value="E-Wallet">E-Wallet</option>
+                <option value="Cash">Cash (Tunai)</option>
+                <option value="Credit Card">Credit Card</option>
+              </select>
+            </div>
+
+            <!-- Urutkan (Sorting) -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold">Urutkan:</span>
+              <select id="setting-account-sort" onchange="changeAccountSort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
                 <option value="default">Default (Urutan Input)</option>
                 <option value="name-asc">Nama (A &rarr; Z)</option>
                 <option value="name-desc">Nama (Z &rarr; A)</option>
@@ -913,10 +970,14 @@
               </select>
             </div>
 
-            <button onclick="openAccountModal()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 transition">
-              <i data-lucide="plus" class="w-4 h-4"></i> Tambah Rekening
+            <!-- Tombol Reset Filter & Sort Sumber Dana -->
+            <button onclick="resetAccountFilterAndSort()" title="Kembalikan filter & urutan rekening ke awal" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
             </button>
           </div>
+
+          <!-- Indikator Jumlah Rekening Tampil -->
+          <div id="setting-account-count" class="text-slate-400 text-[11px] font-medium ml-auto"></div>
         </div>
 
         <!-- Net Worth Global Privacy Setting -->
@@ -932,39 +993,84 @@
       </div>
 
       <!-- 2. MANAGE CATEGORIES & SUBCATEGORIES WITH IMPORT/EXPORT -->
+      <!-- 2. MANAGE CATEGORIES & SUBCATEGORIES (TATA LETAK RAPI & TERSTRUKTUR) -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <!-- Baris 1: Judul & Kelompok Tombol Aksi (Impor, Ekspor, Tambah Kategori) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">Kategori & Subkategori Kustom</h3>
-            <p class="text-xs text-slate-500">Subkategori otomatis terurut A-Z. Urutkan kategori berdasarkan nama atau klasifikasi.</p>
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="tag" class="w-5 h-5 text-emerald-600"></i> Kategori & Subkategori Kustom
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Kelola kategori pemasukan & pengeluaran. Subkategori otomatis tersusun A-Z.</p>
           </div>
           
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Pilihan Sorting Kategori -->
-            <div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 text-xs">
-              <span class="text-slate-400 font-semibold">Urutkan:</span>
-              <select id="setting-category-sort" onchange="changeCategorySort(this.value)" class="bg-white border border-slate-300 rounded px-2 py-0.5 font-medium text-slate-700 outline-none">
-                <option value="default">Default (Urutan Input)</option>
-                <option value="name-asc">Nama (A &rarr; Z)</option>
-                <option value="name-desc">Nama (Z &rarr; A)</option>
-                <option value="class-fixed">Tipe (Tetap &rarr; Berkala &rarr; Dinamis)</option>
-                <option value="class-dynamic">Tipe (Dinamis &rarr; Berkala &rarr; Tetap)</option>
+          <!-- Kelompok Tombol Aksi Kanan -->
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition border border-slate-200 shadow-sm">
+              <i data-lucide="file-up" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Impor Excel</span>
+              <input type="file" id="category-excel-input" accept=".xlsx, .xls" class="hidden" onchange="importCategoriesFromExcel(event)" />
+            </label>
+
+            <button onclick="exportCategoriesToExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition shadow-sm">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Ekspor Excel</span>
+            </button>
+
+            <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Tambah Kategori</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Baris 2: Bilah Toolbar Khusus Filter & Urutan dengan Tombol Reset -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Filter Tipe -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold">Tipe:</span>
+              <select id="setting-category-filter-type" onchange="changeCategoryFilterType(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                <option value="ALL">Semua Tipe</option>
+                <option value="expense">Pengeluaran</option>
+                <option value="income">Pemasukan</option>
               </select>
             </div>
 
-            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-up" class="w-3.5 h-3.5 text-emerald-600"></i> Impor
-              <input type="file" id="category-excel-input" accept=".xlsx, .xls" class="hidden" onchange="importCategoriesFromExcel(event)" />
-            </label>
-            <button onclick="exportCategoriesToExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Ekspor
-            </button>
-            <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Kategori
+            <!-- Filter Klasifikasi -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold">Klasifikasi:</span>
+              <select id="setting-category-filter-class" onchange="changeCategoryFilterClass(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                <option value="ALL">Semua Klasifikasi</option>
+                <option value="fixed">Tetap (Fixed)</option>
+                <option value="periodic">Berkala (Periodic)</option>
+                <option value="dynamic">Dinamis (Dynamic)</option>
+              </select>
+            </div>
+
+            <!-- Urutkan (Sorting) -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold">Urutkan:</span>
+              <select id="setting-category-sort" onchange="changeCategorySort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                <option value="default">Default (Urutan Input)</option>
+                <option value="name-asc">Nama (A &rarr; Z)</option>
+                <option value="name-desc">Nama (Z &rarr; A)</option>
+                <option value="class-fixed">Klasifikasi (Tetap &rarr; Dinamis)</option>
+                <option value="class-dynamic">Klasifikasi (Dinamis &rarr; Tetap)</option>
+              </select>
+            </div>
+
+            <!-- Tombol Reset Filter & Sort Kategori -->
+            <button onclick="resetCategoryFilterAndSort()" title="Kembalikan filter & urutan kategori ke awal" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
             </button>
           </div>
-        </div>		
-		
+
+          <!-- Indikator Jumlah Kategori Tampil -->
+          <div id="setting-category-count" class="text-slate-400 text-[11px] font-medium ml-auto"></div>
+        </div>
+
+        <!-- Wadah Grid Daftar Kategori -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="category-settings-list"></div>
       </div>
 
@@ -1440,6 +1546,11 @@
           <input type="checkbox" id="acc-hidden-chk" checked class="rounded text-emerald-600 h-4 w-4" />
           <label for="acc-hidden-chk" class="text-xs text-slate-700 font-medium cursor-pointer">Sembunyikan saldo secara bawaan (Privasi)</label>
         </div>
+        <!-- Checkbox Tampilkan di Dashboard -->
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="acc-show-dash-chk" checked class="rounded text-emerald-600 h-4 w-4" />
+          <label for="acc-show-dash-chk" class="text-xs text-slate-700 font-medium cursor-pointer">Tampilkan di ringkasan Dashboard</label>
+        </div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('account-modal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Batal</button>
           <button type="submit" class="px-5 py-2 text-sm bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700">Simpan</button>
@@ -1759,6 +1870,53 @@
     let settingAccountSortBy = 'default';
     let settingCategorySortBy = 'default';
 	
+	// Filter State untuk Menu Pengaturan
+    let settingAccountFilterType = 'ALL';
+    let settingCategoryFilterType = 'ALL';
+    let settingCategoryFilterClass = 'ALL';
+
+    function changeAccountFilter(val) {
+      settingAccountFilterType = val;
+      renderSettings();
+    }
+
+    function changeCategoryFilterType(val) {
+      settingCategoryFilterType = val;
+      renderSettings();
+    }
+
+    function changeCategoryFilterClass(val) {
+      settingCategoryFilterClass = val;
+      renderSettings();
+    }
+	
+	// --- RESET FILTER & URUTAN SUMBER DANA ---
+    function resetAccountFilterAndSort() {
+      settingAccountFilterType = 'ALL';
+      settingAccountSortBy = 'default';
+      setVal('setting-account-filter-type', 'ALL');
+      setVal('setting-account-sort', 'default');
+      renderSettings();
+    }
+
+    // --- RESET FILTER & URUTAN KATEGORI ---
+    function resetCategoryFilterAndSort() {
+      settingCategoryFilterType = 'ALL';
+      settingCategoryFilterClass = 'ALL';
+      settingCategorySortBy = 'default';
+      setVal('setting-category-filter-type', 'ALL');
+      setVal('setting-category-filter-class', 'ALL');
+      setVal('setting-category-sort', 'default');
+      renderSettings();
+    }
+
+    // --- RESET FILTER & URUTAN ANGGARAN ---
+    function resetBudgetFilterAndSort() {
+      setVal('budget-filter-class', 'ALL');
+      setVal('budget-sort-name', 'default');
+      renderBudgets();
+    }
+	
 	// Riwayat perubahan limit anggaran
     let budgetHistory = JSON.parse(localStorage.getItem('vf_budget_history')) || [];
     // Toggle garis rata-rata & limit di grafik tren
@@ -1892,6 +2050,7 @@
       accounts.forEach((a, i) => {
         if (!a.id) a.id = 'acc-' + (i + 1);
         if (a.isHidden === undefined) a.isHidden = true;
+        if (a.showOnDashboard === undefined) a.showOnDashboard = true; // <-- Tambahkan baris ini (default aktif)
         if (a.initialBalance === undefined) a.initialBalance = 0;
       });
 
@@ -2195,6 +2354,17 @@ async function initFsAutoBackup() {
       const acc = accounts.find(a => a.id === accId);
       if (acc) {
         acc.isHidden = !acc.isHidden;
+        persistState(false);
+        renderDashboard();
+        renderSettings();
+      }
+    }
+	
+	// Toggle menampilkan / menyembunyikan kartu rekening di menu Dashboard
+    function toggleAccountDashboardVisibility(accId) {
+      const acc = accounts.find(a => a.id === accId);
+      if (acc) {
+        acc.showOnDashboard = !(acc.showOnDashboard ?? true);
         persistState(false);
         renderDashboard();
         renderSettings();
@@ -2504,23 +2674,30 @@ async function initFsAutoBackup() {
       if (iconExp) iconExp.setAttribute('data-lucide', dashPrivacy.expense ? 'eye-off' : 'eye');
       if (iconSav) iconSav.setAttribute('data-lucide', dashPrivacy.savings ? 'eye-off' : 'eye');
 	  
+	  // Render daftar rekening yang dipilih untuk tampil di Dashboard (Total Net Worth tetap menghitung semua rekening)
       const accContainer = document.getElementById('dashboard-accounts-list');
       if (accContainer) {
-        accContainer.innerHTML = accounts.map(a => {
-          const isHidden = a.isHidden ?? true;
-          const balanceDisplay = isHidden ? 'Rp ••••••' : formatCurrency(accountBalances[a.id] || 0);
-          return `
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-              <div>
-                <div class="text-sm font-semibold text-slate-800">${escapeHtml(a.name)}</div>
-                <div class="text-xs text-slate-400">${escapeHtml(a.type)}</div>
+        const visibleAccounts = accounts.filter(a => a.showOnDashboard ?? true);
+
+        if (visibleAccounts.length === 0) {
+          accContainer.innerHTML = `<div class="py-6 text-center text-xs text-slate-400">Tidak ada sumber dana yang dipilih untuk tampil di dashboard. Aktifkan melalui menu Pengaturan.</div>`;
+        } else {
+          accContainer.innerHTML = visibleAccounts.map(a => {
+            const isHidden = a.isHidden ?? true;
+            const balanceDisplay = isHidden ? 'Rp ••••••' : formatCurrency(accountBalances[a.id] || 0);
+            return `
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <div>
+                  <div class="text-sm font-semibold text-slate-800">${escapeHtml(a.name)}</div>
+                  <div class="text-xs text-slate-400">${escapeHtml(a.type)}</div>
+                </div>
+                <div class="text-sm font-bold ${(accountBalances[a.id] || 0) >= 0 ? 'text-slate-800' : 'text-rose-600'}">
+                  ${balanceDisplay}
+                </div>
               </div>
-              <div class="text-sm font-bold ${(accountBalances[a.id] || 0) >= 0 ? 'text-slate-800' : 'text-rose-600'}">
-                ${balanceDisplay}
-              </div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
+        }
       }
 
       renderDashboardPie(categorySpendMap);
@@ -2824,27 +3001,50 @@ async function initFsAutoBackup() {
 
       filtered.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
 
+      // HITUNG PEMASUKAN, PENGELUARAN (TERMASUK BIAYA ADMIN TRANSFER), & TABUNGAN BERSIH
       filtered.forEach(tx => {
         const amt = parseFloat(tx.amount) || 0;
-        if (tx.type === 'income') periodInflow += amt;
-        else if (tx.type === 'expense') periodOutflow += amt;
+        const fee = parseFloat(tx.adminFee) || 0;
+
+        if (tx.type === 'income') {
+          periodInflow += amt;
+        } else if (tx.type === 'expense') {
+          periodOutflow += amt;
+        } else if (tx.type === 'transfer' && fee > 0) {
+          // Biaya admin transfer dihitung sebagai pengeluaran riil
+          periodOutflow += fee;
+        }
       });
+
+      const periodNetSavings = periodInflow - periodOutflow;
+
+      // FORMAT TAMPILAN SESUAI PENGATURAN PRIVASI (dashPrivacy: income, expense, savings)
+      const inDisplay = dashPrivacy.income ? 'Rp ••••••' : `+${formatCurrency(periodInflow)}`;
+      const outDisplay = dashPrivacy.expense ? 'Rp ••••••' : `-${formatCurrency(periodOutflow)}`;
+      const savDisplay = dashPrivacy.savings 
+        ? 'Rp ••••••' 
+        : (periodNetSavings >= 0 ? `+${formatCurrency(periodNetSavings)}` : formatCurrency(periodNetSavings));
+      const savColor = periodNetSavings >= 0 ? 'text-blue-600' : 'text-rose-600';
 
       const summaryEl = document.getElementById('transaction-period-summary');
       if (summaryEl) {
         summaryEl.innerHTML = `
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 w-full">
-            <div class="flex justify-between sm:justify-start items-center gap-1.5 py-0.5 border-b border-slate-200/50 sm:border-none">
-              <span class="text-slate-500">Total Transaksi:</span>
-              <strong class="text-slate-800">${filtered.length} transaksi</strong>
+          <div class="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 w-full">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 py-0.5">
+              <span class="text-slate-500 text-[11px] sm:text-xs">Total Transaksi:</span>
+              <strong class="text-slate-800 text-xs sm:text-sm">${filtered.length} transaksi</strong>
             </div>
-            <div class="flex justify-between sm:justify-start items-center gap-1.5 py-0.5 border-b border-slate-200/50 sm:border-none">
-              <span class="text-slate-500">Total Pemasukan:</span>
-              <strong class="text-emerald-600">+${formatCurrency(periodInflow)}</strong>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 py-0.5">
+              <span class="text-slate-500 text-[11px] sm:text-xs">Total Pemasukan:</span>
+              <strong class="text-emerald-600 text-xs sm:text-sm font-bold">${inDisplay}</strong>
             </div>
-            <div class="flex justify-between sm:justify-start items-center gap-1.5 py-0.5">
-              <span class="text-slate-500">Total Pengeluaran:</span>
-              <strong class="text-rose-600">-${formatCurrency(periodOutflow)}</strong>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 py-0.5">
+              <span class="text-slate-500 text-[11px] sm:text-xs">Total Pengeluaran:</span>
+              <strong class="text-rose-600 text-xs sm:text-sm font-bold">${outDisplay}</strong>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 py-0.5">
+              <span class="text-slate-500 text-[11px] sm:text-xs">Tabungan Bersih:</span>
+              <strong class="${dashPrivacy.savings ? 'text-slate-800' : savColor} text-xs sm:text-sm font-bold">${savDisplay}</strong>
             </div>
           </div>
         `;
@@ -3428,6 +3628,7 @@ function renderAnalysisView() {
       let accStr = acc;
       let catStr = categories.find(c => c.id === t.categoryId)?.name || 'Unknown';
       let typeStr = t.type.toUpperCase();
+      const fee = parseFloat(t.adminFee) || 0;
 
       if (t.type === 'transfer') {
         const toAcc = accounts.find(a => a.id === t.toAccountId)?.name || 'Unknown';
@@ -3442,7 +3643,8 @@ function renderAnalysisView() {
         'Sumber Rekening': accStr,
         'Kategori': catStr,
         'Subkategori': t.subcategory || '',
-        'Nominal (IDR)': t.amount,
+        'Nominal (IDR)': parseFloat(t.amount) || 0,
+        'Biaya Admin (IDR)': fee,
         'Catatan': t.note || ''
       };
     }
@@ -3471,8 +3673,8 @@ function renderAnalysisView() {
           const rows = monthTxs.map(formatTxRow);
           const worksheet = rows.length > 0 
             ? XLSX.utils.json_to_sheet(rows) 
-            : XLSX.utils.json_to_sheet([{'Tanggal':'','Tipe':'','Sumber Rekening':'','Kategori':'','Subkategori':'','Nominal (IDR)':'','Catatan':''}]);
-          XLSX.utils.book_append_sheet(workbook, worksheet, monthName);
+            : XLSX.utils.json_to_sheet([{'Tanggal':'','Tipe':'','Sumber Rekening':'','Kategori':'','Subkategori':'','Nominal (IDR)':'','Biaya Admin (IDR)':'','Catatan':''}]);
+			XLSX.utils.book_append_sheet(workbook, worksheet, monthName);
         }
         XLSX.writeFile(workbook, `Laporan_Keuangan_Tahunan_${year}_PerBulan.xlsx`);
       } else if (type === 'monthly') {
@@ -3493,19 +3695,64 @@ function renderAnalysisView() {
       }
     }
 
+    // ==================== PERBAIKAN EKSPOR PDF (RAPI, DILENGKAPI BIAYA ADMIN & ARUS KAS AKURAT) ====================
+    function formatPdfDetailRow(t) {
+      const acc = accounts.find(a => a.id === t.accountId)?.name || '-';
+      let accText = acc;
+      let catText = categories.find(c => c.id === t.categoryId)?.name || '-';
+      let subcatText = t.subcategory || '-';
+      let amtText = '';
+
+      const amt = parseFloat(t.amount) || 0;
+      const fee = parseFloat(t.adminFee) || 0;
+
+      if (t.type === 'transfer') {
+        const toAcc = accounts.find(a => a.id === t.toAccountId)?.name || '-';
+        accText = `${acc} -> ${toAcc}`;
+        catText = 'Transfer';
+        subcatText = 'Pindah Dana';
+        // Tampilkan nominal bersih tanpa simbol Unicode perusak, 
+        // dan sertakan baris rincian admin jika ada (persis seperti menu transaksi)
+        amtText = formatCurrency(amt);
+        if (fee > 0) {
+          amtText += `\n(Admin: ${formatCurrency(fee)})`;
+        }
+      } else if (t.type === 'income') {
+        amtText = '+' + formatCurrency(amt);
+      } else {
+        amtText = '-' + formatCurrency(amt);
+      }
+
+      return [t.date, accText, catText, subcatText, t.note || '-', amtText];
+    }
+
     function executePdfExport(type) {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+
+      // Struktur Kolom Rapi (6 Kolom Proporsional Sesuai Standar Kertas A4)
+      const tableHead = [['Tanggal', 'Rekening', 'Kategori', 'Subkategori', 'Catatan', 'Nominal']];
+      const tableColumnStyles = {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 38 },
+        2: { cellWidth: 28 },
+        3: { cellWidth: 26 },
+        4: { cellWidth: 38 },
+        5: { cellWidth: 32, halign: 'right', fontStyle: 'bold' } // Kolom nominal rata kanan
+      };
 
       if (type === 'yearly') {
         const year = document.getElementById('export-year-select')?.value || String(curYear);
         const yearTxs = transactions.filter(t => t.date && t.date.startsWith(year));
 
+        // Kalkulasi: Biaya admin transfer tetap selalu dihitung ke pengeluaran
         let totalIn = 0, totalOut = 0;
         yearTxs.forEach(t => {
           const amt = parseFloat(t.amount) || 0;
+          const fee = parseFloat(t.adminFee) || 0;
           if (t.type === 'income') totalIn += amt;
           else if (t.type === 'expense') totalOut += amt;
+          else if (t.type === 'transfer' && fee > 0) totalOut += fee;
         });
 
         doc.setFontSize(16);
@@ -3514,56 +3761,54 @@ function renderAnalysisView() {
         doc.setTextColor(100);
         doc.text(`Waktu Cetak: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}`, 14, 26);
 
+        // Rekapitulasi Tahunan (Total pengeluaran mencakup biaya admin)
         doc.autoTable({
           startY: 32,
           theme: 'plain',
           body: [
-            ['Total Pemasukan:', formatCurrency(totalIn), 'Total Pengeluaran:', formatCurrency(totalOut), 'Tabungan Bersih:', formatCurrency(totalIn - totalOut)]
+            ['Total Pemasukan:', formatCurrency(totalIn), 'Total Pengeluaran (inc. Admin):', formatCurrency(totalOut), 'Tabungan Bersih:', formatCurrency(totalIn - totalOut)]
           ],
-          styles: { fontStyle: 'bold', textColor: [30, 41, 59], fontSize: 9 }
+          styles: { fontStyle: 'bold', textColor: [30, 41, 59], fontSize: 8.5 }
         });
 
+        // Tabel Rekapitulasi 12 Bulan
         const monthRows = [];
         for (let m = 1; m <= 12; m++) {
           const mKey = `${year}-${String(m).padStart(2, '0')}`;
           let inM = 0, outM = 0;
-          yearTxs.filter(t => t.date.startsWith(mKey)).forEach(t => {
+          yearTxs.filter(t => t.date && t.date.startsWith(mKey)).forEach(t => {
             const amt = parseFloat(t.amount) || 0;
+            const fee = parseFloat(t.adminFee) || 0;
             if (t.type === 'income') inM += amt;
             else if (t.type === 'expense') outM += amt;
+            else if (t.type === 'transfer' && fee > 0) outM += fee;
           });
           monthRows.push([monthNamesID[m-1], formatCurrency(inM), formatCurrency(outM), formatCurrency(inM - outM)]);
         }
 
         doc.autoTable({
           startY: doc.lastAutoTable.finalY + 6,
-          head: [['Bulan', 'Pemasukan', 'Pengeluaran', 'Arus Kas Bersih']],
+          head: [['Bulan', 'Pemasukan', 'Pengeluaran (inc. Admin)', 'Arus Kas Bersih']],
           body: monthRows,
           styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] }
-        });
-
-        const detailRows = yearTxs.sort((a,b) => new Date(a.date) - new Date(b.date)).map(t => {
-          const acc = accounts.find(a => a.id === t.accountId)?.name || '-';
-          let accText = acc;
-          let catText = categories.find(c => c.id === t.categoryId)?.name || '-';
-          let amtText = (t.type === 'expense' ? '-' : '+') + formatCurrency(t.amount);
-
-          if (t.type === 'transfer') {
-            const toAcc = accounts.find(a => a.id === t.toAccountId)?.name || '-';
-            accText = `${acc} -> ${toAcc}`;
-            catText = 'Transfer';
-            amtText = '⇄ ' + formatCurrency(t.amount);
+          headStyles: { fillColor: [16, 185, 129] },
+          columnStyles: {
+            1: { halign: 'right' },
+            2: { halign: 'right' },
+            3: { halign: 'right', fontStyle: 'bold' }
           }
-          return [t.date, accText, catText, t.note || '-', amtText];
         });
+
+        // Tabel Detail Transaksi
+        const detailRows = yearTxs.sort((a,b) => new Date(a.date) - new Date(b.date)).map(formatPdfDetailRow);
 
         doc.autoTable({
           startY: doc.lastAutoTable.finalY + 10,
-          head: [['Tanggal', 'Rekening', 'Kategori', 'Catatan', 'Nominal']],
+          head: tableHead,
           body: detailRows,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [59, 130, 246] }
+          styles: { fontSize: 7.5, cellPadding: 2.5, overflow: 'linebreak' },
+          headStyles: { fillColor: [59, 130, 246] },
+          columnStyles: tableColumnStyles
         });
 
         doc.save(`Laporan_Keuangan_Tahunan_${year}.pdf`);
@@ -3579,8 +3824,10 @@ function renderAnalysisView() {
         let totalIn = 0, totalOut = 0;
         monthTxs.forEach(t => {
           const amt = parseFloat(t.amount) || 0;
+          const fee = parseFloat(t.adminFee) || 0;
           if (t.type === 'income') totalIn += amt;
           else if (t.type === 'expense') totalOut += amt;
+          else if (t.type === 'transfer' && fee > 0) totalOut += fee;
         });
 
         doc.setFontSize(16);
@@ -3593,39 +3840,26 @@ function renderAnalysisView() {
           startY: 32,
           theme: 'plain',
           body: [
-            ['Total Pemasukan:', formatCurrency(totalIn), 'Total Pengeluaran:', formatCurrency(totalOut), 'Tabungan Bersih:', formatCurrency(totalIn - totalOut)]
+            ['Total Pemasukan:', formatCurrency(totalIn), 'Total Pengeluaran (inc. Admin):', formatCurrency(totalOut), 'Tabungan Bersih:', formatCurrency(totalIn - totalOut)]
           ],
-          styles: { fontStyle: 'bold', textColor: [30, 41, 59], fontSize: 9 }
+          styles: { fontStyle: 'bold', textColor: [30, 41, 59], fontSize: 8.5 }
         });
 
-        const detailRows = monthTxs.sort((a,b) => new Date(a.date) - new Date(b.date)).map(t => {
-          const acc = accounts.find(a => a.id === t.accountId)?.name || '-';
-          let accText = acc;
-          let catText = categories.find(c => c.id === t.categoryId)?.name || '-';
-          let subcatText = t.subcategory || '-';
-          let amtText = (t.type === 'expense' ? '-' : '+') + formatCurrency(t.amount);
-
-          if (t.type === 'transfer') {
-            const toAcc = accounts.find(a => a.id === t.toAccountId)?.name || '-';
-            accText = `${acc} -> ${toAcc}`;
-            catText = 'Transfer';
-            subcatText = 'Pindah Dana';
-            amtText = '⇄ ' + formatCurrency(t.amount);
-          }
-          return [t.date, accText, catText, subcatText, t.note || '-', amtText];
-        });
+        const detailRows = monthTxs.sort((a,b) => new Date(a.date) - new Date(b.date)).map(formatPdfDetailRow);
 
         doc.autoTable({
           startY: doc.lastAutoTable.finalY + 6,
-          head: [['Tanggal', 'Rekening', 'Kategori', 'Subkategori', 'Catatan', 'Nominal']],
+          head: tableHead,
           body: detailRows,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] }
+          styles: { fontSize: 7.5, cellPadding: 2.5, overflow: 'linebreak' },
+          headStyles: { fillColor: [16, 185, 129] },
+          columnStyles: tableColumnStyles
         });
 
         doc.save(`Laporan_Keuangan_${monthVal}.pdf`);
 
       } else {
+        // Mode Semua Waktu (All-Time)
         doc.setFontSize(16);
         doc.text("Laporan Riwayat Keuangan Pribadi (Semua Waktu)", 14, 20);
         doc.setFontSize(9);
@@ -3635,46 +3869,39 @@ function renderAnalysisView() {
         let totalIn = 0, totalOut = 0;
         transactions.forEach(t => {
           const amt = parseFloat(t.amount) || 0;
+          const fee = parseFloat(t.adminFee) || 0;
           if (t.type === 'income') totalIn += amt;
           else if (t.type === 'expense') totalOut += amt;
+          else if (t.type === 'transfer' && fee > 0) totalOut += fee;
         });
 
         doc.autoTable({
           startY: 32,
           theme: 'plain',
           body: [
-            ['Total Pemasukan:', formatCurrency(totalIn), 'Total Pengeluaran:', formatCurrency(totalOut), 'Tabungan Bersih:', formatCurrency(totalIn - totalOut)]
+            ['Total Pemasukan:', formatCurrency(totalIn), 'Total Pengeluaran (inc. Admin):', formatCurrency(totalOut), 'Tabungan Bersih:', formatCurrency(totalIn - totalOut)]
           ],
-          styles: { fontStyle: 'bold', textColor: [30, 41, 59], fontSize: 9 }
+          styles: { fontStyle: 'bold', textColor: [30, 41, 59], fontSize: 8.5 }
         });
 
-        const detailRows = transactions.sort((a,b) => new Date(a.date) - new Date(b.date)).map(t => {
-          const acc = accounts.find(a => a.id === t.accountId)?.name || '-';
-          let accText = acc;
-          let catText = categories.find(c => c.id === t.categoryId)?.name || '-';
-          let subcatText = t.subcategory || '-';
-          let amtText = (t.type === 'expense' ? '-' : '+') + formatCurrency(t.amount);
-
-          if (t.type === 'transfer') {
-            const toAcc = accounts.find(a => a.id === t.toAccountId)?.name || '-';
-            accText = `${acc} -> ${toAcc}`;
-            catText = 'Transfer';
-            subcatText = 'Pindah Dana';
-            amtText = '⇄ ' + formatCurrency(t.amount);
-          }
-          return [t.date, accText, catText, subcatText, t.note || '-', amtText];
-        });
+        const detailRows = transactions.sort((a,b) => new Date(a.date) - new Date(b.date)).map(formatPdfDetailRow);
 
         doc.autoTable({
           startY: doc.lastAutoTable.finalY + 6,
-          head: [['Tanggal', 'Rekening', 'Kategori', 'Subkategori', 'Catatan', 'Nominal']],
+          head: tableHead,
           body: detailRows,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [16, 185, 129] }
+          styles: { fontSize: 7.5, cellPadding: 2.5, overflow: 'linebreak' },
+          headStyles: { fillColor: [16, 185, 129] },
+          columnStyles: tableColumnStyles
         });
 
         doc.save(`Laporan_Keuangan_SemuaWaktu_${new Date().toISOString().split('T')[0]}.pdf`);
       }
+    }
+
+    // Fungsi Fallback jika tombol lama dipanggil
+    function exportToPDF() {
+      openExportModal('pdf');
     }
 
     // MULTI-SHEET EXCEL IMPORT
@@ -3696,6 +3923,8 @@ function renderAnalysisView() {
             rows.forEach(r => {
               const rawAmount = r['Nominal (IDR)'] || r.Nominal || r.Amount;
               const rawDate = r['Tanggal'] || r.Date;
+			  const rawFee = r['Biaya Admin (IDR)'] || r['Biaya Admin'] || r.AdminFee || 0;
+              const adminFee = Math.abs(parseFloat(rawFee)) || 0;
               if (rawAmount && rawDate) {
                 const accName = r['Sumber Rekening'] || r.Account || '';
                 let acc = accounts.find(a => a.name.toLowerCase() === String(accName).toLowerCase());
@@ -3738,6 +3967,7 @@ function renderAnalysisView() {
                   accountId: acc.id,
                   toAccountId: toAccountId,
                   categoryId: catId,
+				  adminFee: adminFee,
                   subcategory: r['Subkategori'] || r.Subcategory || '',
                   amount: Math.abs(parseFloat(rawAmount)) || 0,
                   note: String(r['Catatan'] || r.Description || '')
@@ -3810,18 +4040,25 @@ function renderAnalysisView() {
               if (rawClass.includes('tetap') || rawClass.includes('fixed')) expenseClass = 'fixed';
               else if (rawClass.includes('berkala') || rawClass.includes('periodic')) expenseClass = 'periodic';
 
-              // Mendukung format baris tabel ('Subkategori') maupun format koma lama ('Daftar Subkategori')
               const subRaw = (r['Subkategori'] || r['Daftar Subkategori'] || r.Subcategories || '').toString().trim();
               const subList = (subRaw && subRaw !== '-') ? subRaw.split(/[,;\n]/).map(s => s.trim()).filter(Boolean) : [];
 
-              let existing = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+              // MENCOCOKKAN KOMBINASI LENGKAP: NAMA + TIPE + KLASIFIKASI FINANSIAL
+              let existing = categories.find(c => 
+                c.name.toLowerCase() === name.toLowerCase() &&
+                c.type.toLowerCase() === type.toLowerCase() &&
+                (c.expenseClass || 'dynamic').toLowerCase() === expenseClass.toLowerCase()
+              );
+
               if (existing) {
-                existing.type = type;
-                existing.expenseClass = expenseClass;
+                // Jika kombinasi persis sama sudah ada, gabungkan subkategori baru secara unik
                 subList.forEach(sub => {
                   if (!existing.subcategories.includes(sub)) existing.subcategories.push(sub);
                 });
+                existing.subcategories.sort((a, b) => a.localeCompare(b, 'id'));
               } else {
+                // JIKA NAMA SAMA TETAPI TIPE ATAU KLASIFIKASINYA BERBEDA, BUAT SEBAGAI KATEGORI BARU
+                subList.sort((a, b) => a.localeCompare(b, 'id'));
                 categories.push({
                   id: 'cat-' + Date.now() + Math.random().toString().slice(2, 6),
                   name,
@@ -3836,7 +4073,7 @@ function renderAnalysisView() {
 
           persistState(true);
           renderAll();
-          alert(`Berhasil memproses & mengimpor kategori dari Excel!`);
+          alert(`Berhasil memproses file Excel! ${count} kategori baru berhasil ditambahkan.`);
         } catch (err) {
           alert('Gagal membaca file Excel kategori. Pastikan kolom sesuai format: Nama Kategori, Tipe, Klasifikasi Arus, Subkategori.');
         }
@@ -3903,7 +4140,25 @@ function renderAnalysisView() {
       grid.innerHTML = '';
 
       const monthBudgets = budgets[month] || {};
-      const expenseCats = categories.filter(c => c.type === 'expense');
+      let expenseCats = categories.filter(c => c.type === 'expense');
+
+      // 1. FILTER KLASIFIKASI FINANSIAL ANGGARAN
+      const filterClass = document.getElementById('budget-filter-class')?.value || 'ALL';
+      if (filterClass !== 'ALL') {
+        expenseCats = expenseCats.filter(c => (c.expenseClass || 'dynamic') === filterClass);
+      }
+
+      // 2. SORTING NAMA KATEGORI ANGGARAN (Tampilan kartu tetap sama persis)
+      const sortName = document.getElementById('budget-sort-name')?.value || 'default';
+      if (sortName === 'name-asc') {
+        expenseCats.sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      } else if (sortName === 'name-desc') {
+        expenseCats.sort((a, b) => b.name.localeCompare(a.name, 'id'));
+      }
+
+      // Update label jumlah kategori yang ditampilkan
+      const countEl = document.getElementById('budget-filter-count');
+      if (countEl) countEl.textContent = `Menampilkan ${expenseCats.length} kategori`;
 
       const spending = {};
       transactions.forEach(tx => {
@@ -3912,13 +4167,16 @@ function renderAnalysisView() {
         }
       });
 
+      if (expenseCats.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs">Tidak ada kategori pengeluaran yang cocok dengan filter klasifikasi ini.</div>`;
+        return;
+      }
+
       expenseCats.forEach(cat => {
         const budgetLimit = monthBudgets[cat.id] || 0;
         const spent = spending[cat.id] || 0;
 
-        // PERSENTASE ASLI (DAPAT LEBIH DARI 100%)
         const realPercentage = budgetLimit > 0 ? Math.round((spent / budgetLimit) * 100) : 0;
-        // Lebar progress bar maksimal 100% agar tidak keluar wadah CSS
         const barWidth = Math.min(realPercentage, 100);
         
         let barColor = 'bg-emerald-500';
@@ -3940,7 +4198,6 @@ function renderAnalysisView() {
           <div>
             <div class="flex items-center justify-between mb-2">
               <h4 class="font-bold text-slate-800">${escapeHtml(cat.name)}</h4>
-              <!-- Tampilkan persentase utuh (misal: 135% Terpakai) -->
               <span class="text-xs px-2 py-0.5 rounded-full ${badgeStyle}">
                 ${budgetLimit > 0 ? `${realPercentage}% Terpakai` : 'Tanpa Limit'}
               </span>
@@ -4631,6 +4888,8 @@ function renderAnalysisView() {
         setVal('acc-balance', acc.initialBalance);
         const chk = document.getElementById('acc-hidden-chk');
         if (chk) chk.checked = acc.isHidden ?? true;
+		const chkDash = document.getElementById('acc-show-dash-chk');
+        if (chkDash) chkDash.checked = acc.showOnDashboard ?? true;
       } else {
         setText('acc-modal-title', 'Tambah Sumber Dana');
         setVal('acc-id', '');
@@ -4639,6 +4898,8 @@ function renderAnalysisView() {
         setVal('acc-balance', '0');
         const chk = document.getElementById('acc-hidden-chk');
         if (chk) chk.checked = true;
+		const chkDash = document.getElementById('acc-show-dash-chk');
+		if (chkDash) chkDash.checked = true;
       }
       openModal('account-modal');
     }
@@ -4650,6 +4911,7 @@ function renderAnalysisView() {
       const type = document.getElementById('acc-type')?.value || 'Bank';
       const initialBalance = parseFloat(document.getElementById('acc-balance')?.value) || 0;
       const isHidden = document.getElementById('acc-hidden-chk')?.checked ?? true;
+	  const showOnDashboard = document.getElementById('acc-show-dash-chk')?.checked ?? true;
 
       if (!name) return;
 
@@ -4750,8 +5012,11 @@ function renderAnalysisView() {
         }
       }
 
-      // 2. Sorting Sumber Dana (Default: Urutan Input / Newest Last)
+      // 2. Filter & Sorting Sumber Dana (Default: Urutan Input)
       let displayAccounts = [...accounts];
+      if (settingAccountFilterType !== 'ALL') {
+        displayAccounts = displayAccounts.filter(a => a.type === settingAccountFilterType);
+      }
       if (settingAccountSortBy === 'name-asc') {
         displayAccounts.sort((a, b) => a.name.localeCompare(b.name, 'id'));
       } else if (settingAccountSortBy === 'name-desc') {
@@ -4759,38 +5024,69 @@ function renderAnalysisView() {
       } else if (settingAccountSortBy === 'type-asc') {
         displayAccounts.sort((a, b) => a.type.localeCompare(b.type, 'id') || a.name.localeCompare(b.name, 'id'));
       }
+	  
+	  // Perbarui label jumlah rekening yang lolos filter
+      const accCountEl = document.getElementById('setting-account-count');
+      if (accCountEl) {
+        accCountEl.textContent = `Menampilkan ${displayAccounts.length} rekening`;
+      }
 
       const accList = document.getElementById('accounts-settings-list');
       if (accList) {
-        accList.innerHTML = displayAccounts.map(a => {
-          const isHidden = a.isHidden ?? true;
-          return `
-            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-              <div>
-                <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">${escapeHtml(a.type)}</span>
-                <h4 class="font-bold text-slate-800 text-sm sm:text-base">${escapeHtml(a.name)}</h4>
-                <div class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-                  <span>Saldo Awal: ${isHidden ? 'Rp ••••••' : formatCurrency(a.initialBalance)}</span>
+        if (displayAccounts.length === 0) {
+          accList.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">Tidak ada rekening yang sesuai dengan filter jenis.</div>`;
+        } else {
+          accList.innerHTML = displayAccounts.map(a => {
+            const isHidden = a.isHidden ?? true;
+            const isShownOnDash = a.showOnDashboard ?? true;
+            return `
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                <div>
+                  <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">${escapeHtml(a.type)}</span>
+                  <h4 class="font-bold text-slate-800 text-sm sm:text-base">${escapeHtml(a.name)}</h4>
+                  <div class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                    <span>Saldo Awal: ${isHidden ? 'Rp ••••••' : formatCurrency(a.initialBalance)}</span>
+                  </div>
+                  <div class="text-[11px] mt-1">
+                    <span class="text-slate-400">Dashboard:</span> 
+                    <span class="${isShownOnDash ? 'text-emerald-700 font-bold' : 'text-slate-400 font-medium'}">
+                      ${isShownOnDash ? 'Ditampilkan' : 'Disembunyikan'}
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <!-- Tombol Sakelar Tampil di Dashboard -->
+                  <button onclick="toggleAccountDashboardVisibility('${a.id}')" title="${isShownOnDash ? 'Sembunyikan rekening ini dari Dashboard' : 'Tampilkan rekening ini di Dashboard'}" class="px-2 py-1.5 rounded-lg border transition flex items-center gap-1 text-[11px] font-bold ${isShownOnDash ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-400 hover:text-slate-600'}">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                    <!-- <span>${isShownOnDash ? 'Aktif' : 'Mati'}</span>
+                  </button>
+
+                  <!-- Tombol Privasi Saldo -->
+                  <button onclick="toggleAccountPrivacy('${a.id}')" title="${isHidden ? 'Tampilkan saldo rekening ini' : 'Sembunyikan saldo rekening ini'}" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition">
+                    <i data-lucide="${isHidden ? 'eye-off' : 'eye'}" class="w-4 h-4 inline ${isHidden ? 'text-amber-600' : 'text-emerald-600'}"></i>
+                  </button>
+                  <button onclick="openAccountModal('${a.id}')" title="Ubah Akun" class="text-slate-400 hover:text-emerald-600 p-1.5 transition">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="deleteAccount('${a.id}')" title="Hapus Akun" class="text-slate-400 hover:text-rose-600 p-1.5 transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
                 </div>
               </div>
-              <div class="flex items-center gap-1">
-                <button onclick="toggleAccountPrivacy('${a.id}')" title="${isHidden ? 'Tampilkan saldo rekening ini' : 'Sembunyikan saldo rekening ini'}" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition">
-                  <i data-lucide="${isHidden ? 'eye-off' : 'eye'}" class="w-4 h-4 inline ${isHidden ? 'text-amber-600' : 'text-emerald-600'}"></i>
-                </button>
-                <button onclick="openAccountModal('${a.id}')" title="Ubah Akun" class="text-slate-400 hover:text-emerald-600 p-1.5 transition">
-                  <i data-lucide="edit-3" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteAccount('${a.id}')" title="Hapus Akun" class="text-slate-400 hover:text-rose-600 p-1.5 transition">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
+        }
       }
 
-      // 3. Sorting Kategori (Default: Urutan Input)
+      // 3. Filter & Sorting Kategori (Default: Urutan Input)
       let displayCategories = [...categories];
+      if (settingCategoryFilterType !== 'ALL') {
+        displayCategories = displayCategories.filter(c => c.type === settingCategoryFilterType);
+      }
+      if (settingCategoryFilterClass !== 'ALL') {
+        displayCategories = displayCategories.filter(c => (c.expenseClass || 'dynamic') === settingCategoryFilterClass);
+      }
+
       if (settingCategorySortBy === 'name-asc') {
         displayCategories.sort((a, b) => a.name.localeCompare(b.name, 'id'));
       } else if (settingCategorySortBy === 'name-desc') {
@@ -4803,53 +5099,63 @@ function renderAnalysisView() {
         displayCategories.sort((a, b) => (order[a.expenseClass || 'dynamic'] - order[b.expenseClass || 'dynamic']) || a.name.localeCompare(b.name, 'id'));
       }
 
-      const catList = document.getElementById('category-settings-list');
-      if (catList) {
-        catList.innerHTML = displayCategories.map(c => {
-          let classLabel = 'Dinamis';
-          let classBadge = 'bg-slate-100 text-slate-700';
-          if (c.expenseClass === 'fixed') {
-            classLabel = 'Tetap (Fixed)';
-            classBadge = 'bg-indigo-100 text-indigo-800';
-          } else if (c.expenseClass === 'periodic') {
-            classLabel = 'Berkala (Periodic)';
-            classBadge = 'bg-amber-100 text-amber-800';
-          }
-
-          // SUBKATEGORI OTOMATIS TERURUT A-Z
-          const sortedSubs = [...(c.subcategories || [])].sort((a, b) => a.localeCompare(b, 'id'));
-
-          return `
-            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(c.name)}</h4>
-                  <div class="flex items-center gap-1">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${classBadge}">${classLabel}</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${c.type === 'income' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-                      ${c.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}
-                    </span>
-                  </div>
-                </div>
-                <div class="flex flex-wrap gap-1 mt-2">
-                  ${sortedSubs.length > 0 
-                    ? sortedSubs.map(sub => `<span class="text-[11px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md">${escapeHtml(sub)}</span>`).join('') 
-                    : `<span class="text-xs text-slate-400 italic">Belum ada subkategori</span>`}
-                </div>
-              </div>
-              <div class="flex justify-end gap-1 mt-3 pt-2 border-t border-slate-200/60">
-                <button onclick="openCategoryModal('${c.id}')" title="Ubah Kategori" class="text-slate-400 hover:text-emerald-600 p-1.5 transition">
-                  <i data-lucide="edit-3" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteCategory('${c.id}')" title="Hapus Kategori" class="text-slate-400 hover:text-rose-600 p-1.5 transition">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
+	  // Perbarui jumlah kategori yang lolos filter
+      const catCountEl = document.getElementById('setting-category-count');
+      if (catCountEl) {
+        catCountEl.textContent = `Menampilkan ${displayCategories.length} kategori`;
       }
 
+      const catList = document.getElementById('category-settings-list');
+      if (catList) {
+        if (displayCategories.length === 0) {
+          catList.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">Tidak ada kategori yang sesuai dengan filter.</div>`;
+        } else {
+          catList.innerHTML = displayCategories.map(c => {
+            let classLabel = 'Dinamis';
+            let classBadge = 'bg-slate-100 text-slate-700';
+            if (c.expenseClass === 'fixed') {
+              classLabel = 'Tetap (Fixed)';
+              classBadge = 'bg-indigo-100 text-indigo-800';
+            } else if (c.expenseClass === 'periodic') {
+              classLabel = 'Berkala (Periodic)';
+              classBadge = 'bg-amber-100 text-amber-800';
+            }
+
+            // Subkategori otomatis terurut A-Z
+            const sortedSubs = [...(c.subcategories || [])].sort((a, b) => a.localeCompare(b, 'id'));
+
+            return `
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(c.name)}</h4>
+                    <div class="flex items-center gap-1">
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded ${classBadge}">${classLabel}</span>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded ${c.type === 'income' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                        ${c.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    ${sortedSubs.length > 0 
+                      ? sortedSubs.map(sub => `<span class="text-[11px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md">${escapeHtml(sub)}</span>`).join('') 
+                      : `<span class="text-xs text-slate-400 italic">Belum ada subkategori</span>`}
+                  </div>
+                </div>
+                <div class="flex justify-end gap-1 mt-3 pt-2 border-t border-slate-200/60">
+                  <button onclick="openCategoryModal('${c.id}')" title="Ubah Kategori" class="text-slate-400 hover:text-emerald-600 p-1.5 transition">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="deleteCategory('${c.id}')" title="Hapus Kategori" class="text-slate-400 hover:text-rose-600 p-1.5 transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+	
       renderBackupSettingsView();
       lucide.createIcons();
     }
@@ -6190,6 +6496,7 @@ function renderAnalysisView() {
         dashPrivacy[type] = !dashPrivacy[type];
         localStorage.setItem('vf_dash_privacy', JSON.stringify(dashPrivacy));
         renderDashboard();
+		renderTransactions();
       }
     }
 	
