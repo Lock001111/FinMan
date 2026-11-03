@@ -683,7 +683,7 @@
             </div>
           </div>
 
-          <div class="h-80 relative">
+          <div class="min-h-[380px] h-[400px] sm:h-80 relative">
             <canvas id="sourceTrendChart"></canvas>
           </div>
         </div>
@@ -774,11 +774,21 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-2">
-                <label class="text-xs font-semibold text-slate-500">Filter Kategori:</label>
-                <select id="trend-category-filter" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white font-medium">
-                  <option value="ALL">Semua Kategori</option>
-                </select>
+              <!-- Filter Dropdown Kategori & Subkategori -->
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                  <label class="text-xs font-semibold text-slate-500">Kategori:</label>
+                  <select id="trend-category-filter" onchange="onTrendCategoryFilterChange()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="ALL">Semua Kategori</option>
+                  </select>
+                </div>
+
+                <div id="trend-subcat-filter-wrap" class="hidden flex items-center gap-1.5">
+                  <label class="text-xs font-semibold text-slate-500">Subkategori:</label>
+                  <select id="trend-subcategory-filter" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="ALL">Semua Subkategori</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -838,7 +848,8 @@
             <div id="cmp-delta-banner" class="p-3 rounded-lg text-xs font-medium flex items-center justify-between bg-white border border-slate-200"></div>
           </div>
 
-          <div class="h-96 relative">
+          <!-- Box canvas dengan tinggi responsif agar Legend di HP leluasa -->
+          <div class="min-h-[420px] h-[450px] sm:h-96 relative">
             <canvas id="trendsChart"></canvas>
           </div>
         </div>
@@ -883,7 +894,7 @@
             </div>
           </div>
 
-          <div class="h-80 relative">
+          <div class="min-h-[380px] h-[400px] sm:h-80 relative">
             <canvas id="classTrendChart"></canvas>
           </div>
         </div>
@@ -1793,15 +1804,50 @@
     </div>
   </div>
 
-  <!-- PWA NOTIFIKASI UPDATE BANNER -->
-  <div id="pwa-update-banner" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[120] hidden bg-slate-900/95 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-4 text-xs backdrop-blur-md animate-bounce">
-    <div class="flex items-center gap-2">
-      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-      <span><strong>Versi Baru FinTrack Tersedia!</strong> Data Anda tetap 100% aman.</span>
+  <!-- MODAL KONFIRMASI KELUAR APLIKASI (EXIT CONFIRMATION) -->
+  <div id="exit-confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl text-center space-y-4 border border-slate-100 animate-in fade-in zoom-in duration-200">
+      <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="log-out" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Keluar dari FinTrack?</h3>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          Seluruh data yang telah tersimpan di perangkat ini aman. Apakah Anda yakin ingin menutup aplikasi?
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button type="button" onclick="closeModal('exit-confirm-modal')" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          Batal
+        </button>
+        <button type="button" onclick="confirmExitApp()" class="w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md shadow-rose-600/20 transition">
+          Ya, Keluar
+        </button>
+      </div>
     </div>
-    <button onclick="applyAppUpdate()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap">
-      Perbarui Sekarang
-    </button>
+  </div>
+
+  <!-- PWA NOTIFIKASI UPDATE BANNER (RESPONSIF, MODERN & DIAM) -->
+  <div id="pwa-update-banner" class="fixed bottom-5 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-auto sm:max-w-md z-[120] hidden bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-md transition-all duration-300">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl shrink-0 mt-0.5 sm:mt-0">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="font-bold text-white block text-[13px]">Versi Baru Tersedia!</span>
+          <span class="text-slate-300 text-[11px] leading-tight block">Pembaruan siap dipasang. Data transaksi Anda tetap 100% aman.</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+        <button onclick="dismissUpdateBanner()" class="text-slate-400 hover:text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition">
+          Nanti
+        </button>
+        <button onclick="applyAppUpdate()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm shadow-emerald-600/30 text-xs whitespace-nowrap">
+          Perbarui Sekarang
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- LAYAR KUNCI APLIKASI (APP LOCK OVERLAY) -->
@@ -2074,7 +2120,8 @@
       'sync-badge-modal',
       'sync-conflict-modal',
       'budget-history-modal',
-      'applock-reset-modal'
+      'applock-reset-modal',
+	  'exit-confirm-modal'
     ];
 
     let navStack = ['dashboard'];
@@ -2143,12 +2190,20 @@
         return;
       }
 
+      // Jika user sedang berada di halaman sekunder, mundurkan tab sesuai riwayat
       if (currentActiveTab !== 'dashboard') {
         navStack.pop();
         const prevTab = navStack.length > 0 ? navStack[navStack.length - 1] : 'dashboard';
         if (navStack.length === 0) navStack = ['dashboard'];
         switchTab(prevTab, true);
+        return;
       }
+
+      // Jika user sudah berada di Dashboard (akar aplikasi) dan menekan Back di HP:
+      // Pertahankan state agar browser tidak langsung terlempar keluar, lalu tampilkan pop-up konfirmasi
+      history.pushState({ tab: 'dashboard' }, '');
+      openModal('exit-confirm-modal');
+      lucide.createIcons();
     });
 
     // --- PRIVACY CONTROLS ---
@@ -4718,7 +4773,14 @@
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { position: 'bottom' },
+            legend: { 
+              position: 'bottom',
+              labels: {
+                boxWidth: 10,
+                padding: 8,
+                font: { size: 10 }
+              }
+            },
             tooltip: {
               callbacks: {
                 label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)}`
@@ -4754,7 +4816,8 @@
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const catFilter = document.getElementById('trend-category-filter')?.value || 'ALL';
-      const palette = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e', '#8b5cf6', '#64748b'];
+      const subFilter = document.getElementById('trend-subcategory-filter')?.value || 'ALL';
+      const palette = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e', '#8b5cf6', '#64748b', '#06b6d4', '#e11d48', '#84cc16'];
 
       let timeLabels = [];
       let timeKeys = [];
@@ -4832,14 +4895,22 @@
         const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
         const subMap = new Set();
         targetCats.forEach(c => {
-          (c.subcategories || []).forEach(sub => subMap.add(sub));
+          (c.subcategories || []).forEach(sub => { if (sub && sub.trim()) subMap.add(sub.trim()); });
         });
         transactions.forEach(tx => {
-          if (tx.type === 'expense' && tx.subcategory && (catFilter === 'ALL' || tx.categoryId === catFilter)) {
-            subMap.add(tx.subcategory);
+          if (tx.type === 'expense' && tx.subcategory && tx.subcategory.trim()) {
+            if (catFilter === 'ALL' || tx.categoryId === catFilter) {
+              subMap.add(tx.subcategory.trim());
+            }
           }
         });
-        seriesItems = Array.from(subMap).map(sub => ({ key: sub, label: sub }));
+
+        // Filter berdasarkan subkategori spesifik jika dipilih selain ALL
+        let subList = Array.from(subMap);
+        if (subFilter !== 'ALL') {
+          subList = subList.filter(s => s === subFilter);
+        }
+        seriesItems = subList.map(sub => ({ key: sub, label: sub }));
       }
 
       const datasets = [];
@@ -4853,7 +4924,7 @@
               if (matchesTime) {
                 if (trendEntity === 'category' && tx.categoryId === item.key) {
                   return sum + (parseFloat(tx.amount) || 0);
-                } else if (trendEntity === 'subcategory' && tx.subcategory === item.key) {
+                } else if (trendEntity === 'subcategory' && (tx.subcategory || '').trim() === item.key) {
                   if (catFilter === 'ALL' || tx.categoryId === catFilter) {
                     return sum + (parseFloat(tx.amount) || 0);
                   }
@@ -4954,7 +5025,14 @@
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { position: 'bottom' },
+            legend: { 
+              position: 'bottom',
+              labels: { 
+                boxWidth: 10,
+                padding: 8,
+                font: { size: 10 }
+              }
+            },
             tooltip: {
               callbacks: {
                 label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)}`
@@ -5167,18 +5245,62 @@
       setVal('trend-month-input', `${curYear}-${curMonth}`);
       renderTrendsChart();
     }
+	
+	function onTrendCategoryFilterChange() {
+      updateTrendSubcategoryDropdown();
+      renderTrendsChart();
+    }
 
+    function updateTrendSubcategoryDropdown() {
+      const catSelect = document.getElementById('trend-category-filter');
+      const subSelect = document.getElementById('trend-subcategory-filter');
+      if (!subSelect) return;
+
+      const catFilter = catSelect ? catSelect.value : 'ALL';
+      const prevSub = subSelect.value || 'ALL';
+      const subSet = new Set();
+
+      const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
+      targetCats.forEach(c => {
+        (c.subcategories || []).forEach(sub => { if (sub && sub.trim()) subSet.add(sub.trim()); });
+      });
+
+      transactions.forEach(tx => {
+        if (tx.type === 'expense' && tx.subcategory && tx.subcategory.trim()) {
+          if (catFilter === 'ALL' || tx.categoryId === catFilter) {
+            subSet.add(tx.subcategory.trim());
+          }
+        }
+      });
+
+      const sortedSubs = Array.from(subSet).sort((a, b) => a.localeCompare(b, 'id'));
+      subSelect.innerHTML = `<option value="ALL">Semua Subkategori</option>` + 
+        sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+
+      if ([...subSelect.options].some(o => o.value === prevSub)) {
+        subSelect.value = prevSub;
+      } else {
+        subSelect.value = 'ALL';
+      }
+    }
+	
     function setTrendEntity(entity) {
       trendEntity = entity;
       const btnCat = document.getElementById('btn-trend-entity-cat');
       const btnSub = document.getElementById('btn-trend-entity-sub');
+      const subWrap = document.getElementById('trend-subcat-filter-wrap');
 
       if (entity === 'category') {
         if (btnCat) btnCat.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition';
         if (btnSub) btnSub.className = 'px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition';
+        if (subWrap) subWrap.classList.add('hidden');
       } else {
         if (btnSub) btnSub.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition';
         if (btnCat) btnCat.className = 'px-2.5 py-1 text-xs font-bold rounded text-slate-600 hover:text-slate-900 transition';
+        if (subWrap) {
+          subWrap.classList.remove('hidden');
+          updateTrendSubcategoryDropdown();
+        }
       }
       renderTrendsChart();
     }
@@ -5847,8 +5969,13 @@
       }
 
       if (trendCat) {
+        const prevTrendCat = trendCat.value || 'ALL';
         const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
         trendCat.innerHTML = `<option value="ALL">Semua Kategori</option>` + expenseCatsSorted.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        if ([...trendCat.options].some(o => o.value === prevTrendCat)) {
+          trendCat.value = prevTrendCat;
+        }
+        updateTrendSubcategoryDropdown();
       }
 
       if (prefCat) {
@@ -6918,6 +7045,26 @@
         window.location.reload();
       }
     }
+	
+	function confirmExitApp() {
+      closeModal('exit-confirm-modal');
+      // Bila aplikasi dijalankan sebagai PWA di HP atau WebView
+      if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
+        window.navigator.app.exitApp();
+      } else {
+        // Fallback untuk browser modern
+        window.close();
+        setTimeout(() => {
+          history.go(-2);
+        }, 150);
+      }
+    }
+
+    function dismissUpdateBanner() {
+      const banner = document.getElementById('pwa-update-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+	
   </script>
 </body>
 </html>
