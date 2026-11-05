@@ -217,7 +217,7 @@
           <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
             <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600"></i> Proporsi Pengeluaran (<span id="dash-pie-month-title">Bulan Terpilih</span>)
           </h3>
-          <div class="h-64 relative">
+          <div class="min-h-[300px] h-72 sm:h-64 relative">
             <canvas id="categoryPieChart"></canvas>
           </div>
         </div>
@@ -244,7 +244,7 @@
             </button>
           </div>
         </div>
-        <div class="h-80 relative">
+        <div class="min-h-[360px] h-[380px] sm:h-80 relative">
           <canvas id="dashYearlyChart"></canvas>
         </div>
       </div>
@@ -1282,6 +1282,14 @@
     </div>
   </main>
 
+  <!-- ==================== FOOTER / VERSI APLIKASI ==================== -->
+  <footer class="max-w-7xl w-full mx-auto px-4 py-3 flex items-center justify-end text-[11px] text-slate-400 select-none">
+    <div class="flex items-center gap-1.5 bg-slate-100/80 px-2.5 py-1 rounded-full border border-slate-200">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+      <span id="app-installed-version">v1.2.0</span>
+    </div>
+  </footer>
+
   <!-- ==================== POP-UP MODAL: CALENDAR MONTH-YEAR PICKER (z-[70]) ==================== -->
   <div id="calendar-picker-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
@@ -1395,12 +1403,12 @@
       <form id="tx-form" onsubmit="saveTransaction(event)" class="space-y-4">
         <input type="hidden" id="tx-id" />
 
-        <!-- Nominal (Tabindex 1 - Auto-focused) -->
+        <!-- Nominal (Tabindex 1 - Auto-focused dengan Pemisah Titik) -->
         <div>
           <label class="text-xs font-bold text-slate-700 block mb-1">Nominal (Rupiah) *</label>
           <div class="relative">
             <span class="absolute left-3.5 top-2.5 text-slate-500 font-bold text-sm">Rp</span>
-            <input type="number" step="100" required id="tx-amount" tabindex="1" placeholder="0" class="w-full pl-11 pr-3 py-2 border-2 border-emerald-500 rounded-xl text-slate-900 font-bold text-base focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm" />
+            <input type="text" inputmode="numeric" required id="tx-amount" oninput="formatTxAmountInput(this)" tabindex="1" placeholder="0" class="w-full pl-11 pr-3 py-2 border-2 border-emerald-500 rounded-xl text-slate-900 font-bold text-base focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm" />
           </div>
         </div>
 
@@ -1439,8 +1447,8 @@
             <label class="text-xs font-semibold text-rose-600 block mb-1">Biaya Admin Transfer (Rp) <span class="text-[10px] text-slate-400 font-normal">(Opsional)</span></label>
             <div class="relative">
               <span class="absolute left-3 top-2 text-slate-400 font-bold text-xs">Rp</span>
-              <input type="number" step="100" id="tx-admin-fee" value="0" placeholder="0" class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-slate-900 font-semibold text-sm outline-none focus:ring-2 focus:ring-rose-500" />
-            </div>
+              <input type="text" inputmode="numeric" id="tx-admin-fee" value="0" oninput="formatTxAmountInput(this)" placeholder="0" class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-lg text-slate-900 font-semibold text-sm outline-none focus:ring-2 focus:ring-rose-500" />
+			</div>
             <span class="text-[10px] text-slate-400 mt-0.5 block">Biaya admin dipotong dari rekening asal dan dicatat sebagai beban pengeluaran.</span>
           </div>
         </div>
@@ -1495,7 +1503,12 @@
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600 block mb-1">Saldo Awal (Rp)</label>
-          <input type="number" step="1000" id="acc-balance" value="0" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input type="text" inputmode="numeric" id="acc-balance" value="0" 
+            onfocus="handleBalanceFocus(this)" 
+            onblur="handleBalanceBlur(this)" 
+            oninput="formatTxAmountInput(this)" 
+            placeholder="0" 
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
         <div class="flex items-center gap-2 pt-1">
           <input type="checkbox" id="acc-hidden-chk" checked class="rounded text-emerald-600 h-4 w-4" />
@@ -1585,11 +1598,20 @@
         </div>
 
         <div>
-          <label class="text-xs font-semibold text-slate-600 block mb-1">Batas Maksimal Pengeluaran (Rp)</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-slate-600">Batas Maksimal Pengeluaran (Rp)</label>
+            <span id="budget-amount-ref-badge" class="hidden text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">Acuan Rata-rata</span>
+          </div>
           <div class="relative">
             <span class="absolute left-3 top-2.5 text-slate-400 font-bold text-sm">Rp</span>
-            <input type="number" step="10000" required id="budget-amount" placeholder="0" class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-bold text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+            <input type="text" inputmode="numeric" required id="budget-amount" 
+              onfocus="handleBudgetAmountFocus(this)" 
+              onblur="handleBudgetAmountBlur(this)" 
+              oninput="handleBudgetAmountInput(this)" 
+              placeholder="0" 
+              class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-bold text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-colors" />
           </div>
+          <span id="budget-amount-hint" class="hidden text-[10px] text-slate-400 mt-1 block">Klik field untuk mengganti nominal acuan rata-rata.</span>
         </div>
 
         <div class="space-y-1.5 pt-1">
@@ -1612,9 +1634,14 @@
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal('budget-modal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Batal</button>
-          <button type="submit" class="px-5 py-2 text-sm bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 shadow-sm">Simpan Anggaran</button>
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          <button type="button" id="btn-delete-budget" onclick="deleteActiveBudget()" class="hidden px-3 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition flex items-center gap-1.5">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus Limit
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeModal('budget-modal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Batal</button>
+            <button type="submit" class="px-5 py-2 text-sm bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 shadow-sm">Simpan Anggaran</button>
+          </div>
         </div>
       </form>
     </div>
@@ -1822,6 +1849,46 @@
         </button>
         <button type="button" onclick="confirmExitApp()" class="w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md shadow-rose-600/20 transition">
           Ya, Keluar
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- MODAL NOTIFIKASI LIMIT ANGGARAN TERLAMPAUI -->
+  <div id="budget-overrun-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-rose-100 text-center animate-in fade-in zoom-in duration-200">
+      <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Anggaran Terlampaui!</h3>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          Transaksi <strong class="text-emerald-700">tetap berhasil dicatat</strong>, namun pengeluaran untuk kategori ini telah melebihi batas limit bulanan.
+        </p>
+      </div>
+
+      <div class="bg-rose-50/70 border border-rose-100 rounded-2xl p-3.5 text-xs space-y-2 text-left">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500">Kategori:</span>
+          <span class="font-bold text-slate-800" id="overrun-modal-cat">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500">Batas Limit:</span>
+          <span class="font-bold text-slate-800" id="overrun-modal-limit">Rp 0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500">Total Pengeluaran:</span>
+          <span class="font-bold text-rose-600" id="overrun-modal-spent">Rp 0</span>
+        </div>
+        <div class="flex justify-between items-center pt-1.5 border-t border-rose-200/60">
+          <span class="font-semibold text-rose-800">Melebihi Batas:</span>
+          <span class="font-extrabold text-rose-700" id="overrun-modal-diff">Rp 0</span>
+        </div>
+      </div>
+
+      <div class="pt-1">
+        <button type="button" onclick="closeModal('budget-overrun-modal')" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow-md transition">
+          Saya Mengerti
         </button>
       </div>
     </div>
@@ -2121,7 +2188,8 @@
       'sync-conflict-modal',
       'budget-history-modal',
       'applock-reset-modal',
-	  'exit-confirm-modal'
+      'exit-confirm-modal',
+      'budget-overrun-modal'
     ];
 
     let navStack = ['dashboard'];
@@ -2170,14 +2238,36 @@
         return;
       }
 
+      const nowTs = Date.now();
+      const exitModalEl = document.getElementById('exit-confirm-modal');
+      const isExitModalOpen = exitModalEl && !exitModalEl.classList.contains('hidden');
+
+      // 1. ATURAN BACK 2X CEPAT (EXIT LANGSUNG DARI HALAMAN MANAPUN DALAM WAKTU <= 2 DETIK)
+      if (nowTs - lastBackPressedTime <= 2000) {
+        if (isExitModalOpen) closeModal('exit-confirm-modal');
+        confirmExitApp();
+        return;
+      }
+      lastBackPressedTime = nowTs;
+
+      // 2. JIKA POP-UP KONFIRMASI KELUAR SEDANG MUNCUL, BACK 1X HANYA MENUTUP POP-UP (BATAL)
+      if (isExitModalOpen) {
+        closeModal('exit-confirm-modal');
+        lucide.createIcons();
+        return;
+      }
+
+      // 3. TUTUP MENU MOBILE JIKA SEDANG TERBUKA
       const mobMenu = document.getElementById('mobile-menu');
       if (mobMenu && !mobMenu.classList.contains('hidden')) {
         closeMobileMenu();
         return;
       }
 
+      // 4. TUTUP MODAL LAIN JIKA SEDANG TERBUKA
       let modalWasClosed = false;
       allModalIds.forEach(id => {
+        if (id === 'exit-confirm-modal') return;
         const el = document.getElementById(id);
         if (el && !el.classList.contains('hidden')) {
           el.classList.add('hidden');
@@ -2190,7 +2280,7 @@
         return;
       }
 
-      // Jika user sedang berada di halaman sekunder, mundurkan tab sesuai riwayat
+      // 5. JIKA DI HALAMAN SELAIN DASHBOARD, MUNDURKAN KE TAB SEBELUMNYA
       if (currentActiveTab !== 'dashboard') {
         navStack.pop();
         const prevTab = navStack.length > 0 ? navStack[navStack.length - 1] : 'dashboard';
@@ -2199,8 +2289,7 @@
         return;
       }
 
-      // Jika user sudah berada di Dashboard (akar aplikasi) dan menekan Back di HP:
-      // Pertahankan state agar browser tidak langsung terlempar keluar, lalu tampilkan pop-up konfirmasi
+      // 6. JIKA SUDAH DI DASHBOARD, MUNCULKAN POP-UP KONFIRMASI KELUAR
       history.pushState({ tab: 'dashboard' }, '');
       openModal('exit-confirm-modal');
       lucide.createIcons();
@@ -2297,6 +2386,7 @@
       checkPeriodicAutoBackup();
       checkAppLockOnStartup();
       renderAll();
+	  setText('app-installed-version', APP_VERSION);
     });
 
     function initPickers() {
@@ -2599,7 +2689,16 @@
             labels: ['Belum Ada Pengeluaran'],
             datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }]
           },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+          options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { 
+              legend: { 
+                position: 'bottom',
+                labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
+              } 
+            } 
+          }
         });
         return;
       }
@@ -2614,7 +2713,10 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom' },
+            legend: { 
+              position: 'bottom',
+              labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
+            },
             tooltip: {
               callbacks: {
                 label: (item) => ` ${item.label}: ${formatCurrency(item.raw)}`
@@ -2633,6 +2735,7 @@
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
+      const elapsed = getElapsedMonthsCount(year);
       const monthlyIncome = new Array(12).fill(0);
       const monthlyExpense = new Array(12).fill(0);
 
@@ -2648,6 +2751,14 @@
           }
         }
       });
+
+      // Nilai bulan berikutnya diset null agar bar tidak muncul
+      for (let m = 0; m < 12; m++) {
+        if (m + 1 > elapsed) {
+          monthlyIncome[m] = null;
+          monthlyExpense[m] = null;
+        }
+      }
 
       if (dashYearlyChartInstance) dashYearlyChartInstance.destroy();
 
@@ -2674,7 +2785,10 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom' },
+            legend: { 
+              position: 'bottom',
+              labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
+            },
             tooltip: {
               callbacks: {
                 label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)}`
@@ -3126,7 +3240,7 @@
         const radio = document.querySelector(`input[name="tx-type"][value="${tx.type}"]`);
         if (radio) radio.checked = true;
 
-        setVal('tx-amount', tx.amount);
+        setVal('tx-amount', formatNumberWithDots(tx.amount));
         setVal('tx-date', tx.date);
         setVal('tx-account', tx.accountId);
 
@@ -3134,7 +3248,7 @@
 
         if (tx.type === 'transfer') {
           setVal('tx-to-account', tx.toAccountId || '');
-          setVal('tx-admin-fee', tx.adminFee || 0);
+          setVal('tx-admin-fee', formatNumberWithDots(tx.adminFee || 0));
         } else {
           setVal('tx-category', tx.categoryId);
           populateSubcategoriesDropdown();
@@ -3145,7 +3259,7 @@
         setText('tx-modal-title', 'Catat Transaksi Baru');
         setVal('tx-id', '');
         setVal('tx-date', new Date().toISOString().split('T')[0]);
-        setVal('tx-admin-fee', 0);
+        setVal('tx-admin-fee', '0');
 
         const defaultCat = categories.find(c => c.id === txPreferences.defaultCategoryId) || categories[0];
         const targetType = defaultCat ? defaultCat.type : 'expense';
@@ -3182,11 +3296,11 @@
       e.preventDefault();
       const existingId = document.getElementById('tx-id')?.value;
       const type = document.querySelector('input[name="tx-type"]:checked')?.value || 'expense';
-      const amount = parseFloat(document.getElementById('tx-amount')?.value) || 0;
+      const amount = parseDotsNumber(document.getElementById('tx-amount')?.value);
       const date = document.getElementById('tx-date')?.value || new Date().toISOString().split('T')[0];
       const accountId = document.getElementById('tx-account')?.value;
       const toAccountId = document.getElementById('tx-to-account')?.value;
-      const adminFee = (type === 'transfer') ? (parseFloat(document.getElementById('tx-admin-fee')?.value) || 0) : 0;
+      const adminFee = (type === 'transfer') ? parseDotsNumber(document.getElementById('tx-admin-fee')?.value) : 0;
       const categoryId = document.getElementById('tx-category')?.value;
       const subcategory = document.getElementById('tx-subcategory')?.value || '';
       const note = document.getElementById('tx-note')?.value || '';
@@ -3195,6 +3309,37 @@
         if (!toAccountId || accountId === toAccountId) {
           alert('Rekening asal dan rekening tujuan transfer tidak boleh sama!');
           return;
+        }
+      }
+
+      // Deteksi apakah pengeluaran ini melampaui limit anggaran aktif
+      let budgetWarningInfo = null;
+      if (type === 'expense' && categoryId) {
+        const txMonth = date.substring(0, 7);
+        const monthBudgets = budgets[txMonth] || {};
+        const limitAmount = parseFloat(monthBudgets[categoryId]) || 0;
+
+        if (limitAmount > 0) {
+          let currentSpent = 0;
+          transactions.forEach(t => {
+            if (t.type === 'expense' && t.categoryId === categoryId && t.date && t.date.startsWith(txMonth)) {
+              if (!existingId || t.id !== existingId) {
+                currentSpent += (parseFloat(t.amount) || 0);
+              }
+            }
+          });
+          const newTotalSpent = currentSpent + amount;
+          if (newTotalSpent > limitAmount) {
+            const catObj = categories.find(c => c.id === categoryId);
+            budgetWarningInfo = {
+              catName: catObj ? catObj.name : 'Kategori',
+              limitAmount: limitAmount,
+              totalSpent: newTotalSpent,
+              overAmount: newTotalSpent - limitAmount,
+              pct: Math.round((newTotalSpent / limitAmount) * 100),
+              txMonth: txMonth
+            };
+          }
         }
       }
 
@@ -3229,9 +3374,15 @@
         });
       }
 
+      // Transaksi tetap langsung tersimpan aman
       persistState(true);
       closeModal('transaction-modal');
       renderAll();
+
+      // Jika over budget, tampilkan pop-up peringatan detail
+      if (budgetWarningInfo) {
+        showBudgetOverrunNotification(budgetWarningInfo);
+      }
     }
 
     function deleteTransaction(id) {
@@ -3681,6 +3832,10 @@
           monthRows.push({ mNum: m, mName: monthNamesID[m - 1], in: mIn, out: mOut, net: mNet });
         }
 
+        const targetYearNum = parseInt(targetYear) || curYear;
+        const elapsed = getElapsedMonthsCount(targetYearNum);
+        const divisor = Math.max(1, elapsed);
+
         const catAverages = categories.map(c => {
           const totalCatSpend = transactions.reduce((sum, tx) => {
             if (tx.type === c.type && tx.categoryId === c.id && tx.date && tx.date.startsWith(targetYear)) {
@@ -3688,8 +3843,13 @@
             }
             return sum;
           }, 0);
-          return { id: c.id, name: c.name, type: c.type, total: totalCatSpend, avg: totalCatSpend / 12 };
+          const avgSpend = elapsed > 0 ? (totalCatSpend / divisor) : 0;
+          return { id: c.id, name: c.name, type: c.type, total: totalCatSpend, avg: avgSpend };
         });
+
+		const avgSubtitle = (targetYearNum === new Date().getFullYear() && elapsed < 12)
+          ? `Total nominal dibagi ${elapsed} bulan yang telah berjalan.`
+          : `Total nominal tahunan dibagi 12 bulan sebagai referensi anggaran.`;
 
         catAverages.sort((a, b) => {
           if (yearlyCatSort.by === 'name') {
@@ -4271,10 +4431,11 @@
       const refYear = (targetMonth <= 3) ? (targetYear - 1) : targetYear;
       const refYearStr = String(refYear);
 
-      const monthlySpends = [];
-      const maxMonthIdx = (refYear === targetYear) ? targetMonth : 12;
+      const elapsed = getElapsedMonthsCount(refYear);
+      const maxAllowed = (refYear === targetYear) ? Math.min(targetMonth, elapsed) : elapsed;
 
-      for (let m = 1; m <= maxMonthIdx; m++) {
+      const monthlySpends = [];
+      for (let m = 1; m <= maxAllowed; m++) {
         const mKey = `${refYearStr}-${String(m).padStart(2, '0')}`;
         const total = transactions.reduce((sum, tx) => {
           if (tx.type === 'expense' && tx.categoryId === catId && tx.date && tx.date.startsWith(mKey)) {
@@ -4307,6 +4468,21 @@
       setText('budget-ref-max', formatCurrency(ana.maxSpend));
       setText('budget-ref-min', formatCurrency(ana.minSpend));
       setText('budget-ref-avg', formatCurrency(ana.avgSpend));
+
+      // Cek apakah kategori ini sudah memiliki limit aktif di bulan terpilih
+      const monthBudgets = budgets[targetMonthStr] || {};
+      const activeLimit = parseFloat(monthBudgets[catId]) || 0;
+      const refAvg = Math.round(ana.avgSpend) || 0;
+      const btnDel = document.getElementById('btn-delete-budget');
+
+      if (activeLimit > 0) {
+        if (btnDel) btnDel.classList.remove('hidden');
+        setBudgetAmountField(activeLimit, false, refAvg);
+      } else {
+        if (btnDel) btnDel.classList.add('hidden');
+        setBudgetAmountField(refAvg, refAvg > 0, refAvg);
+      }
+      lucide.createIcons();
     }
 
     function renderBudgets() {
@@ -4420,8 +4596,21 @@
 
     function quickSetBudget(catId, currentVal) {
       setVal('budget-cat-select', catId);
-      setVal('budget-amount', currentVal || '');
+      const monthInput = document.getElementById('budget-month-selector');
+      const targetMonthStr = monthInput?.value || dashboardSelectedMonth;
+      const ana = calculateCategoryAnalytics(catId, targetMonthStr);
+      const refAvg = Math.round(ana.avgSpend) || 0;
+      const btnDel = document.getElementById('btn-delete-budget');
+
+      if (currentVal && currentVal > 0) {
+        if (btnDel) btnDel.classList.remove('hidden');
+        setBudgetAmountField(currentVal, false, refAvg);
+      } else {
+        if (btnDel) btnDel.classList.add('hidden');
+        setBudgetAmountField(refAvg, refAvg > 0, refAvg);
+      }
       openSetBudgetModal();
+      lucide.createIcons();
     }
 
     function openSetBudgetModal() {
@@ -4439,6 +4628,72 @@
       openModal('budget-modal');
     }
 
+	function deleteActiveBudget() {
+      const catSelect = document.getElementById('budget-cat-select');
+      const monthInput = document.getElementById('budget-month-selector');
+      const targetMonthStr = monthInput?.value || dashboardSelectedMonth;
+      const parts = targetMonthStr.split('-').map(Number);
+      const selYear = parts[0] || curYear;
+      const catId = catSelect?.value;
+      const cat = categories.find(c => c.id === catId);
+      const catName = cat ? cat.name : 'Kategori';
+
+      const scope = document.querySelector('input[name="budget-apply-scope"]:checked')?.value || 'single';
+      const scopeDesc = (scope === 'year') ? `seluruh 12 bulan di Tahun ${selYear}` : `bulan ${targetMonthStr}`;
+
+      if (!confirm(`Hapus dan nonaktifkan limit anggaran untuk ${catName} pada ${scopeDesc}?`)) {
+        return;
+      }
+
+      const oldLimit = budgets[targetMonthStr]?.[catId] || 0;
+
+      if (scope === 'year') {
+        for (let m = 1; m <= 12; m++) {
+          const mKey = `${selYear}-${String(m).padStart(2, '0')}`;
+          if (budgets[mKey]) {
+            delete budgets[mKey][catId];
+          }
+        }
+        budgetHistory.unshift({
+          id: 'bh-' + Date.now(),
+          timestamp: new Date().toISOString(),
+          categoryName: catName,
+          period: `Tahun ${selYear} (12 Bulan)`,
+          oldLimit: oldLimit,
+          newLimit: 0
+        });
+      } else {
+        if (budgets[targetMonthStr]) {
+          delete budgets[targetMonthStr][catId];
+        }
+        budgetHistory.unshift({
+          id: 'bh-' + Date.now(),
+          timestamp: new Date().toISOString(),
+          categoryName: catName,
+          period: targetMonthStr,
+          oldLimit: oldLimit,
+          newLimit: 0
+        });
+      }
+
+      if (budgetHistory.length > 50) budgetHistory = budgetHistory.slice(0, 50);
+      localStorage.setItem('vf_budget_history', JSON.stringify(budgetHistory));
+
+      persistState(true);
+      closeModal('budget-modal');
+      renderBudgets();
+    }
+
+    function showBudgetOverrunNotification(info) {
+      setText('overrun-modal-cat', info.catName);
+      setText('overrun-modal-limit', formatCurrency(info.limitAmount));
+      setText('overrun-modal-spent', `${formatCurrency(info.totalSpent)} (${info.pct}%)`);
+      setText('overrun-modal-diff', `+${formatCurrency(info.overAmount)}`);
+
+      openModal('budget-overrun-modal');
+      lucide.createIcons();
+    }
+
     function saveBudget(e) {
       e.preventDefault();
       const monthInput = document.getElementById('budget-month-selector');
@@ -4447,9 +4702,14 @@
       const selYear = parts[0] || curYear;
 
       const catId = document.getElementById('budget-cat-select')?.value;
-      const amount = parseFloat(document.getElementById('budget-amount')?.value) || 0;
+      let rawVal = document.getElementById('budget-amount')?.value;
+      // Jika input kosong namun ada placeholder acuan, gunakan nilai acuan tersebut
+      if ((!rawVal || rawVal.trim() === '') && document.getElementById('budget-amount')?.placeholder) {
+        rawVal = document.getElementById('budget-amount').placeholder;
+      }
+      const amount = parseDotsNumber(rawVal);
       const scope = document.querySelector('input[name="budget-apply-scope"]:checked')?.value || 'single';
-
+	  
       if (catId) {
         const cat = categories.find(c => c.id === catId);
         const oldLimit = budgets[targetMonthStr]?.[catId] || 0;
@@ -4572,6 +4832,7 @@
 
       const sourceId = document.getElementById('trend-source-select')?.value || 'ALL';
       const year = parseInt(document.getElementById('trend-source-year')?.value || curYear) || curYear;
+      const elapsed = getElapsedMonthsCount(year);
       const palette = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e', '#8b5cf6', '#06b6d4', '#64748b'];
 
       const timeKeys = [];
@@ -4588,7 +4849,10 @@
       targetAccounts.forEach((acc, idx) => {
         const color = palette[idx % palette.length];
 
-        const dataPoints = timeKeys.map(mKey => {
+        const dataPoints = timeKeys.map((mKey, mIdx) => {
+          // Berhenti pada bulan saat ini
+          if (mIdx + 1 > elapsed) return null;
+
           let bal = parseFloat(acc.initialBalance) || 0;
 
           transactions.forEach(tx => {
@@ -4625,7 +4889,8 @@
 
       if (sourceId === 'ALL' && targetAccounts.length > 1) {
         const totalBalances = timeKeys.map((_, mIdx) => {
-          return datasets.reduce((sum, ds) => sum + ds.data[mIdx], 0);
+          if (mIdx + 1 > elapsed) return null;
+          return datasets.reduce((sum, ds) => sum + (ds.data[mIdx] !== null ? ds.data[mIdx] : 0), 0);
         });
 
         datasets.push({
@@ -4659,7 +4924,7 @@
           plugins: {
             legend: { 
               position: 'bottom',
-              labels: { boxWidth: 12, font: { size: 11 } }
+              labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
             },
             tooltip: {
               callbacks: {
@@ -4705,6 +4970,7 @@
       const ctx = canvas.getContext('2d');
 
       const year = parseInt(document.getElementById('trend-class-year')?.value || curYear) || curYear;
+      const elapsed = getElapsedMonthsCount(year);
 
       const fixedSpend = new Array(12).fill(0);
       const periodicSpend = new Array(12).fill(0);
@@ -4729,6 +4995,15 @@
           dynamicSpend[m] += fee;
         }
       });
+
+      // Nilai bulan berikutnya diset null agar garis/bar berhenti di bulan saat ini
+      for (let m = 0; m < 12; m++) {
+        if (m + 1 > elapsed) {
+          fixedSpend[m] = null;
+          periodicSpend[m] = null;
+          dynamicSpend[m] = null;
+        }
+      }
 
       if (classTrendChartInstance) classTrendChartInstance.destroy();
 
@@ -4775,11 +5050,7 @@
           plugins: {
             legend: { 
               position: 'bottom',
-              labels: {
-                boxWidth: 10,
-                padding: 8,
-                font: { size: 10 }
-              }
+              labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
             },
             tooltip: {
               callbacks: {
@@ -4846,6 +5117,8 @@
         }
       }
 
+      const elapsed = (trendScope === 'year') ? getElapsedMonthsCount(parseInt(yearVal) || curYear) : 12;
+
       const budgetCheckMonths = (trendScope === 'year') 
         ? Array.from({ length: 12 }, (_, i) => `${yearVal}-${String(i + 1).padStart(2, '0')}`)
         : [monthVal];
@@ -4895,7 +5168,7 @@
         const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
         const subMap = new Set();
         targetCats.forEach(c => {
-          (c.subcategories || []).forEach(sub => { if (sub && sub.trim()) subMap.add(sub.trim()); });
+          (c.subcategories || []).forEach(sub => { if (sub && sub.trim()) subSet.add(sub.trim()); });
         });
         transactions.forEach(tx => {
           if (tx.type === 'expense' && tx.subcategory && tx.subcategory.trim()) {
@@ -4905,7 +5178,6 @@
           }
         });
 
-        // Filter berdasarkan subkategori spesifik jika dipilih selain ALL
         let subList = Array.from(subMap);
         if (subFilter !== 'ALL') {
           subList = subList.filter(s => s === subFilter);
@@ -4917,7 +5189,10 @@
       let colorIndex = 0;
 
       seriesItems.forEach(item => {
-        const dataPoints = timeKeys.map(timeKey => {
+        const dataPoints = timeKeys.map((timeKey, idx) => {
+          // Set null jika bulan belum berjalan
+          if (trendScope === 'year' && (idx + 1) > elapsed) return null;
+
           return transactions.reduce((sum, tx) => {
             if (tx.type === 'expense' && tx.date) {
               const matchesTime = tx.date.startsWith(timeKey);
@@ -4935,7 +5210,7 @@
           }, 0);
         });
 
-        const totalSpent = dataPoints.reduce((a, b) => a + b, 0);
+        const totalSpent = dataPoints.reduce((a, b) => a + (b || 0), 0);
         if (totalSpent > 0 || seriesItems.length <= 3) {
           const color = palette[colorIndex % palette.length];
           datasets.push({
@@ -4953,6 +5228,7 @@
 
       if (trendScope === 'year') {
         const year = yearVal;
+        const divisor = Math.max(1, elapsed); // Dibagi bulan yang sudah berjalan
 
         if (trendShowAvg && datasets.length > 0) {
           let avgVal = 0;
@@ -4963,7 +5239,7 @@
               }
               return sum;
             }, 0);
-            avgVal = totalCat / 12;
+            avgVal = elapsed > 0 ? (totalCat / divisor) : 0;
           } else {
             const totalAll = transactions.reduce((sum, tx) => {
               if (tx.type === 'expense' && tx.date && tx.date.startsWith(year)) {
@@ -4971,12 +5247,15 @@
               }
               return sum;
             }, 0);
-            avgVal = totalAll / 12;
+            avgVal = elapsed > 0 ? (totalAll / divisor) : 0;
           }
 
+          // Garis rata-rata berhenti di bulan saat ini
+          const avgData = Array.from({ length: 12 }, (_, i) => (i + 1 <= elapsed ? avgVal : null));
+
           datasets.push({
-            label: `Rata-rata (${formatCurrency(avgVal)})`,
-            data: new Array(12).fill(avgVal),
+            label: `Rata-rata (${formatCurrency(avgVal)}/bln)`,
+            data: avgData,
             borderColor: '#f59e0b',
             borderDash: [5, 5],
             borderWidth: 2,
@@ -4986,7 +5265,8 @@
         }
 
         if (hasBudgetConfigured && trendShowBudget) {
-          const budgetData = timeKeys.map(timeKey => {
+          const budgetData = timeKeys.map((timeKey, idx) => {
+            if (idx + 1 > elapsed) return null; // Garis limit juga berhenti di bulan saat ini
             const monthBudgets = budgets[timeKey] || {};
             if (catFilter !== 'ALL') {
               return monthBudgets[catFilter] || 0;
@@ -5378,7 +5658,7 @@
         setVal('acc-id', acc.id);
         setVal('acc-name', acc.name);
         setVal('acc-type', acc.type);
-        setVal('acc-balance', acc.initialBalance);
+        setVal('acc-balance', formatNumberWithDots(acc.initialBalance));
         const chk = document.getElementById('acc-hidden-chk');
         if (chk) chk.checked = acc.isHidden ?? true;
         const chkDash = document.getElementById('acc-show-dash-chk');
@@ -5402,7 +5682,7 @@
       const id = document.getElementById('acc-id')?.value;
       const name = document.getElementById('acc-name')?.value?.trim();
       const type = document.getElementById('acc-type')?.value || 'Bank';
-      const initialBalance = parseFloat(document.getElementById('acc-balance')?.value) || 0;
+      const initialBalance = parseDotsNumber(document.getElementById('acc-balance')?.value);
       const isHidden = document.getElementById('acc-hidden-chk')?.checked ?? true;
       const showOnDashboard = document.getElementById('acc-show-dash-chk')?.checked ?? true;
 
@@ -7046,6 +7326,9 @@
       }
     }
 	
+	let lastBackPressedTime = 0;
+    const APP_VERSION = 'v1.2.0';
+	
 	function confirmExitApp() {
       closeModal('exit-confirm-modal');
       // Bila aplikasi dijalankan sebagai PWA di HP atau WebView
@@ -7063,6 +7346,126 @@
     function dismissUpdateBanner() {
       const banner = document.getElementById('pwa-update-banner');
       if (banner) banner.classList.add('hidden');
+    }
+	
+	function formatNumberWithDots(val) {
+      if (!val && val !== 0) return '';
+      const clean = String(val).replace(/\D/g, '');
+      if (!clean) return '';
+      return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function parseDotsNumber(val) {
+      if (!val) return 0;
+      const clean = String(val).replace(/\./g, '').trim();
+      return parseFloat(clean) || 0;
+    }
+
+	function getElapsedMonthsCount(year) {
+      const today = new Date();
+      const currentFullYear = today.getFullYear();
+      const currentMonthNum = today.getMonth() + 1; // 1 s.d. 12
+      const targetYearNum = parseInt(year);
+
+      if (targetYearNum < currentFullYear) return 12;
+      if (targetYearNum > currentFullYear) return 0;
+      return currentMonthNum;
+    }
+
+    function formatTxAmountInput(el) {
+      const cursor = el.selectionStart;
+      const oldLen = el.value.length;
+      const clean = el.value.replace(/\D/g, '');
+      el.value = clean ? formatNumberWithDots(clean) : '';
+      const newLen = el.value.length;
+      const diff = newLen - oldLen;
+      el.setSelectionRange(cursor + diff, cursor + diff);
+    }
+	
+	function handleBalanceFocus(el) {
+      if (el.value === '0') {
+        el.value = '';
+      } else {
+        setTimeout(() => el.select(), 50);
+      }
+    }
+
+	function setBudgetAmountField(amount, isReference = false, rawRefVal = 0) {
+      const input = document.getElementById('budget-amount');
+      const badge = document.getElementById('budget-amount-ref-badge');
+      const hint = document.getElementById('budget-amount-hint');
+      if (!input) return;
+
+      if (isReference && amount > 0) {
+        input.value = formatNumberWithDots(amount);
+        input.placeholder = formatNumberWithDots(amount);
+        input.dataset.isRef = "true";
+        input.dataset.rawRef = String(amount);
+        // Tampilan teks dibuat samar (blur/abu-abu pudar) sebagai acuan referensi
+        input.classList.add('text-slate-400', 'italic');
+        input.classList.remove('text-slate-900');
+        if (badge) badge.classList.remove('hidden');
+        if (hint) hint.classList.remove('hidden');
+      } else {
+        input.value = amount > 0 ? formatNumberWithDots(amount) : '';
+        input.placeholder = '0';
+        input.dataset.isRef = "false";
+        input.dataset.rawRef = String(rawRefVal || 0);
+        // Tampilan teks normal tegas (bold hitam)
+        input.classList.remove('text-slate-400', 'italic');
+        input.classList.add('text-slate-900', 'font-bold');
+        if (badge) badge.classList.add('hidden');
+        if (hint) hint.classList.add('hidden');
+      }
+    }
+
+    function handleBudgetAmountFocus(el) {
+      if (el.dataset.isRef === "true") {
+        // Saat diklik, nilai acuan dialihkan ke placeholder latar belakang dan nilai input dikosongkan agar user langsung mengetik
+        el.placeholder = el.value || '0';
+        el.value = '';
+        el.classList.remove('text-slate-400', 'italic');
+        el.classList.add('text-slate-900', 'font-bold');
+      } else {
+        setTimeout(() => el.select(), 50);
+      }
+    }
+
+    function handleBudgetAmountBlur(el) {
+      // Jika user keluar dari field dan tidak mengetikkan apapun, kembalikan nilai acuan rata-rata
+      if (!el.value || el.value.trim() === '') {
+        if (el.dataset.rawRef && el.dataset.rawRef !== '0') {
+          el.value = formatNumberWithDots(el.dataset.rawRef);
+          el.dataset.isRef = "true";
+          el.classList.add('text-slate-400', 'italic');
+          el.classList.remove('text-slate-900');
+          const badge = document.getElementById('budget-amount-ref-badge');
+          if (badge) badge.classList.remove('hidden');
+          const hint = document.getElementById('budget-amount-hint');
+          if (hint) hint.classList.remove('hidden');
+        } else {
+          el.value = '0';
+          el.dataset.isRef = "false";
+        }
+      }
+    }
+
+    function handleBudgetAmountInput(el) {
+      // Saat user mulai mengetik nominal baru, matikan status referensi
+      el.dataset.isRef = "false";
+      el.classList.remove('text-slate-400', 'italic');
+      el.classList.add('text-slate-900', 'font-bold');
+      const badge = document.getElementById('budget-amount-ref-badge');
+      if (badge) badge.classList.add('hidden');
+      const hint = document.getElementById('budget-amount-hint');
+      if (hint) hint.classList.add('hidden');
+      formatTxAmountInput(el);
+    }
+
+    function handleBalanceBlur(el) {
+      if (!el.value || el.value.trim() === '') {
+        el.value = '0';
+      }
     }
 	
   </script>
