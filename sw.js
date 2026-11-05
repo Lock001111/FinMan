@@ -105,7 +105,7 @@ self.addEventListener('fetch', (event) => {
 
 // 4. TERIMA PERINTAH UPDATE DARI TOMBOL APLIKASI
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.action === 'skipWaiting') {
-    self.skipWaiting();
+  if (event.data && event.data.action === 'getVersion') {
+    event.source.postMessage({ version: APP_VERSION });
   }
 });
