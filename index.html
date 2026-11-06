@@ -2188,7 +2188,6 @@
       'sync-conflict-modal',
       'budget-history-modal',
       'applock-reset-modal',
-      'exit-confirm-modal',
       'budget-overrun-modal'
     ];
 
@@ -2242,32 +2241,17 @@
       const exitModalEl = document.getElementById('exit-confirm-modal');
       const isExitModalOpen = exitModalEl && !exitModalEl.classList.contains('hidden');
 
-      // 1. ATURAN BACK 2X CEPAT (EXIT LANGSUNG DARI HALAMAN MANAPUN DALAM WAKTU <= 2 DETIK)
-      if (nowTs - lastBackPressedTime <= 2000) {
-        if (isExitModalOpen) closeModal('exit-confirm-modal');
-        confirmExitApp();
-        return;
-      }
-      lastBackPressedTime = nowTs;
-
-      // 2. JIKA POP-UP KONFIRMASI KELUAR SEDANG MUNCUL, BACK 1X HANYA MENUTUP POP-UP (BATAL)
-      if (isExitModalOpen) {
-        closeModal('exit-confirm-modal');
-        lucide.createIcons();
-        return;
-      }
-
-      // 3. TUTUP MENU MOBILE JIKA SEDANG TERBUKA
+      // 1. TUTUP MENU MOBILE JIKA SEDANG TERBUKA
       const mobMenu = document.getElementById('mobile-menu');
       if (mobMenu && !mobMenu.classList.contains('hidden')) {
         closeMobileMenu();
+        history.pushState({ tab: currentActiveTab }, '');
         return;
       }
 
-      // 4. TUTUP MODAL LAIN JIKA SEDANG TERBUKA
+      // 2. TUTUP MODAL FORMULIR BIASA JIKA SEDANG TERBUKA
       let modalWasClosed = false;
       allModalIds.forEach(id => {
-        if (id === 'exit-confirm-modal') return;
         const el = document.getElementById(id);
         if (el && !el.classList.contains('hidden')) {
           el.classList.add('hidden');
@@ -2276,12 +2260,35 @@
       });
 
       if (modalWasClosed) {
+        lastBackPressedTime = 0; // Reset agar penutupan modal tidak memicu exit cepat
         lucide.createIcons();
         return;
       }
 
-      // 5. JIKA DI HALAMAN SELAIN DASHBOARD, MUNDURKAN KE TAB SEBELUMNYA
+      // 3. JIKA POP-UP KONFIRMASI KELUAR SEDANG MUNCUL:
+      if (isExitModalOpen) {
+        // Jika ditekan back lagi secara CEPAT (<= 2 detik): LANGSUNG EXIT
+        if (lastBackPressedTime > 0 && (nowTs - lastBackPressedTime <= 2000)) {
+          confirmExitApp();
+          return;
+        }
+        // Jika ditekan back setelah santai (> 2 detik): HANYA TUTUP POP-UP (BATAL)
+        closeExitConfirmModal();
+        lastBackPressedTime = 0;
+        history.pushState({ tab: 'dashboard' }, '');
+        return;
+      }
+
+      // 4. JIKA USER BERADA DI TAB SELAIN DASHBOARD:
       if (currentActiveTab !== 'dashboard') {
+        // Cek apakah user menekan back 2x cepat untuk exit langsung dari halaman manapun
+        if (lastBackPressedTime > 0 && (nowTs - lastBackPressedTime <= 2000)) {
+          confirmExitApp();
+          return;
+        }
+        lastBackPressedTime = nowTs;
+
+        // Mundurkan tab sesuai riwayat navigasi
         navStack.pop();
         const prevTab = navStack.length > 0 ? navStack[navStack.length - 1] : 'dashboard';
         if (navStack.length === 0) navStack = ['dashboard'];
@@ -2289,10 +2296,19 @@
         return;
       }
 
-      // 6. JIKA SUDAH DI DASHBOARD, MUNCULKAN POP-UP KONFIRMASI KELUAR
+      // 5. JIKA USER SUDAH BERADA DI DASHBOARD:
+      // Cek apakah user menekan back 2x cepat saat di dashboard
+      if (lastBackPressedTime > 0 && (nowTs - lastBackPressedTime <= 2000)) {
+        confirmExitApp();
+        return;
+      }
+
+      // Jika baru pertama kali menekan back di dashboard:
+      lastBackPressedTime = nowTs;
+      // Kunci posisi history agar tidak terlempar keluar
       history.pushState({ tab: 'dashboard' }, '');
-      openModal('exit-confirm-modal');
-      lucide.createIcons();
+      // Tampilkan pop up konfirmasi exit
+      showExitConfirmModal();
     });
 
     // --- PRIVACY CONTROLS ---
@@ -2375,9 +2391,10 @@
 
     // --- STARTUP INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
-      if (!history.state || !history.state.tab) {
-        history.replaceState({ tab: 'dashboard' }, '');
-      }
+      // Pasang Guard State agar tombol Back di Dashboard selalu memicu event popstate
+      history.replaceState({ isGuard: true }, '');
+      history.pushState({ tab: 'dashboard' }, '');
+
       sanitizeState();
       initPickers();
       initNoteKeydownListener();
@@ -2386,7 +2403,7 @@
       checkPeriodicAutoBackup();
       checkAppLockOnStartup();
       renderAll();
-	  setText('app-installed-version', APP_VERSION);
+	  fetchAppVersionFromSW();
     });
 
     function initPickers() {
@@ -7284,6 +7301,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then((registration) => {
+		  fetchAppVersionFromSW();
           setInterval(() => {
             registration.update();
           }, 30 * 60 * 1000);
@@ -7329,20 +7347,67 @@
 	let lastBackPressedTime = 0;
     const APP_VERSION = 'v1.2.0';
 	
-	function confirmExitApp() {
-      closeModal('exit-confirm-modal');
-      // Bila aplikasi dijalankan sebagai PWA di HP atau WebView
-      if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
-        window.navigator.app.exitApp();
-      } else {
-        // Fallback untuk browser modern
-        window.close();
-        setTimeout(() => {
-          history.go(-2);
-        }, 150);
+	async function fetchAppVersionFromSW() {
+      // 1. Tampilkan versi terakhir yang tersimpan di cache lokal (agar instan saat offline)
+      const cachedVer = localStorage.getItem('vf_app_version');
+      if (cachedVer) {
+        setText('app-installed-version', cachedVer);
+      }
+
+      // 2. Baca file sw.js secara dinamis untuk mengambil versi terbarunya
+      try {
+        const response = await fetch('./sw.js', { cache: 'no-cache' });
+        if (response.ok) {
+          const content = await response.text();
+
+          // Regex cerdas: menangkap pola CACHE_NAME, VERSION, atau teks versi vX.Y.Z
+          const matchVar = content.match(/(?:CACHE_NAME|VERSION|APP_VERSION|CACHE_VERSION|CACHE_KEY)\s*=\s*['"`](.*?)['"`]/i);
+          const rawString = matchVar ? matchVar[1] : content;
+
+          // Ekstrak angka versi (contoh: 1.2.0, v1.3.5, 2.0)
+          const verMatch = rawString.match(/v?\d+\.\d+(?:\.\d+)?/i);
+
+          if (verMatch) {
+            let finalVersion = verMatch[0];
+            if (!finalVersion.toLowerCase().startsWith('v')) {
+              finalVersion = 'v' + finalVersion;
+            }
+            setText('app-installed-version', finalVersion);
+            localStorage.setItem('vf_app_version', finalVersion);
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal membaca versi otomatis dari sw.js:', err);
+      }
+    }
+	
+	function showExitConfirmModal() {
+      const el = document.getElementById('exit-confirm-modal');
+      if (el) {
+        el.classList.remove('hidden');
+        lucide.createIcons();
       }
     }
 
+    function closeExitConfirmModal() {
+      const el = document.getElementById('exit-confirm-modal');
+      if (el) {
+        el.classList.add('hidden');
+      }
+    }
+
+    function confirmExitApp() {
+      closeExitConfirmModal();
+      if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
+        window.navigator.app.exitApp();
+        return;
+      }
+      window.close();
+      setTimeout(() => {
+        history.go(-2);
+      }, 100);
+    }
+	
     function dismissUpdateBanner() {
       const banner = document.getElementById('pwa-update-banner');
       if (banner) banner.classList.add('hidden');
