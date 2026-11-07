@@ -1844,7 +1844,7 @@
         </p>
       </div>
       <div class="grid grid-cols-2 gap-2.5 pt-1">
-        <button type="button" onclick="closeModal('exit-confirm-modal')" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+        <button type="button" onclick="closeExitConfirmModal()" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
           Batal
         </button>
         <button type="button" onclick="confirmExitApp()" class="w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md shadow-rose-600/20 transition">
@@ -1915,6 +1915,34 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- POP-UP MODAL KONFIRMASI BERHASIL UPDATE APLIKASI -->
+  <div id="pwa-update-success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl text-center space-y-4 border border-emerald-100 animate-in fade-in zoom-in duration-200">
+      <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Pembaruan Berhasil Dipasang!</h3>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          Sistem FinTrack telah siap. Aplikasi akan segera dimuat ulang untuk menampilkan versi dan fitur terbarunya.
+        </p>
+      </div>
+      <div class="pt-1">
+        <button type="button" onclick="executeReloadForUpdate()" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Muat Ulang Sekarang</span>
+          <span id="update-countdown-text" class="text-emerald-200 font-mono">(3s)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFIKASI SUKSES PASCA REFRESH -->
+  <div id="toast-update-success" class="fixed top-5 left-1/2 -translate-x-1/2 z-[150] hidden bg-slate-900/95 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-slate-700/80 flex items-center gap-2.5 text-xs backdrop-blur-md transition-all">
+    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
+    <span id="toast-update-text">FinTrack berhasil diperbarui ke versi terbaru!</span>
   </div>
 
   <!-- LAYAR KUNCI APLIKASI (APP LOCK OVERLAY) -->
@@ -2237,7 +2265,6 @@
         return;
       }
 
-      const nowTs = Date.now();
       const exitModalEl = document.getElementById('exit-confirm-modal');
       const isExitModalOpen = exitModalEl && !exitModalEl.classList.contains('hidden');
 
@@ -2260,55 +2287,35 @@
       });
 
       if (modalWasClosed) {
-        lastBackPressedTime = 0; // Reset agar penutupan modal tidak memicu exit cepat
         lucide.createIcons();
         return;
       }
 
       // 3. JIKA POP-UP KONFIRMASI KELUAR SEDANG MUNCUL:
+      // Tombol Back HP berfungsi sebagai pembatal (menutup pop-up)
       if (isExitModalOpen) {
-        // Jika ditekan back lagi secara CEPAT (<= 2 detik): LANGSUNG EXIT
-        if (lastBackPressedTime > 0 && (nowTs - lastBackPressedTime <= 2000)) {
-          confirmExitApp();
-          return;
-        }
-        // Jika ditekan back setelah santai (> 2 detik): HANYA TUTUP POP-UP (BATAL)
         closeExitConfirmModal();
-        lastBackPressedTime = 0;
         history.pushState({ tab: 'dashboard' }, '');
         return;
       }
 
-      // 4. JIKA USER BERADA DI TAB SELAIN DASHBOARD:
-      if (currentActiveTab !== 'dashboard') {
-        // Cek apakah user menekan back 2x cepat untuk exit langsung dari halaman manapun
-        if (lastBackPressedTime > 0 && (nowTs - lastBackPressedTime <= 2000)) {
-          confirmExitApp();
-          return;
+      // 4. JIKA MENCAPAI AKAR APLIKASI (DASHBOARD):
+      // Munculkan SELALU pop-up konfirmasi keluar
+      if (!e.state || e.state.root) {
+        history.pushState({ tab: 'dashboard' }, '');
+        if (currentActiveTab !== 'dashboard') {
+          switchTab('dashboard', true);
         }
-        lastBackPressedTime = nowTs;
-
-        // Mundurkan tab sesuai riwayat navigasi
-        navStack.pop();
-        const prevTab = navStack.length > 0 ? navStack[navStack.length - 1] : 'dashboard';
-        if (navStack.length === 0) navStack = ['dashboard'];
-        switchTab(prevTab, true);
+        showExitConfirmModal();
         return;
       }
 
-      // 5. JIKA USER SUDAH BERADA DI DASHBOARD:
-      // Cek apakah user menekan back 2x cepat saat di dashboard
-      if (lastBackPressedTime > 0 && (nowTs - lastBackPressedTime <= 2000)) {
-        confirmExitApp();
+      // 5. JIKA MASIH ADA RIWAYAT TAB SEBELUMNYA:
+      // Mundurkan tab sesuai riwayat browser
+      if (e.state && e.state.tab) {
+        switchTab(e.state.tab, true);
         return;
       }
-
-      // Jika baru pertama kali menekan back di dashboard:
-      lastBackPressedTime = nowTs;
-      // Kunci posisi history agar tidak terlempar keluar
-      history.pushState({ tab: 'dashboard' }, '');
-      // Tampilkan pop up konfirmasi exit
-      showExitConfirmModal();
     });
 
     // --- PRIVACY CONTROLS ---
@@ -2391,8 +2398,8 @@
 
     // --- STARTUP INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
-      // Pasang Guard State agar tombol Back di Dashboard selalu memicu event popstate
-      history.replaceState({ isGuard: true }, '');
+      // Inisialisasi Guard State agar tombol Back di Dashboard selalu memicu popstate
+      history.replaceState({ root: true }, '');
       history.pushState({ tab: 'dashboard' }, '');
 
       sanitizeState();
@@ -2404,6 +2411,7 @@
       checkAppLockOnStartup();
       renderAll();
 	  fetchAppVersionFromSW();
+	  checkPostUpdateNotice();
     });
 
     function initPickers() {
@@ -7336,11 +7344,69 @@
       if (banner) banner.classList.remove('hidden');
     }
 
+    let updateCountdownTimer = null;
+
     function applyAppUpdate() {
+      // 1. Sembunyikan banner bawah
+      dismissUpdateBanner();
+
+      // 2. Munculkan pop-up modal konfirmasi sukses update
+      const successModal = document.getElementById('pwa-update-success-modal');
+      if (successModal) {
+        successModal.classList.remove('hidden');
+        lucide.createIcons();
+      }
+
+      // 3. Jalankan hitung mundur 3 detik sebelum otomatis refresh
+      let secondsLeft = 3;
+      const countdownEl = document.getElementById('update-countdown-text');
+      if (countdownEl) countdownEl.textContent = `(${secondsLeft}s)`;
+
+      if (updateCountdownTimer) clearInterval(updateCountdownTimer);
+      updateCountdownTimer = setInterval(() => {
+        secondsLeft--;
+        if (countdownEl) countdownEl.textContent = `(${secondsLeft}s)`;
+        if (secondsLeft <= 0) {
+          clearInterval(updateCountdownTimer);
+          executeReloadForUpdate();
+        }
+      }, 1000);
+    }
+
+    function executeReloadForUpdate() {
+      if (updateCountdownTimer) clearInterval(updateCountdownTimer);
+
+      // Tandai di localStorage bahwa aplikasi baru saja diperbarui
+      localStorage.setItem('vf_just_updated', 'true');
+
+      // Terapkan service worker baru & segarkan halaman
       if (pwaWaitingWorker) {
         pwaWaitingWorker.postMessage({ action: 'skipWaiting' });
       } else {
         window.location.reload();
+      }
+    }
+
+    function checkPostUpdateNotice() {
+      if (localStorage.getItem('vf_just_updated') === 'true') {
+        localStorage.removeItem('vf_just_updated');
+
+        const toast = document.getElementById('toast-update-success');
+        const toastText = document.getElementById('toast-update-text');
+        const currentVer = localStorage.getItem('vf_app_version') || 'terbaru';
+
+        if (toast && toastText) {
+          toastText.textContent = `🎉 FinTrack berhasil diperbarui ke ${currentVer}!`;
+          toast.classList.remove('hidden');
+
+          setTimeout(() => {
+            toast.classList.add('opacity-0');
+            setTimeout(() => {
+              toast.classList.add('hidden');
+              toast.classList.remove('opacity-0');
+            }, 500);
+          }, 4000);
+        }
       }
     }
 	
