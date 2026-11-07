@@ -1,5 +1,5 @@
 // UBAH NOMOR VERSI INI SETIAP KALI ANDA MEMPERBARUI KODE UNTUK MEMICU NOTIFIKASI UPDATE
-const APP_VERSION = 'v1.0.6';
+const APP_VERSION = 'v1.0.7';
 const CACHE_NAME = `fintrack-${APP_VERSION}`;
 
 // DAFTAR LENGKAP BERKAS INTI & PUSTAKA CDN YANG DIKUNCI KE PENYIMPANAN OFFLINE
@@ -23,6 +23,7 @@ const ASSETS_TO_CACHE = [
 
 // 1. TAHAP INSTALASI: Unduh semua file dan simpan ke cache memori lokal
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Langsung aktifkan Service Worker baru tanpa menunggu aplikasi ditutup
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
       // Unduh asset satu per satu agar jika salah satu gagal tidak membatalkan yang lain
@@ -48,7 +49,7 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => self.clients.claim()) // Langsung ambil kendali halaman yang sedang terbuka
   );
 });
 
@@ -105,6 +106,11 @@ self.addEventListener('fetch', (event) => {
 
 // 4. TERIMA PERINTAH UPDATE DARI TOMBOL APLIKASI
 self.addEventListener('message', (event) => {
+  // Tangkap perintah skipWaiting saat tombol 'Perbarui Sekarang' ditekan di index.html
+  if (event.data && (event.data.action === 'skipWaiting' || event.data === 'skipWaiting')) {
+    self.skipWaiting();
+  }
+
   if (event.data && event.data.action === 'getVersion') {
     event.source.postMessage({ version: APP_VERSION });
   }
