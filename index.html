@@ -2259,7 +2259,14 @@
       }
     });
 
+    let isExitingApplication = false; // Pengaman agar popstate tidak mencegat saat tombol Ya Keluar ditekan
+
     window.addEventListener('popstate', (e) => {
+      // Jika user sudah menekan tombol "Ya, Keluar", izinkan browser keluar sepenuhnya
+      if (isExitingApplication) {
+        return;
+      }
+
       if (suppressNextPopstate) {
         suppressNextPopstate = false;
         return;
@@ -2292,7 +2299,7 @@
       }
 
       // 3. JIKA POP-UP KONFIRMASI KELUAR SEDANG MUNCUL:
-      // Tekan tombol Back HP berfungsi sebagai pembatal (menutup pop-up)
+      // Tombol Back HP berfungsi sebagai pembatal (menutup pop-up)
       if (isExitModalOpen) {
         closeExitConfirmModal();
         history.pushState({ tab: 'dashboard' }, '', '#app');
@@ -7360,25 +7367,23 @@
     }
 
     function dismissUpdateBanner() {
+      // Pengguna memilih BATAL / NANTI: Sembunyikan banner
       const banner = document.getElementById('pwa-update-banner');
       if (banner) banner.classList.add('hidden');
+      // JANGAN ubah vf_installed_version. Versi aplikasi tetap pada versi lama!
     }
 
     function applyAppUpdate() {
-      // Buka kunci: Pengguna resmi menyetujui update
+      // Pengguna resmi menyetujui pembaruan
       userTriggeredUpdate = true;
-
-      // 1. Sembunyikan banner bawah
       dismissUpdateBanner();
 
-      // 2. Munculkan pop-up modal konfirmasi sukses update
       const successModal = document.getElementById('pwa-update-success-modal');
       if (successModal) {
         successModal.classList.remove('hidden');
         lucide.createIcons();
       }
 
-      // 3. Hitung mundur 3 detik sebelum eksekusi reload
       let secondsLeft = 3;
       const countdownEl = document.getElementById('update-countdown-text');
       if (countdownEl) countdownEl.textContent = `(${secondsLeft}s)`;
@@ -7399,7 +7404,11 @@
       userTriggeredUpdate = true;
       localStorage.setItem('vf_just_updated', 'true');
 
-      // Kirim sinyal skipWaiting ke Service Worker yang sedang menunggu
+      // SAHKAN VERSI BARU HANYA KETIKA TOMBOL INI DIJALANKAN
+      if (pendingNewVersion) {
+        localStorage.setItem('vf_installed_version', pendingNewVersion);
+      }
+
       try {
         if ('serviceWorker' in navigator) {
           const reg = await navigator.serviceWorker.getRegistration();
@@ -7414,7 +7423,6 @@
         console.warn('Gagal kirim skipWaiting:', err);
       }
 
-      // Fallback reload jika controllerchange tidak terpicu dalam 500ms
       setTimeout(() => {
         const cleanUrl = window.location.origin + window.location.pathname;
         window.location.replace(cleanUrl + '?updated=' + Date.now() + '#app');
@@ -7427,7 +7435,7 @@
 
         const toast = document.getElementById('toast-update-success');
         const toastText = document.getElementById('toast-update-text');
-        const currentVer = localStorage.getItem('vf_app_version') || 'terbaru';
+        const currentVer = localStorage.getItem('vf_installed_version') || 'terbaru';
 
         if (toast && toastText) {
           toastText.textContent = `🎉 FinTrack berhasil diperbarui ke ${currentVer}!`;
@@ -7447,14 +7455,18 @@
 	let lastBackPressedTime = 0;
     const APP_VERSION = 'v1.2.0';
 	
-	async function fetchAppVersionFromSW() {
-      // Tampilkan versi tersimpan di cache lokal terlebih dahulu
-      const cachedVer = localStorage.getItem('vf_app_version');
-      if (cachedVer) {
-        setText('app-installed-version', cachedVer);
-      }
+	let pendingNewVersion = null; // Menyimpan versi baru yang terdeteksi di server
 
-      // Ambil file sw.js langsung dari server (bypass cache HTTP menggunakan parameter acak)
+    async function fetchAppVersionFromSW() {
+      // 1. Tampilkan versi yang SAH terpasang saat ini (default awal v1.0.5 jika belum ada)
+      let installedVer = localStorage.getItem('vf_installed_version');
+      if (!installedVer) {
+        installedVer = 'v1.0.5';
+        localStorage.setItem('vf_installed_version', installedVer);
+      }
+      setText('app-installed-version', installedVer);
+
+      // 2. Cek apakah ada file sw.js dengan versi lebih baru di server
       try {
         const response = await fetch('./sw.js?nocache=' + Date.now(), { 
           cache: 'no-store',
@@ -7463,23 +7475,26 @@
 
         if (response.ok) {
           const content = await response.text();
-
-          // Regex mendeteksi nama cache atau variabel versi
           const matchVar = content.match(/(?:CACHE_NAME|VERSION|APP_VERSION|CACHE_VERSION|CACHE_KEY)\s*=\s*['"`](.*?)['"`]/i);
           const rawString = matchVar ? matchVar[1] : content;
-
           const verMatch = rawString.match(/v?\d+\.\d+(?:\.\d+)?/i);
+
           if (verMatch) {
-            let finalVersion = verMatch[0];
-            if (!finalVersion.toLowerCase().startsWith('v')) {
-              finalVersion = 'v' + finalVersion;
+            let serverVersion = verMatch[0];
+            if (!serverVersion.toLowerCase().startsWith('v')) {
+              serverVersion = 'v' + serverVersion;
             }
-            setText('app-installed-version', finalVersion);
-            localStorage.setItem('vf_app_version', finalVersion);
+
+            // Jika versi di server lebih baru dari versi terpasang:
+            if (serverVersion !== installedVer) {
+              pendingNewVersion = serverVersion;
+              // Munculkan banner pembaruan
+              showUpdateBanner();
+            }
           }
         }
       } catch (err) {
-        console.warn('Gagal membaca versi otomatis dari sw.js:', err);
+        console.warn('Gagal cek pembaruan sw.js:', err);
       }
     }
 	
@@ -7499,15 +7514,38 @@
     }
 
     function confirmExitApp() {
+      isExitingApplication = true; // Matikan cegatan popstate
       closeExitConfirmModal();
+
+      // 1. Eksekusi keluar jika berjalan di lingkungan WebView / Aplikasi Android
       if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
         window.navigator.app.exitApp();
         return;
       }
+
+      // 2. Coba tutup jendela browser / PWA Standalone
       window.close();
+
+      // 3. Navigasi mundur melewati riwayat aplikasi agar keluar dari halaman
       setTimeout(() => {
-        history.go(-2);
-      }, 100);
+        history.go(-(history.length));
+      }, 50);
+
+      // 4. Tampilkan layar "Aplikasi Ditutup" elegan jika browser memblokir penutupan tab otomatis
+      setTimeout(() => {
+        document.body.innerHTML = `
+          <div class="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center text-white">
+            <div class="w-16 h-16 bg-slate-800 text-emerald-400 rounded-3xl flex items-center justify-center mb-4 shadow-xl border border-slate-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+            </div>
+            <h2 class="text-xl font-bold">FinTrack Telah Ditutup</h2>
+            <p class="text-xs text-slate-400 mt-2 max-w-xs leading-relaxed">Sesi Anda telah aman diakhiri. Anda dapat menutup tab atau beralih ke aplikasi lain.</p>
+            <button onclick="location.href=location.pathname + '#app'; location.reload();" class="mt-6 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-emerald-600/30">
+              Buka Kembali FinTrack
+            </button>
+          </div>
+        `;
+      }, 300);
     }
 	
     function dismissUpdateBanner() {
