@@ -7294,20 +7294,18 @@
     // ==================== PWA INSTALLATION & UPDATE ENGINE ====================
     let deferredInstallPrompt = null;
     let pwaWaitingWorker = null;
+    let userTriggeredUpdate = false; // Kunci pengaman: hanya reload jika user menekan tombol
+    let updateCountdownTimer = null;
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
-      console.log("FinTrack siap diinstal sebagai PWA!");
     });
 
     function triggerPwaInstall() {
       if (deferredInstallPrompt) {
         deferredInstallPrompt.prompt();
-        deferredInstallPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('Pengguna menyetujui instalasi PWA');
-          }
+        deferredInstallPrompt.userChoice.then(() => {
           deferredInstallPrompt = null;
         });
       }
@@ -7316,7 +7314,14 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then((registration) => {
-		  fetchAppVersionFromSW();
+          fetchAppVersionFromSW();
+
+          // Jika ada update yang sudah siap/menunggu, tampilkan bannernya dengan tenang
+          if (registration.waiting) {
+            pwaWaitingWorker = registration.waiting;
+            showUpdateBanner();
+          }
+
           setInterval(() => {
             registration.update();
           }, 30 * 60 * 1000);
@@ -7326,6 +7331,7 @@
             if (!installingWorker) return;
 
             installingWorker.addEventListener('statechange', () => {
+              // Service Worker baru selesai diunduh, tampilkan banner & TUNGGU klik pengguna
               if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 pwaWaitingWorker = installingWorker;
                 showUpdateBanner();
@@ -7338,9 +7344,11 @@
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!refreshing) {
+          // PENGAMAN: HANYA reload halaman jika pengguna SUDAH menekan tombol update!
+          if (!refreshing && userTriggeredUpdate) {
             refreshing = true;
-            window.location.reload();
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.location.replace(cleanUrl + '?updated=' + Date.now() + '#app');
           }
         });
       });
@@ -7351,9 +7359,15 @@
       if (banner) banner.classList.remove('hidden');
     }
 
-    let updateCountdownTimer = null;
+    function dismissUpdateBanner() {
+      const banner = document.getElementById('pwa-update-banner');
+      if (banner) banner.classList.add('hidden');
+    }
 
     function applyAppUpdate() {
+      // Buka kunci: Pengguna resmi menyetujui update
+      userTriggeredUpdate = true;
+
       // 1. Sembunyikan banner bawah
       dismissUpdateBanner();
 
@@ -7364,7 +7378,7 @@
         lucide.createIcons();
       }
 
-      // 3. Jalankan hitung mundur 3 detik sebelum otomatis refresh
+      // 3. Hitung mundur 3 detik sebelum eksekusi reload
       let secondsLeft = 3;
       const countdownEl = document.getElementById('update-countdown-text');
       if (countdownEl) countdownEl.textContent = `(${secondsLeft}s)`;
@@ -7382,11 +7396,10 @@
 
     async function executeReloadForUpdate() {
       if (updateCountdownTimer) clearInterval(updateCountdownTimer);
-
-      // Simpan tanda bahwa update berhasil dieksekusi
+      userTriggeredUpdate = true;
       localStorage.setItem('vf_just_updated', 'true');
 
-      // 1. Paksa Service Worker baru untuk skipWaiting
+      // Kirim sinyal skipWaiting ke Service Worker yang sedang menunggu
       try {
         if ('serviceWorker' in navigator) {
           const reg = await navigator.serviceWorker.getRegistration();
@@ -7398,26 +7411,14 @@
           pwaWaitingWorker.postMessage({ action: 'skipWaiting' });
         }
       } catch (err) {
-        console.warn('Gagal kirim pesan skipWaiting:', err);
+        console.warn('Gagal kirim skipWaiting:', err);
       }
 
-      // 2. Eksekusi reload paksa dengan cache-busting agar browser tidak membaca memori usang
-      let hasReloaded = false;
-      const forceReload = () => {
-        if (!hasReloaded) {
-          hasReloaded = true;
-          // Muat ulang dengan query timestamp acak untuk membersihkan cache browser
-          const cleanUrl = window.location.origin + window.location.pathname;
-          window.location.replace(cleanUrl + '?updated=' + Date.now() + '#app');
-        }
-      };
-
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.addEventListener('controllerchange', forceReload, { once: true });
-      }
-
-      // Fallback: Jika controllerchange tidak merespons dalam 500ms, tetap paksa reload
-      setTimeout(forceReload, 500);
+      // Fallback reload jika controllerchange tidak terpicu dalam 500ms
+      setTimeout(() => {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.location.replace(cleanUrl + '?updated=' + Date.now() + '#app');
+      }, 500);
     }
 
     function checkPostUpdateNotice() {
