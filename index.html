@@ -2272,7 +2272,7 @@
       const mobMenu = document.getElementById('mobile-menu');
       if (mobMenu && !mobMenu.classList.contains('hidden')) {
         closeMobileMenu();
-        history.pushState({ tab: currentActiveTab }, '');
+        history.pushState({ tab: currentActiveTab }, '', (currentActiveTab === 'dashboard' ? '#app' : '#' + currentActiveTab));
         return;
       }
 
@@ -2292,17 +2292,18 @@
       }
 
       // 3. JIKA POP-UP KONFIRMASI KELUAR SEDANG MUNCUL:
-      // Tombol Back HP berfungsi sebagai pembatal (menutup pop-up)
+      // Tekan tombol Back HP berfungsi sebagai pembatal (menutup pop-up)
       if (isExitModalOpen) {
         closeExitConfirmModal();
-        history.pushState({ tab: 'dashboard' }, '');
+        history.pushState({ tab: 'dashboard' }, '', '#app');
         return;
       }
 
-      // 4. JIKA MENCAPAI AKAR APLIKASI (DASHBOARD):
+      // 4. JIKA KEMBALI KE AKAR APLIKASI (DASHBOARD ATAU #root):
       // Munculkan SELALU pop-up konfirmasi keluar
-      if (!e.state || e.state.root) {
-        history.pushState({ tab: 'dashboard' }, '');
+      const isAtRoot = (!e.state || e.state.root || window.location.hash === '#root' || window.location.hash === '');
+      if (isAtRoot) {
+        history.pushState({ tab: 'dashboard' }, '', '#app');
         if (currentActiveTab !== 'dashboard') {
           switchTab('dashboard', true);
         }
@@ -2310,8 +2311,7 @@
         return;
       }
 
-      // 5. JIKA MASIH ADA RIWAYAT TAB SEBELUMNYA:
-      // Mundurkan tab sesuai riwayat browser
+      // 5. JIKA NAVIGASI MUNDUR ANTAR TAB:
       if (e.state && e.state.tab) {
         switchTab(e.state.tab, true);
         return;
@@ -2397,10 +2397,26 @@
     let classTrendChartInstance = null;
 
     // --- STARTUP INITIALIZATION ---
+    function initHistoryTrap() {
+      // Gunakan fragment #root dan #app agar browser mobile 100% mengenali navigasi awal
+      if (!window.location.hash || window.location.hash === '#root') {
+        history.replaceState({ root: true }, '', '#root');
+        history.pushState({ tab: 'dashboard' }, '', '#app');
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
-      // Inisialisasi Guard State agar tombol Back di Dashboard selalu memicu popstate
-      history.replaceState({ root: true }, '');
-      history.pushState({ tab: 'dashboard' }, '');
+      // Inisialisasi Guard State dengan fragment URL
+      initHistoryTrap();
+
+      // Pasang pengaman interaksi sentuhan pertama
+      ['touchstart', 'pointerdown', 'click'].forEach(evt => {
+        window.addEventListener(evt, () => {
+          if (!window.location.hash || window.location.hash === '#root') {
+            initHistoryTrap();
+          }
+        }, { once: true, passive: true });
+      });
 
       sanitizeState();
       initPickers();
@@ -2410,8 +2426,8 @@
       checkPeriodicAutoBackup();
       checkAppLockOnStartup();
       renderAll();
-	  fetchAppVersionFromSW();
-	  checkPostUpdateNotice();
+      fetchAppVersionFromSW();
+      checkPostUpdateNotice();
     });
 
     function initPickers() {
@@ -6385,17 +6401,8 @@
       if (currentActiveTab === tabName && !isBackNavigation) return;
 
       if (!isBackNavigation) {
-        if (tabName === 'dashboard') {
-          navStack = ['dashboard'];
-        } else {
-          const existingIdx = navStack.indexOf(tabName);
-          if (existingIdx !== -1) {
-            navStack = navStack.slice(0, existingIdx + 1);
-          } else {
-            navStack.push(tabName);
-          }
-        }
-        history.pushState({ tab: tabName }, '');
+        const targetHash = (tabName === 'dashboard') ? '#app' : '#' + tabName;
+        history.pushState({ tab: tabName }, '', targetHash);
       }
 
       currentActiveTab = tabName;
@@ -7373,18 +7380,44 @@
       }, 1000);
     }
 
-    function executeReloadForUpdate() {
+    async function executeReloadForUpdate() {
       if (updateCountdownTimer) clearInterval(updateCountdownTimer);
 
-      // Tandai di localStorage bahwa aplikasi baru saja diperbarui
+      // Simpan tanda bahwa update berhasil dieksekusi
       localStorage.setItem('vf_just_updated', 'true');
 
-      // Terapkan service worker baru & segarkan halaman
-      if (pwaWaitingWorker) {
-        pwaWaitingWorker.postMessage({ action: 'skipWaiting' });
-      } else {
-        window.location.reload();
+      // 1. Paksa Service Worker baru untuk skipWaiting
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg && reg.waiting) {
+            reg.waiting.postMessage({ action: 'skipWaiting' });
+          }
+        }
+        if (pwaWaitingWorker) {
+          pwaWaitingWorker.postMessage({ action: 'skipWaiting' });
+        }
+      } catch (err) {
+        console.warn('Gagal kirim pesan skipWaiting:', err);
       }
+
+      // 2. Eksekusi reload paksa dengan cache-busting agar browser tidak membaca memori usang
+      let hasReloaded = false;
+      const forceReload = () => {
+        if (!hasReloaded) {
+          hasReloaded = true;
+          // Muat ulang dengan query timestamp acak untuk membersihkan cache browser
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.location.replace(cleanUrl + '?updated=' + Date.now() + '#app');
+        }
+      };
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('controllerchange', forceReload, { once: true });
+      }
+
+      // Fallback: Jika controllerchange tidak merespons dalam 500ms, tetap paksa reload
+      setTimeout(forceReload, 500);
     }
 
     function checkPostUpdateNotice() {
@@ -7414,25 +7447,27 @@
     const APP_VERSION = 'v1.2.0';
 	
 	async function fetchAppVersionFromSW() {
-      // 1. Tampilkan versi terakhir yang tersimpan di cache lokal (agar instan saat offline)
+      // Tampilkan versi tersimpan di cache lokal terlebih dahulu
       const cachedVer = localStorage.getItem('vf_app_version');
       if (cachedVer) {
         setText('app-installed-version', cachedVer);
       }
 
-      // 2. Baca file sw.js secara dinamis untuk mengambil versi terbarunya
+      // Ambil file sw.js langsung dari server (bypass cache HTTP menggunakan parameter acak)
       try {
-        const response = await fetch('./sw.js', { cache: 'no-cache' });
+        const response = await fetch('./sw.js?nocache=' + Date.now(), { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        });
+
         if (response.ok) {
           const content = await response.text();
 
-          // Regex cerdas: menangkap pola CACHE_NAME, VERSION, atau teks versi vX.Y.Z
+          // Regex mendeteksi nama cache atau variabel versi
           const matchVar = content.match(/(?:CACHE_NAME|VERSION|APP_VERSION|CACHE_VERSION|CACHE_KEY)\s*=\s*['"`](.*?)['"`]/i);
           const rawString = matchVar ? matchVar[1] : content;
 
-          // Ekstrak angka versi (contoh: 1.2.0, v1.3.5, 2.0)
           const verMatch = rawString.match(/v?\d+\.\d+(?:\.\d+)?/i);
-
           if (verMatch) {
             let finalVersion = verMatch[0];
             if (!finalVersion.toLowerCase().startsWith('v')) {
