@@ -6482,6 +6482,28 @@
       );
     }
 
+    // Fungsi konversi Base64 anti-overflow (mampu menangani data ribuan transaksi)
+    function bufToB64(buf) {
+      const bytes = new Uint8Array(buf);
+      let binary = '';
+      const len = bytes.byteLength;
+      const chunkSize = 0x8000; // Pecah per 32KB agar aman dari batas memori browser
+      for (let i = 0; i < len; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return btoa(binary);
+    }
+
+    function b64ToBuf(b64) {
+      const binary = atob(b64);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return bytes;
+    }
+
     async function encryptE2EE(dataObj, password) {
       const salt = crypto.getRandomValues(new Uint8Array(16));
       const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -6489,13 +6511,12 @@
       const encoded = new TextEncoder().encode(JSON.stringify(dataObj));
       const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
 
-      const bufToB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
       return JSON.stringify({
         encrypted: true,
         cipher: "AES-GCM-256",
         salt: bufToB64(salt),
         iv: bufToB64(iv),
-        data: bufToB64(ciphertext)
+        data: bufToB64(ciphertext) // Sekarang aman untuk data berukuran besar
       });
     }
 
@@ -6504,7 +6525,7 @@
       if (!pkg.encrypted || !pkg.salt || !pkg.iv || !pkg.data) {
         throw new Error("Berkas tidak valid atau tidak terenkripsi.");
       }
-      const b64ToBuf = (b64) => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+
       const salt = b64ToBuf(pkg.salt);
       const iv = b64ToBuf(pkg.iv);
       const ciphertext = b64ToBuf(pkg.data);
@@ -6765,7 +6786,7 @@
 
         let uploadRes;
         if (existingFile) {
-          uploadRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=media`, {
+          uploadRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=media&fields=id,name,modifiedTime`, {
             method: 'PATCH',
             headers: {
               Authorization: `Bearer ${gdriveAccessToken}`,
@@ -6779,23 +6800,41 @@
           form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
           form.append('file', new Blob([encryptedBody], { type: 'application/octet-stream' }));
 
-          uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime', {
             method: 'POST',
             headers: { Authorization: `Bearer ${gdriveAccessToken}` },
             body: form
           });
         }
 
+        // Tangani jika sesi login Google kedaluwarsa (401)
+        if (!uploadRes.ok) {
+          if (uploadRes.status === 401) {
+            setSyncBadge('error', 'Sesi Berakhir');
+            throw new Error('Sesi Google kedaluwarsa. Silakan Login Akun Google kembali.');
+          }
+          const errRes = await uploadRes.json().catch(() => ({}));
+          throw new Error(errRes.error?.message || `HTTP ${uploadRes.status}`);
+        }
+
         const dataRes = await uploadRes.json();
         const serverModifiedTime = dataRes.modifiedTime ? new Date(dataRes.modifiedTime).getTime() : Date.now();
+        const nowIso = new Date(serverModifiedTime).toISOString();
 
+        // Kalibrasi ulang seluruh timestamp sinkronisasi
         localStorage.setItem('vf_last_sync_timestamp', String(serverModifiedTime));
-        localStorage.setItem('vf_gdrive_last_sync', new Date().toISOString());
-        loadGdrivePrefs();
+        localStorage.setItem('vf_local_modified_timestamp', String(serverModifiedTime));
+        localStorage.setItem('vf_gdrive_last_sync', nowIso);
+
+        // Perbarui teks keterangan waktu sinkronisasi di UI Pengaturan
+        const t = new Date(nowIso).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+        setText('gdrive-last-sync-label', `Sinkronisasi Cloud: ${t}`);
+
         setSyncBadge('synced');
       } catch (err) {
         console.error("Auto push error:", err);
         setSyncBadge('error', 'Gagal Auto-Push');
+        throw err; // Teruskan pesan eror ke fungsi pemanggil
       }
     }
 
@@ -6836,7 +6875,7 @@
     }
 
     async function syncUploadToGdrive() {
-      const pin = document.getElementById('gdrive-encryption-pin')?.value || localStorage.getItem('vf_gdrive_pin_persistent');
+      const pin = document.getElementById('gdrive-encryption-pin')?.value.trim() || localStorage.getItem('vf_gdrive_pin_persistent');
       if (!pin) {
         alert("Harap masukkan PIN / Kata Sandi Enkripsi terlebih dahulu!");
         return;
@@ -6845,8 +6884,15 @@
         loginGdrive();
         return;
       }
-      await executeCloudPush(pin);
-      alert("Berhasil! Data telah dienkripsi secara lokal dan tersimpan di Google Drive.");
+
+      try {
+        setSyncBadge('syncing', 'Mengunggah ke Cloud...');
+        await executeCloudPush(pin);
+        alert("Berhasil! Seluruh data hasil pemulihan telah dienkripsi dan tersimpan di Google Drive.");
+      } catch (err) {
+        console.error("Gagal unggah manual:", err);
+        alert("Gagal mengunggah ke Cloud: " + (err.message || "Periksa koneksi internet atau PIN enkripsi Anda."));
+      }
     }
 
     async function syncDownloadFromGdrive() {
