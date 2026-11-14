@@ -6407,6 +6407,9 @@
       if (!tabName) tabName = 'dashboard';
       if (currentActiveTab === tabName && !isBackNavigation) return;
 
+      // 1. UPLOAD INSTAN: Jika ada perubahan lokal yang belum terunggah, langsung dorong saat pindah menu
+      flushPendingCloudPush();
+
       if (!isBackNavigation) {
         const targetHash = (tabName === 'dashboard') ? '#app' : '#' + tabName;
         history.pushState({ tab: tabName }, '', targetHash);
@@ -6448,6 +6451,14 @@
       }
 
       closeMobileMenu();
+
+      // 2. AUTO-SINKRON MASUK MENU TRANSAKSI: Tarik data terbaru dari Cloud secara instan
+      if (tabName === 'transactions') {
+        renderTransactions();
+        if (navigator.onLine && isGdriveSessionActive()) {
+          autoPullFromCloud();
+        }
+      }
 
       if (tabName === 'analysis') renderAnalysisView();
       if (tabName === 'trends') {
@@ -6567,6 +6578,108 @@
       localStorage.setItem('vf_gdrive_pin_persistent', pin);
     }
 
+	// ==================== SESI GOOGLE 48 JAM & INSTANT SYNC ====================
+    const GDRIVE_SESSION_MAX_IDLE = 48 * 60 * 60 * 1000; // 48 Jam dalam milidetik
+
+    function isGdriveSessionActive() {
+      const lastActive = parseInt(localStorage.getItem('vf_gdrive_session_last_active') || '0');
+      if (!lastActive) return false;
+      return (Date.now() - lastActive) <= GDRIVE_SESSION_MAX_IDLE;
+    }
+
+    function updateGdriveSessionActivity() {
+      localStorage.setItem('vf_gdrive_session_last_active', String(Date.now()));
+    }
+
+    // Memastikan token Google selalu valid selama sesi 48 jam masih aktif
+    async function ensureValidGdriveToken(forceRefresh = false) {
+      const savedToken = localStorage.getItem('vf_gdrive_access_token');
+      const tokenExpiresAt = parseInt(localStorage.getItem('vf_gdrive_token_expires') || '0');
+
+      // Jika sudah melebihi 48 jam tidak aktif, putuskan sesi dan minta login ulang
+      if (!isGdriveSessionActive()) {
+        if (savedToken) {
+          disconnectGdrive(false);
+          setSyncBadge('error', 'Sesi Berakhir (48 Jam)');
+        }
+        return null;
+      }
+
+      // Jika token masih berlaku dan tidak dipaksa refresh
+      if (!forceRefresh && savedToken && Date.now() < (tokenExpiresAt - 60000)) {
+        gdriveAccessToken = savedToken;
+        updateGdriveSessionActivity();
+        return savedToken;
+      }
+
+      // Lakukan silent refresh di latar belakang (tanpa pop up) jika masih dalam sesi 48 jam
+      return new Promise((resolve) => {
+        const clientId = document.getElementById('gdrive-client-id')?.value.trim() || localStorage.getItem('vf_gdrive_client_id');
+        if (!clientId || typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+          resolve(null);
+          return;
+        }
+
+        if (!gdriveTokenClient) {
+          initGdriveAuth(() => {});
+        }
+
+        if (!gdriveTokenClient) {
+          resolve(null);
+          return;
+        }
+
+        const originalCallback = gdriveTokenClient.callback;
+        gdriveTokenClient.callback = (tokenResponse) => {
+          gdriveTokenClient.callback = originalCallback;
+          if (tokenResponse && tokenResponse.access_token) {
+            gdriveAccessToken = tokenResponse.access_token;
+            const expiresInSec = tokenResponse.expires_in ? parseInt(tokenResponse.expires_in) : 3600;
+            localStorage.setItem('vf_gdrive_access_token', gdriveAccessToken);
+            localStorage.setItem('vf_gdrive_token_expires', String(Date.now() + (expiresInSec * 1000) - 30000));
+            updateGdriveSessionActivity();
+            updateGdriveStatusUI(true);
+            resolve(gdriveAccessToken);
+          } else {
+            resolve(null);
+          }
+        };
+
+        try {
+          // Permintaan token senyap tanpa prompt
+          gdriveTokenClient.requestAccessToken({ prompt: '' });
+        } catch (err) {
+          gdriveTokenClient.callback = originalCallback;
+          resolve(null);
+        }
+      });
+    }
+
+    // Cek apakah ada perubahan data lokal yang belum sempat terunggah ke Cloud
+    function hasPendingCloudChanges() {
+      const lastSync = parseInt(localStorage.getItem('vf_last_sync_timestamp') || '0');
+      const localMod = parseInt(localStorage.getItem('vf_local_modified_timestamp') || '0');
+      return (localMod > lastSync) || (autoSyncPushTimer !== null);
+    }
+
+    // Eksekusi unggah instan saat berpindah menu atau keluar aplikasi
+    async function flushPendingCloudPush() {
+      if (!hasPendingCloudChanges()) return;
+      const pin = document.getElementById('gdrive-encryption-pin')?.value.trim() || localStorage.getItem('vf_gdrive_pin_persistent');
+      if (!pin) return;
+
+      if (autoSyncPushTimer) {
+        clearTimeout(autoSyncPushTimer);
+        autoSyncPushTimer = null;
+      }
+
+      try {
+        await executeCloudPush(pin);
+      } catch (err) {
+        console.warn('Gagal eksekusi instant upload:', err);
+      }
+    }
+
     function loadGdrivePrefs() {
       const clientId = localStorage.getItem('vf_gdrive_client_id') || '';
       const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin') || '';
@@ -6574,14 +6687,14 @@
       setVal('gdrive-encryption-pin', pin);
 
       const savedToken = localStorage.getItem('vf_gdrive_access_token');
-      const tokenExpiresAt = parseInt(localStorage.getItem('vf_gdrive_token_expires') || '0');
 
-      if (savedToken && Date.now() < tokenExpiresAt) {
+      if (savedToken && isGdriveSessionActive()) {
         gdriveAccessToken = savedToken;
         updateGdriveStatusUI(true);
         setSyncBadge('synced');
+        ensureValidGdriveToken(); // Refresh token di latar jika mendekati 1 jam
       } else if (savedToken) {
-        setSyncBadge('error', 'Sesi Berakhir');
+        setSyncBadge('error', 'Sesi Berakhir (48 Jam)');
         updateGdriveStatusUI(false);
       } else {
         setSyncBadge('offline');
@@ -6621,6 +6734,7 @@
           localStorage.setItem('vf_gdrive_access_token', gdriveAccessToken);
           localStorage.setItem('vf_gdrive_token_expires', String(Date.now() + (expiresInSec * 1000) - 30000));
           
+          updateGdriveSessionActivity(); // Aktifkan sesi 48 jam
           updateGdriveStatusUI(true);
           setSyncBadge('synced');
           saveGdrivePrefs();
@@ -6630,24 +6744,25 @@
       return true;
     }
 
+    function disconnectGdrive(showAlert = true) {
+      if (gdriveAccessToken && typeof google !== 'undefined') {
+        try { google.accounts.oauth2.revoke(gdriveAccessToken, () => {}); } catch(e) {}
+      }
+      gdriveAccessToken = null;
+      localStorage.removeItem('vf_gdrive_access_token');
+      localStorage.removeItem('vf_gdrive_token_expires');
+      localStorage.removeItem('vf_gdrive_session_last_active');
+      updateGdriveStatusUI(false);
+      setSyncBadge('offline');
+      if (showAlert) alert("Koneksi Google Drive diputuskan.");
+    }
+
     function loginGdrive() {
       if (initGdriveAuth(async () => {
         await autoPullFromCloud(true);
       })) {
         gdriveTokenClient.requestAccessToken({ prompt: '' });
       }
-    }
-
-    function disconnectGdrive() {
-      if (gdriveAccessToken && typeof google !== 'undefined') {
-        google.accounts.oauth2.revoke(gdriveAccessToken, () => {});
-      }
-      gdriveAccessToken = null;
-      localStorage.removeItem('vf_gdrive_access_token');
-      localStorage.removeItem('vf_gdrive_token_expires');
-      updateGdriveStatusUI(false);
-      setSyncBadge('offline');
-      alert("Koneksi Google Drive diputuskan.");
     }
 
     function updateGdriveStatusUI(isLoggedIn) {
@@ -6702,7 +6817,9 @@
         setSyncBadge('offline');
         return;
       }
-      if (!gdriveAccessToken) return;
+      const token = await ensureValidGdriveToken();
+      if (!token) return;
+
       const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
       if (!pin) return;
 
@@ -6743,6 +6860,7 @@
             localStorage.setItem('vf_last_sync_timestamp', String(cloudModifiedTime));
             localStorage.setItem('vf_local_modified_timestamp', String(cloudModifiedTime));
             localStorage.setItem('vf_gdrive_last_sync', cloudSyncIso);
+            updateGdriveSessionActivity();
             loadGdrivePrefs();
 
             persistState(false);
@@ -6777,7 +6895,9 @@
     }
 
     async function executeCloudPush(pin) {
-      if (!gdriveAccessToken) return;
+      const token = await ensureValidGdriveToken();
+      if (!token) return;
+
       try {
         setSyncBadge('syncing', 'Mengunggah ke Cloud...');
         const rawPayload = buildBackupPayload();
@@ -6807,11 +6927,13 @@
           });
         }
 
-        // Tangani jika sesi login Google kedaluwarsa (401)
         if (!uploadRes.ok) {
           if (uploadRes.status === 401) {
-            setSyncBadge('error', 'Sesi Berakhir');
-            throw new Error('Sesi Google kedaluwarsa. Silakan Login Akun Google kembali.');
+            // Coba perbarui token sekali lagi jika ditolak
+            const newToken = await ensureValidGdriveToken(true);
+            if (newToken) return executeCloudPush(pin);
+            setSyncBadge('error', 'Sesi Berakhir (48 Jam)');
+            throw new Error('Sesi Google kedaluwarsa.');
           }
           const errRes = await uploadRes.json().catch(() => ({}));
           throw new Error(errRes.error?.message || `HTTP ${uploadRes.status}`);
@@ -6821,12 +6943,11 @@
         const serverModifiedTime = dataRes.modifiedTime ? new Date(dataRes.modifiedTime).getTime() : Date.now();
         const nowIso = new Date(serverModifiedTime).toISOString();
 
-        // Kalibrasi ulang seluruh timestamp sinkronisasi
         localStorage.setItem('vf_last_sync_timestamp', String(serverModifiedTime));
         localStorage.setItem('vf_local_modified_timestamp', String(serverModifiedTime));
         localStorage.setItem('vf_gdrive_last_sync', nowIso);
+        updateGdriveSessionActivity();
 
-        // Perbarui teks keterangan waktu sinkronisasi di UI Pengaturan
         const t = new Date(nowIso).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
         setText('gdrive-last-sync-label', `Sinkronisasi Cloud: ${t}`);
 
@@ -6834,7 +6955,7 @@
       } catch (err) {
         console.error("Auto push error:", err);
         setSyncBadge('error', 'Gagal Auto-Push');
-        throw err; // Teruskan pesan eror ke fungsi pemanggil
+        throw err;
       }
     }
 
@@ -7559,40 +7680,48 @@
       }
     }
 
-    function confirmExitApp() {
-      isExitingApplication = true; // Matikan cegatan popstate
+    async function confirmExitApp() {
+      // 1. Eksekusi upload instan jika masih ada data yang tertunda sebelum aplikasi ditutup
+      await flushPendingCloudPush();
+
+      isExitingApplication = true;
       closeExitConfirmModal();
 
-      // 1. Eksekusi keluar jika berjalan di lingkungan WebView / Aplikasi Android
       if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
         window.navigator.app.exitApp();
         return;
       }
 
-      // 2. Coba tutup jendela browser / PWA Standalone
       window.close();
-
-      // 3. Navigasi mundur melewati riwayat aplikasi agar keluar dari halaman
       setTimeout(() => {
-        history.go(-(history.length));
-      }, 50);
-
-      // 4. Tampilkan layar "Aplikasi Ditutup" elegan jika browser memblokir penutupan tab otomatis
-      setTimeout(() => {
-        document.body.innerHTML = `
-          <div class="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center text-white">
-            <div class="w-16 h-16 bg-slate-800 text-emerald-400 rounded-3xl flex items-center justify-center mb-4 shadow-xl border border-slate-700">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-            </div>
-            <h2 class="text-xl font-bold">FinTrack Telah Ditutup</h2>
-            <p class="text-xs text-slate-400 mt-2 max-w-xs leading-relaxed">Sesi Anda telah aman diakhiri. Anda dapat menutup tab atau beralih ke aplikasi lain.</p>
-            <button onclick="location.href=location.pathname + '#app'; location.reload();" class="mt-6 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-emerald-600/30">
-              Buka Kembali FinTrack
-            </button>
-          </div>
-        `;
-      }, 300);
+        history.go(-2);
+      }, 100);
     }
+
+    // Pemicu saat aplikasi diminimalkan / layar dimatikan / tab dibuka kembali (HP & PC)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        // Saat aplikasi ditinggalkan/ditutup ke latar belakang: langsung unggah jika ada pending
+        flushPendingCloudPush();
+      } else if (document.visibilityState === 'visible') {
+        // Saat aplikasi dibuka kembali: langsung periksa data baru
+        if (navigator.onLine && isGdriveSessionActive()) {
+          autoPullFromCloud();
+        }
+      }
+    });
+
+    // Pemicu saat jendela browser ditutup (PC)
+    window.addEventListener('pagehide', () => {
+      flushPendingCloudPush();
+    });
+
+    // Pengecekan rutin otomatis setiap 1 menit saat aplikasi sedang aktif menyala
+    setInterval(() => {
+      if (navigator.onLine && isGdriveSessionActive()) {
+        autoPullFromCloud();
+      }
+    }, 60000);
 	
     function dismissUpdateBanner() {
       const banner = document.getElementById('pwa-update-banner');
