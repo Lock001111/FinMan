@@ -330,6 +330,17 @@
             </div>
           </div>
         </div>
+		
+		<!-- BANNER PENANDA DRILL-DOWN DARI GRAFIK DASHBOARD -->
+        <div id="drilldown-banner" class="hidden p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-2">
+            <i data-lucide="filter" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+            <span>Menampilkan rincian dari Dashboard: <strong id="drilldown-desc">-</strong></span>
+          </div>
+          <button type="button" onclick="clearDrillDownView()" class="px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg font-bold text-[11px] transition shadow-xs whitespace-nowrap">
+            Reset Tampilan
+          </button>
+        </div>
 
         <!-- 2. PENCARIAN CATATAN & FILTER LENGKAP -->
         <div class="space-y-2.5 pb-2">
@@ -2961,6 +2972,24 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          // ==================== DRILL-DOWN KLIK IRISAN PIE ====================
+          onClick: (evt, elements) => {
+            if (elements && elements.length > 0) {
+              const idx = elements[0].index;
+              const catName = labels[idx];
+              if (catName && catName !== 'Belum Ada Pengeluaran') {
+                drillDownToTransactions({
+                  month: dashboardSelectedMonth,
+                  category: catName,
+                  type: 'expense'
+                });
+              }
+            }
+          },
+          onHover: (event, chartElement) => {
+            event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
+          },
+          // ====================================================================
           plugins: {
             legend: { 
               position: 'bottom',
@@ -2968,7 +2997,7 @@
             },
             tooltip: {
               callbacks: {
-                label: (item) => ` ${item.label}: ${formatCurrency(item.raw)}`
+                label: (item) => ` ${item.label}: ${formatCurrency(item.raw)} (Klik untuk rincian)`
               }
             }
           }
@@ -3033,6 +3062,31 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          // ==================== DRILL-DOWN KLIK BATANG GRAFIK ====================
+          onClick: (evt, elements) => {
+            if (elements && elements.length > 0) {
+              const elem = elements[0];
+              const monthIdx = elem.index; // 0 s.d. 11
+              const datasetIdx = elem.datasetIndex; // 0 = Pemasukan, 1 = Pengeluaran
+
+              // Abaikan jika batang bernilai null / belum berjalan
+              const clickedVal = (datasetIdx === 0 ? monthlyIncome : monthlyExpense)[monthIdx];
+              if (clickedVal === null || clickedVal === undefined) return;
+
+              const targetMonthStr = `${year}-${String(monthIdx + 1).padStart(2, '0')}`;
+              const targetType = (datasetIdx === 0) ? 'income' : 'expense';
+
+              drillDownToTransactions({
+                month: targetMonthStr,
+                type: targetType,
+                category: 'ALL'
+              });
+            }
+          },
+          onHover: (event, chartElement) => {
+            event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
+          },
+          // =======================================================================
           plugins: {
             legend: { 
               position: 'bottom',
@@ -3040,7 +3094,7 @@
             },
             tooltip: {
               callbacks: {
-                label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)}`
+                label: (item) => ` ${item.dataset.label}: ${formatCurrency(item.raw)} (Klik untuk rincian)`
               }
             }
           },
@@ -3324,6 +3378,102 @@
     function onFilterCategoryChange() {
       allTimeCurrentPage = 1;
       updateDynamicTransactionFilters();
+      renderTransactions();
+    }
+	
+	// ==================== INTERACTIVE CHART DRILL-DOWN ====================
+    let isDrillDownFilter = false;
+
+    function drillDownToTransactions(params) {
+      isDrillDownFilter = true;
+
+      // 1. Matikan 'Semua Waktu' jika aktif
+      const chkAllTime = document.getElementById('filter-all-time');
+      if (chkAllTime) chkAllTime.checked = false;
+      const monthWrapper = document.getElementById('month-selector-wrapper');
+      if (monthWrapper) monthWrapper.classList.remove('opacity-40', 'pointer-events-none');
+
+      // 2. Set periode bulan
+      if (params.month) {
+        setVal('filter-month', params.month);
+      }
+
+      // 3. Reset kolom pencarian teks & nominal
+      setVal('filter-search', '');
+      setVal('filter-amount-op', 'ALL');
+      setVal('filter-amount-val', '');
+      setVal('filter-expense-class', 'ALL');
+      const labelClass = document.getElementById('label-filter-expense-class');
+      if (labelClass) labelClass.textContent = 'Semua Klasifikasi';
+
+      // 4. Set Tipe (expense / income / ALL)
+      const targetType = params.type || 'ALL';
+      setVal('filter-type', targetType);
+      const typeOpt = (searchableFilterData['filter-type'] || []).find(o => o.value === targetType);
+      const labelType = document.getElementById('label-filter-type');
+      if (labelType && typeOpt) labelType.textContent = typeOpt.label;
+
+      // 5. Perbarui opsi filter kategori & subkategori riil periode ini
+      updateDynamicTransactionFilters();
+
+      // 6. Set Kategori terpilih
+      const targetCat = params.category || 'ALL';
+      setVal('filter-category', targetCat);
+      const curCatOpt = (searchableFilterData['filter-category'] || []).find(o => o.value === targetCat) 
+                     || { label: targetCat === 'ALL' ? 'Semua Kategori' : targetCat };
+      const labelCat = document.getElementById('label-filter-category');
+      if (labelCat) labelCat.textContent = curCatOpt.label;
+
+      // 7. Update subkategori untuk kategori ini & reset subkategori ke ALL
+      onFilterCategoryChange();
+
+      // 8. Reset Rekening ke ALL
+      setVal('filter-account', 'ALL');
+      const labelAcc = document.getElementById('label-filter-account');
+      if (labelAcc) labelAcc.textContent = 'Semua Rekening';
+
+      // 9. Reset pagination ke halaman 1
+      allTimeCurrentPage = 1;
+
+      // 10. Tampilkan banner info rincian dari dashboard
+      const banner = document.getElementById('drilldown-banner');
+      const desc = document.getElementById('drilldown-desc');
+      if (banner && desc) {
+        let text = '';
+        if (params.category && params.category !== 'ALL') text += params.category;
+        if (params.type && params.type !== 'ALL') text += (text ? ' (' : '') + (params.type === 'income' ? 'Pemasukan' : 'Pengeluaran') + (text ? ')' : '');
+        if (params.month) text += ' • ' + params.month;
+        desc.textContent = text || 'Rincian Grafik';
+        banner.classList.remove('hidden');
+      }
+
+      // 11. Buka halaman transaksi
+      switchTab('transactions');
+    }
+
+    function resetDrillDownFilter() {
+      if (!isDrillDownFilter) return;
+      isDrillDownFilter = false;
+
+      // Sembunyikan banner penanda drill-down
+      const banner = document.getElementById('drilldown-banner');
+      if (banner) banner.classList.add('hidden');
+
+      // Kembalikan filter transaksi ke bulan aktif di Dashboard
+      const defaultMonth = dashboardSelectedMonth || `${curYear}-${curMonth}`;
+      setVal('filter-month', defaultMonth);
+
+      const chkAllTime = document.getElementById('filter-all-time');
+      if (chkAllTime) chkAllTime.checked = false;
+      const monthWrapper = document.getElementById('month-selector-wrapper');
+      if (monthWrapper) monthWrapper.classList.remove('opacity-40', 'pointer-events-none');
+
+      // Reset semua filter ke kondisi default bersih
+      resetTransactionFilters();
+    }
+
+    function clearDrillDownView() {
+      resetDrillDownFilter();
       renderTransactions();
     }
 	
@@ -4213,8 +4363,8 @@
           }
         });
 
-        let expenseCats = categories.filter(c => c.type === 'expense');
-        let incomeCats = categories.filter(c => c.type === 'income');
+        let expenseCats = categories.filter(c => c.type === 'expense' && (expCatSums[c.id] || 0) > 0);
+        let incomeCats = categories.filter(c => c.type === 'income' && (incCatSums[c.id] || 0) > 0);
 
         const sortCatList = (cats, sumMap) => {
           return [...cats].sort((a, b) => {
@@ -4232,7 +4382,10 @@
         incomeCats = sortCatList(incomeCats, incCatSums);
 
         const renderCategoryBlock = (cats, sumMap, subMapCollection, totalAmount, isExpense) => {
-          return cats.map(c => {
+          if (cats.length === 0) {
+            return `<div class="py-4 text-center text-slate-400 italic text-xs">Belum ada transaksi ${isExpense ? 'pengeluaran' : 'pemasukan'} di bulan ini.</div>`;
+          }
+		  return cats.map(c => {
             const val = sumMap[c.id] || 0;
             const pct = totalAmount > 0 ? ((val / totalAmount) * 100).toFixed(1) : 0;
             const isExpanded = (activeExpandedAnalysisCatId === c.id);
@@ -5639,78 +5792,52 @@
 
       const elapsed = (trendScope === 'year') ? getElapsedMonthsCount(parseInt(yearVal) || curYear) : 12;
 
-      const budgetCheckMonths = (trendScope === 'year') 
-        ? Array.from({ length: 12 }, (_, i) => `${yearVal}-${String(i + 1).padStart(2, '0')}`)
-        : [monthVal];
-
-      let hasBudgetConfigured = false;
-      for (const mKey of budgetCheckMonths) {
-        const monthBudgets = budgets[mKey];
-        if (monthBudgets) {
-          if (catFilter !== 'ALL') {
-            if (parseFloat(monthBudgets[catFilter]) > 0) {
-              hasBudgetConfigured = true;
-              break;
-            }
-          } else {
-            const anyCatBudget = Object.values(monthBudgets).some(v => parseFloat(v) > 0);
-            if (anyCatBudget) {
-              hasBudgetConfigured = true;
-              break;
-            }
-          }
-        }
-      }
-
-      const budgetCheckbox = document.getElementById('trend-toggle-budget');
-      const budgetLabel = document.getElementById('trend-toggle-budget-label');
-
-      if (budgetCheckbox && budgetLabel) {
-        if (!hasBudgetConfigured) {
-          budgetCheckbox.disabled = true;
-          budgetCheckbox.checked = false;
-          budgetLabel.classList.add('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
-          budgetLabel.title = "Belum ada limit anggaran yang diatur untuk periode/kategori ini";
-        } else {
-          budgetCheckbox.disabled = false;
-          budgetCheckbox.checked = trendShowBudget;
-          budgetLabel.classList.remove('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
-          budgetLabel.removeAttribute('title');
-        }
-      }
-
+      // =========================================================================
+      // PEMBAGIAN ENTITAS: KATEGORI vs SUBKATEGORI (SUDAH DIPERBAIKI)
+      // =========================================================================
       let seriesItems = [];
 
       if (trendEntity === 'category') {
+        // Mode Kategori
         const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
         seriesItems = targetCats.map(c => ({ key: c.id, label: c.name }));
       } else {
+        // Mode Subkategori
         const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
-        const subMap = new Set();
+        const subSet = new Set(); // Menggunakan nama variabel subSet secara konsisten
+
+        // 1. Ambil subkategori master dari kategori terpilih
         targetCats.forEach(c => {
-          (c.subcategories || []).forEach(sub => { if (sub && sub.trim()) subSet.add(sub.trim()); });
+          (c.subcategories || []).forEach(sub => {
+            if (sub && sub.trim()) subSet.add(sub.trim());
+          });
         });
+
+        // 2. Ambil subkategori riil dari riwayat transaksi
         transactions.forEach(tx => {
           if (tx.type === 'expense' && tx.subcategory && tx.subcategory.trim()) {
             if (catFilter === 'ALL' || tx.categoryId === catFilter) {
-              subMap.add(tx.subcategory.trim());
+              subSet.add(tx.subcategory.trim());
             }
           }
         });
 
-        let subList = Array.from(subMap);
+        let subList = Array.from(subSet).sort((a, b) => a.localeCompare(b, 'id'));
+
+        // Filter subkategori tunggal jika user memilih subkategori tertentu
         if (subFilter !== 'ALL') {
           subList = subList.filter(s => s === subFilter);
         }
+
         seriesItems = subList.map(sub => ({ key: sub, label: sub }));
       }
 
+      // Bangun dataset grafik
       const datasets = [];
       let colorIndex = 0;
 
       seriesItems.forEach(item => {
         const dataPoints = timeKeys.map((timeKey, idx) => {
-          // Set null jika bulan belum berjalan
           if (trendScope === 'year' && (idx + 1) > elapsed) return null;
 
           return transactions.reduce((sum, tx) => {
@@ -5731,7 +5858,8 @@
         });
 
         const totalSpent = dataPoints.reduce((a, b) => a + (b || 0), 0);
-        if (totalSpent > 0 || seriesItems.length <= 3) {
+        // Tampilkan garis jika ada transaksi atau jika user memfilter subkategori tunggal
+        if (totalSpent > 0 || (trendEntity === 'subcategory' && subFilter !== 'ALL') || seriesItems.length <= 3) {
           const color = palette[colorIndex % palette.length];
           datasets.push({
             label: item.label,
@@ -5746,13 +5874,25 @@
         }
       });
 
+      // Hitung garis rata-rata & limit anggaran
       if (trendScope === 'year') {
         const year = yearVal;
-        const divisor = Math.max(1, elapsed); // Dibagi bulan yang sudah berjalan
+        const divisor = Math.max(1, elapsed);
 
         if (trendShowAvg && datasets.length > 0) {
           let avgVal = 0;
-          if (catFilter !== 'ALL') {
+          if (trendEntity === 'subcategory' && subFilter !== 'ALL') {
+            // Rata-rata khusus untuk subkategori spesifik yang dipilih
+            const totalSub = transactions.reduce((sum, tx) => {
+              if (tx.type === 'expense' && (tx.subcategory || '').trim() === subFilter && tx.date && tx.date.startsWith(year)) {
+                if (catFilter === 'ALL' || tx.categoryId === catFilter) {
+                  return sum + (parseFloat(tx.amount) || 0);
+                }
+              }
+              return sum;
+            }, 0);
+            avgVal = elapsed > 0 ? (totalSub / divisor) : 0;
+          } else if (catFilter !== 'ALL') {
             const totalCat = transactions.reduce((sum, tx) => {
               if (tx.type === 'expense' && tx.categoryId === catFilter && tx.date && tx.date.startsWith(year)) {
                 return sum + (parseFloat(tx.amount) || 0);
@@ -5770,7 +5910,6 @@
             avgVal = elapsed > 0 ? (totalAll / divisor) : 0;
           }
 
-          // Garis rata-rata berhenti di bulan saat ini
           const avgData = Array.from({ length: 12 }, (_, i) => (i + 1 <= elapsed ? avgVal : null));
 
           datasets.push({
@@ -5784,19 +5923,16 @@
           });
         }
 
-        if (hasBudgetConfigured && trendShowBudget) {
+        // Garis batas limit anggaran kategori
+        const hasBudgetConfigured = budgets && (catFilter !== 'ALL' ? Boolean(budgets[`${year}-01`]?.[catFilter]) : false);
+        if (hasBudgetConfigured && trendShowBudget && catFilter !== 'ALL') {
           const budgetData = timeKeys.map((timeKey, idx) => {
-            if (idx + 1 > elapsed) return null; // Garis limit juga berhenti di bulan saat ini
-            const monthBudgets = budgets[timeKey] || {};
-            if (catFilter !== 'ALL') {
-              return monthBudgets[catFilter] || 0;
-            } else {
-              return Object.values(monthBudgets).reduce((a, b) => a + (parseFloat(b) || 0), 0);
-            }
+            if (idx + 1 > elapsed) return null;
+            return budgets[timeKey]?.[catFilter] || 0;
           });
 
           datasets.push({
-            label: 'Batas Anggaran (Limit)',
+            label: 'Batas Limit Kategori',
             data: budgetData,
             borderColor: '#f43f5e',
             borderDash: [3, 3],
@@ -5808,6 +5944,7 @@
         }
       }
 
+      // Hancurkan instance grafik lama dan gambar ulang
       if (trendsChartInstance) trendsChartInstance.destroy();
 
       trendsChartInstance = new Chart(ctx, {
@@ -5815,7 +5952,7 @@
         data: {
           labels: timeLabels,
           datasets: datasets.length > 0 ? datasets : [{
-            label: 'Tidak ada data pengeluaran',
+            label: trendEntity === 'subcategory' ? 'Tidak ada data subkategori' : 'Tidak ada data pengeluaran',
             data: new Array(timeLabels.length).fill(0),
             borderColor: '#cbd5e1'
           }]
@@ -6062,7 +6199,9 @@
 
       const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
       targetCats.forEach(c => {
-        (c.subcategories || []).forEach(sub => { if (sub && sub.trim()) subSet.add(sub.trim()); });
+        (c.subcategories || []).forEach(sub => { 
+          if (sub && sub.trim()) subSet.add(sub.trim()); 
+        });
       });
 
       transactions.forEach(tx => {
@@ -6103,6 +6242,7 @@
         }
       }
       renderTrendsChart();
+      lucide.createIcons();
     }
 
     function setCompareType(type) {
@@ -6880,6 +7020,11 @@
     function switchTab(tabName, isBackNavigation = false) {
       if (!tabName) tabName = 'dashboard';
       if (currentActiveTab === tabName && !isBackNavigation) return;
+	  
+	  // AUTO-RESET: Jika sedang meninggalkan menu Transaksi yang dibuka dari grafik, bersihkan filter
+      if (isDrillDownFilter && currentActiveTab === 'transactions' && tabName !== 'transactions') {
+        resetDrillDownFilter();
+      }
 
       // 1. Simpan posisi scroll menu saat ini sebelum berpindah
       if (currentActiveTab && tabScrollPositions.hasOwnProperty(currentActiveTab)) {
