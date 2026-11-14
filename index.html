@@ -356,33 +356,90 @@
             </div>
           </div>
 
+          <!-- BARIS FILTER SEARCHABLE (BISA DIKETIK / CARI HURUF DEPAN) -->
           <div class="grid grid-cols-2 gap-2 md:flex md:flex-nowrap md:items-center">
-            <select id="filter-account" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
-              <option value="ALL">Semua Rekening</option>
-            </select>
+            
+            <!-- 1. FILTER REKENING -->
+            <div class="relative w-full md:w-auto searchable-filter-wrap" id="wrap-filter-account">
+              <input type="hidden" id="filter-account" value="ALL" />
+              <button type="button" onclick="toggleSearchableDropdown('filter-account', event)" class="w-full md:w-auto min-w-[130px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 hover:border-emerald-500 transition shadow-sm text-left">
+                <span id="label-filter-account" class="truncate font-medium">Semua Rekening</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-filter-account" class="hidden absolute left-0 top-full mt-1 w-56 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                <div class="relative">
+                  <input type="text" id="input-search-filter-account" oninput="onSearchableDropdownInput('filter-account')" onkeydown="onSearchableDropdownKeydown('filter-account', event)" placeholder="Ketik rekening..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div id="list-filter-account" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+              </div>
+            </div>
 
-            <select id="filter-category" onchange="onFilterCategoryChange()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
-              <option value="ALL">Semua Kategori</option>
-            </select>
+            <!-- 2. FILTER KATEGORI (HANYA MUNCUL JIKA ADA DI TRANSAKSI) -->
+            <div class="relative w-full md:w-auto searchable-filter-wrap" id="wrap-filter-category">
+              <input type="hidden" id="filter-category" value="ALL" />
+              <button type="button" onclick="toggleSearchableDropdown('filter-category', event)" class="w-full md:w-auto min-w-[130px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 hover:border-emerald-500 transition shadow-sm text-left">
+                <span id="label-filter-category" class="truncate font-medium">Semua Kategori</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-filter-category" class="hidden absolute left-0 top-full mt-1 w-56 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                <div class="relative">
+                  <input type="text" id="input-search-filter-category" oninput="onSearchableDropdownInput('filter-category')" onkeydown="onSearchableDropdownKeydown('filter-category', event)" placeholder="Ketik kategori..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div id="list-filter-category" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+              </div>
+            </div>
 
-            <select id="filter-subcategory" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
-              <option value="ALL">Semua Subkategori</option>
-            </select>
+            <!-- 3. FILTER SUBKATEGORI (HANYA MUNCUL JIKA ADA DI TRANSAKSI) -->
+            <div class="relative w-full md:w-auto searchable-filter-wrap" id="wrap-filter-subcategory">
+              <input type="hidden" id="filter-subcategory" value="ALL" />
+              <button type="button" onclick="toggleSearchableDropdown('filter-subcategory', event)" class="w-full md:w-auto min-w-[130px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 hover:border-emerald-500 transition shadow-sm text-left">
+                <span id="label-filter-subcategory" class="truncate font-medium">Semua Subkategori</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-filter-subcategory" class="hidden absolute left-0 top-full mt-1 w-56 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                <div class="relative">
+                  <input type="text" id="input-search-filter-subcategory" oninput="onSearchableDropdownInput('filter-subcategory')" onkeydown="onSearchableDropdownKeydown('filter-subcategory', event)" placeholder="Ketik subkategori..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div id="list-filter-subcategory" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+              </div>
+            </div>
 
-            <select id="filter-type" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white w-full md:w-auto">
-              <option value="ALL">Semua Tipe</option>
-              <option value="expense">Pengeluaran</option>
-              <option value="income">Pemasukan</option>
-              <option value="transfer">Transfer</option>
-            </select>
+            <!-- 4. FILTER TIPE -->
+            <div class="relative w-full md:w-auto searchable-filter-wrap" id="wrap-filter-type">
+              <input type="hidden" id="filter-type" value="ALL" />
+              <button type="button" onclick="toggleSearchableDropdown('filter-type', event)" class="w-full md:w-auto min-w-[115px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 hover:border-emerald-500 transition shadow-sm text-left">
+                <span id="label-filter-type" class="truncate font-medium">Semua Tipe</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-filter-type" class="hidden absolute left-0 top-full mt-1 w-48 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                <div class="relative">
+                  <input type="text" id="input-search-filter-type" oninput="onSearchableDropdownInput('filter-type')" onkeydown="onSearchableDropdownKeydown('filter-type', event)" placeholder="Cari tipe..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div id="list-filter-type" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+              </div>
+            </div>
 
-            <select id="filter-expense-class" onchange="renderTransactions()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-emerald-800 w-full md:w-auto">
-              <option value="ALL">Semua Klasifikasi</option>
-              <option value="fixed">Tetap (Fixed)</option>
-              <option value="periodic">Berkala (Periodic)</option>
-              <option value="dynamic">Dinamis (Dynamic)</option>
-            </select>
+            <!-- 5. FILTER KLASIFIKASI -->
+            <div class="relative w-full md:w-auto searchable-filter-wrap" id="wrap-filter-expense-class">
+              <input type="hidden" id="filter-expense-class" value="ALL" />
+              <button type="button" onclick="toggleSearchableDropdown('filter-expense-class', event)" class="w-full md:w-auto min-w-[135px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-emerald-800 font-medium hover:border-emerald-500 transition shadow-sm text-left">
+                <span id="label-filter-expense-class" class="truncate font-semibold">Semua Klasifikasi</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+              </button>
+              <div id="dropdown-filter-expense-class" class="hidden absolute left-0 top-full mt-1 w-52 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                <div class="relative">
+                  <input type="text" id="input-search-filter-expense-class" oninput="onSearchableDropdownInput('filter-expense-class')" onkeydown="onSearchableDropdownKeydown('filter-expense-class', event)" placeholder="Cari klasifikasi..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                </div>
+                <div id="list-filter-expense-class" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+              </div>
+            </div>
 
+            <!-- TOMBOL RESET FILTER -->
             <button onclick="resetTransactionFilters()" title="Kembalikan semua filter ke awal" class="text-xs sm:text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-lg transition flex items-center justify-center gap-1 w-full md:w-auto shrink-0 shadow-sm">
               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Filter
             </button>
@@ -411,6 +468,38 @@
         <div class="block md:hidden space-y-2.5 mt-2" id="transaction-mobile-cards"></div>
 
         <div id="no-tx-msg" class="py-12 text-center text-slate-400 hidden">Tidak ada transaksi yang cocok dengan filter ini.</div>
+		<!-- KONTROL PAGINASI KHUSUS "SEMUA WAKTU" -->
+        <div id="all-time-pagination" class="hidden mt-4 pt-3 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-center justify-between sm:justify-start gap-3">
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-medium">Tampilkan:</span>
+              <select id="pagination-page-size" onchange="changeAllTimePageSize(this.value)" class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm cursor-pointer">
+                <option value="25">25 baris</option>
+                <option value="50">50 baris</option>
+                <option value="100">100 baris</option>
+              </select>
+            </div>
+            <span id="pagination-info-text" class="text-slate-500 font-medium">Menampilkan 0–0 dari 0 transaksi</span>
+          </div>
+
+          <div class="flex items-center justify-center sm:justify-end gap-1">
+            <button type="button" id="btn-page-first" onclick="setAllTimePage(1)" title="Halaman Pertama" class="px-2 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition font-mono font-bold">
+              &laquo;
+            </button>
+            <button type="button" id="btn-page-prev" onclick="changeAllTimePage(-1)" title="Halaman Sebelumnya" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition font-semibold">
+              &lsaquo;
+            </button>
+            <span id="pagination-pages-badge" class="px-3 py-1 font-bold text-slate-800 bg-slate-100 rounded-lg border border-slate-200 min-w-[65px] text-center">
+              1 / 1
+            </span>
+            <button type="button" id="btn-page-next" onclick="changeAllTimePage(1)" title="Halaman Berikutnya" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition font-semibold">
+              &rsaquo;
+            </button>
+            <button type="button" id="btn-page-last" onclick="setAllTimePage(999999)" title="Halaman Terakhir" class="px-2 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition font-mono font-bold">
+              &raquo;
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2091,6 +2180,117 @@
       expense: false,
       savings: true
     };
+	
+	// ==================== INDEPENDENT SCROLL RETENTION PER MENU ====================
+    // Default posisi scroll selalu di paling atas (0) saat pertama kali dibuka
+    const tabScrollPositions = {
+      dashboard: 0,
+      transactions: 0,
+      analysis: 0,
+      budgets: 0,
+      trends: 0,
+      settings: 0
+    };
+
+    // ==================== MOBILE SWIPE GESTURE NAVIGATION ====================
+    const TABS_ORDER = ['dashboard', 'transactions', 'analysis', 'budgets', 'trends', 'settings'];
+
+    function initSwipeNavigation() {
+      let touchStartX = null;
+      let touchStartY = null;
+      let touchStartTime = 0;
+
+      window.addEventListener('touchstart', (e) => {
+        // 1. Abaikan jika sentuhan lebih dari 1 jari (misal zoom)
+        if (e.touches.length !== 1) {
+          touchStartX = null;
+          return;
+        }
+
+        // 2. Abaikan jika ada modal/pop-up yang sedang terbuka di layar
+        const anyModalOpen = allModalIds.some(id => {
+          const el = document.getElementById(id);
+          return el && !el.classList.contains('hidden');
+        }) || document.getElementById('exit-confirm-modal')?.classList.contains('hidden') === false
+           || document.getElementById('pwa-update-success-modal')?.classList.contains('hidden') === false
+           || document.getElementById('app-lock-overlay')?.classList.contains('hidden') === false;
+
+        if (anyModalOpen) {
+          touchStartX = null;
+          return;
+        }
+
+        // 3. Abaikan jika menu navigasi mobile (hamburger) sedang terbuka
+        const mobMenu = document.getElementById('mobile-menu');
+        if (mobMenu && !mobMenu.classList.contains('hidden')) {
+          touchStartX = null;
+          return;
+        }
+
+        // 4. Pengaman Edge Swipe: Hindari bentrokan dengan gesture Back/Forward bawaan Android/iOS
+        const startX = e.touches[0].clientX;
+        const edgeMargin = 25; // Abaikan sentuhan 25px dari tepi kiri dan kanan layar
+        if (startX < edgeMargin || startX > (window.innerWidth - edgeMargin)) {
+          touchStartX = null;
+          return;
+        }
+
+        // 5. Pengecualian area interaktif (grafik/canvas, input/textarea/select, tabel scroll horizontal)
+        let targetEl = e.target;
+        while (targetEl && targetEl !== document.body) {
+          const tag = targetEl.tagName;
+          if (['CANVAS', 'INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
+            touchStartX = null;
+            return;
+          }
+          // Abaikan jika jari menyentuh tabel/elemen yang memiliki scrollbar horizontal aktif
+          if (targetEl.scrollWidth > targetEl.clientWidth && 
+             (targetEl.classList.contains('overflow-x-auto') || targetEl.classList.contains('overflow-x-scroll'))) {
+            touchStartX = null;
+            return;
+          }
+          targetEl = targetEl.parentElement;
+        }
+
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        const duration = Date.now() - touchStartTime;
+
+        touchStartX = null;
+        touchStartY = null;
+
+        // Filter Kenyamanan & Keamanan Gerakan:
+        // - Jarak geser horizontal minimal 65px
+        // - Dominan horizontal: gerakan samping minimal 1.5x lebih besar dari gerakan atas/bawah (bukan scroll halaman)
+        // - Durasi gesek cepat maksimal 600ms (bukan menahan/drag lambat)
+        if (Math.abs(deltaX) >= 65 && Math.abs(deltaX) > 1.5 * Math.abs(deltaY) && duration <= 600) {
+          const curIdx = TABS_ORDER.indexOf(currentActiveTab);
+          if (curIdx === -1) return;
+
+          if (deltaX < 0) {
+            // Geser Kiri (Swipe Left) -> Pindah ke tab berikutnya
+            if (curIdx + 1 < TABS_ORDER.length) {
+              switchTab(TABS_ORDER[curIdx + 1]);
+            }
+          } else {
+            // Geser Kanan (Swipe Right) -> Pindah ke tab sebelumnya
+            if (curIdx - 1 >= 0) {
+              switchTab(TABS_ORDER[curIdx - 1]);
+            }
+          }
+        }
+      }, { passive: true });
+    }
 
     function sanitizeState() {
       try {
@@ -2435,6 +2635,7 @@
       renderAll();
       fetchAppVersionFromSW();
       checkPostUpdateNotice();
+	  initSwipeNavigation();
     });
 
     function initPickers() {
@@ -2854,13 +3055,15 @@
     }
 
     // ==================== TRANSACTIONS VIEW ====================
-    function togglePeriodFilter() {
+	function togglePeriodFilter() {
       const isAllTime = document.getElementById('filter-all-time')?.checked;
       const monthWrapper = document.getElementById('month-selector-wrapper');
       if (monthWrapper) {
         if (isAllTime) monthWrapper.classList.add('opacity-40', 'pointer-events-none');
         else monthWrapper.classList.remove('opacity-40', 'pointer-events-none');
       }
+      allTimeCurrentPage = 1;
+      updateDynamicTransactionFilters();
       renderTransactions();
     }
 
@@ -2870,6 +3073,8 @@
       const parts = input.value.split('-').map(Number);
       const d = new Date(parts[0] || curYear, (parts[1] || 1) - 1 + step, 1);
       input.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      allTimeCurrentPage = 1;
+      updateDynamicTransactionFilters();
       renderTransactions();
     }
 
@@ -2878,6 +3083,8 @@
       if (chk) chk.checked = false;
       togglePeriodFilter();
       setVal('filter-month', `${curYear}-${curMonth}`);
+      allTimeCurrentPage = 1;
+      updateDynamicTransactionFilters();
       renderTransactions();
     }
 
@@ -2885,49 +3092,261 @@
       setVal('filter-search', '');
       setVal('filter-amount-op', 'ALL');
       setVal('filter-amount-val', '');
-      setVal('filter-account', 'ALL');
-      setVal('filter-category', 'ALL');
-      setVal('filter-type', 'ALL');
-      setVal('filter-expense-class', 'ALL');
-      onFilterCategoryChange(false, 'ALL');
+
+      // Reset semua searchable dropdown ke nilai 'ALL'
+      const filterKeys = ['filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class'];
+      filterKeys.forEach(k => {
+        const hiddenInput = document.getElementById(k);
+        if (hiddenInput) hiddenInput.value = 'ALL';
+        const labelEl = document.getElementById('label-' + k);
+        const opt = (searchableFilterData[k] || []).find(o => o.value === 'ALL');
+        if (labelEl && opt) labelEl.textContent = opt.label;
+      });
+
+      allTimeCurrentPage = 1;
+      updateDynamicTransactionFilters();
+      renderTransactions();
+    }
+	
+	// ==================== STATE PAGINASI SEMUA WAKTU ====================
+    let allTimeCurrentPage = 1;
+    let allTimePageSize = 25; // Pilihan: 25, 50, 100
+
+    // Data opsi dropdown pencarian
+    const searchableFilterData = {
+      'filter-account': [],
+      'filter-category': [],
+      'filter-subcategory': [],
+      'filter-type': [
+        { value: 'ALL', label: 'Semua Tipe' },
+        { value: 'expense', label: 'Pengeluaran' },
+        { value: 'income', label: 'Pemasukan' },
+        { value: 'transfer', label: 'Transfer' }
+      ],
+      'filter-expense-class': [
+        { value: 'ALL', label: 'Semua Klasifikasi' },
+        { value: 'fixed', label: 'Tetap (Fixed)' },
+        { value: 'periodic', label: 'Berkala (Periodic)' },
+        { value: 'dynamic', label: 'Dinamis (Dynamic)' }
+      ]
+    };
+
+    // ==================== MESIN SEARCHABLE DROPDOWN ====================
+    function toggleSearchableDropdown(filterId, event) {
+      if (event) event.stopPropagation();
+
+      // Tutup dropdown lain yang sedang terbuka
+      const allFilterKeys = ['filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class'];
+      allFilterKeys.forEach(k => {
+        if (k !== filterId) {
+          const d = document.getElementById('dropdown-' + k);
+          if (d) d.classList.add('hidden');
+        }
+      });
+
+      const dropdown = document.getElementById('dropdown-' + filterId);
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        const searchInput = document.getElementById('input-search-' + filterId);
+        if (searchInput) {
+          searchInput.value = '';
+          setTimeout(() => searchInput.focus(), 60);
+        }
+        renderSearchableDropdownList(filterId, '');
+        lucide.createIcons();
+      } else {
+        dropdown.classList.add('hidden');
+      }
     }
 
-    function onFilterCategoryChange(preserveSub = false, explicitSubValue = null) {
-      const catName = document.getElementById('filter-category')?.value || 'ALL';
-      const subSelect = document.getElementById('filter-subcategory');
-      if (!subSelect) return;
+    function onSearchableDropdownInput(filterId) {
+      const searchInput = document.getElementById('input-search-' + filterId);
+      const query = (searchInput?.value || '').trim();
+      renderSearchableDropdownList(filterId, query);
+    }
 
-      const subToPreserve = explicitSubValue !== null ? explicitSubValue : (preserveSub ? subSelect.value : 'ALL');
-      const matchedSubs = new Set();
+    function onSearchableDropdownKeydown(filterId, event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const listContainer = document.getElementById('list-' + filterId);
+        const firstBtn = listContainer?.querySelector('button');
+        if (firstBtn) firstBtn.click();
+      }
+    }
 
-      if (catName === 'ALL') {
-        categories.forEach(c => (c.subcategories || []).forEach(s => { if (s && s.trim()) matchedSubs.add(s.trim()); }));
-        transactions.forEach(t => { if (t.subcategory && t.subcategory.trim()) matchedSubs.add(t.subcategory.trim()); });
-      } else {
-        const matchingCats = categories.filter(c => c.name.trim().toLowerCase() === catName.toLowerCase());
-        matchingCats.forEach(c => (c.subcategories || []).forEach(s => { if (s && s.trim()) matchedSubs.add(s.trim()); }));
-        transactions.forEach(t => {
-          const tCat = categories.find(c => c.id === t.categoryId);
-          if (tCat && tCat.name.trim().toLowerCase() === catName.toLowerCase() && t.subcategory && t.subcategory.trim()) {
-            matchedSubs.add(t.subcategory.trim());
-          }
+    function renderSearchableDropdownList(filterId, query = '') {
+      const listContainer = document.getElementById('list-' + filterId);
+      if (!listContainer) return;
+
+      const currentVal = document.getElementById(filterId)?.value || 'ALL';
+      const items = searchableFilterData[filterId] || [];
+      const q = query.toLowerCase();
+
+      // Filter pintar: utamakan yang diawali huruf/kata yang diketik, lalu yang mengandung kata
+      let matchedItems = items;
+      if (q) {
+        matchedItems = items.filter(item => {
+          const lbl = item.label.toLowerCase();
+          const val = item.value.toLowerCase();
+          return lbl.includes(q) || val.includes(q);
+        });
+
+        matchedItems.sort((a, b) => {
+          const aStarts = a.label.toLowerCase().startsWith(q) ? 0 : 1;
+          const bStarts = b.label.toLowerCase().startsWith(q) ? 0 : 1;
+          if (aStarts !== bStarts) return aStarts - bStarts;
+          return a.label.localeCompare(b.label, 'id');
         });
       }
 
-      const sortedSubs = Array.from(matchedSubs).sort((a, b) => a.localeCompare(b, 'id'));
-      if (sortedSubs.length > 0) {
-        subSelect.innerHTML = `<option value="ALL">Semua Subkategori${catName !== 'ALL' ? ` (${escapeHtml(catName)})` : ''}</option>` + 
-          sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-      } else {
-        subSelect.innerHTML = `<option value="ALL">Tanpa Subkategori</option>`;
+      if (matchedItems.length === 0) {
+        listContainer.innerHTML = `<div class="p-2.5 text-center text-slate-400 italic text-[11px]">Tidak ada pilihan cocok</div>`;
+        return;
       }
 
-      if (subToPreserve && [...subSelect.options].some(o => o.value === subToPreserve)) {
-        subSelect.value = subToPreserve;
-      } else {
-        subSelect.value = 'ALL';
-      }
+      listContainer.innerHTML = matchedItems.map(item => {
+        const isSelected = (item.value === currentVal);
+        return `
+          <button type="button" onclick="selectSearchableOption('${filterId}', '${escapeHtml(item.value)}', '${escapeHtml(item.label)}')" class="w-full text-left px-2.5 py-1.5 rounded-lg transition flex items-center justify-between text-xs ${isSelected ? 'bg-emerald-50 text-emerald-800 font-bold' : 'hover:bg-slate-100 text-slate-700 font-medium'}">
+            <span class="truncate">${escapeHtml(item.label)}</span>
+            ${isSelected ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0 ml-1"></i>' : ''}
+          </button>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
 
+    function selectSearchableOption(filterId, value, label) {
+      const hiddenInput = document.getElementById(filterId);
+      if (hiddenInput) hiddenInput.value = value;
+
+      const labelEl = document.getElementById('label-' + filterId);
+      if (labelEl) labelEl.textContent = label;
+
+      const dropdown = document.getElementById('dropdown-' + filterId);
+      if (dropdown) dropdown.classList.add('hidden');
+
+      allTimeCurrentPage = 1; // Reset ke halaman 1 saat filter diubah
+
+      if (filterId === 'filter-category') {
+        onFilterCategoryChange();
+      } else {
+        renderTransactions();
+      }
+    }
+
+    // Tutup dropdown searchable jika user mengklik area lain
+    document.addEventListener('click', (e) => {
+      const allFilterKeys = ['filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class'];
+      allFilterKeys.forEach(k => {
+        const wrap = document.getElementById('wrap-' + k);
+        const dropdown = document.getElementById('dropdown-' + k);
+        if (wrap && dropdown && !wrap.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    });
+
+    // Memperbarui pilihan filter agar HANYA menampilkan kategori/subkategori yang ada pada transaksi periode terpilih
+    function updateDynamicTransactionFilters() {
+      const isAllTime = document.getElementById('filter-all-time')?.checked;
+      const selectedMonth = document.getElementById('filter-month')?.value;
+
+      // 1. Ambil seluruh transaksi pada periode aktif
+      const periodTxs = transactions.filter(tx => {
+        if (!isAllTime && selectedMonth && tx.date && !tx.date.startsWith(selectedMonth)) return false;
+        return true;
+      });
+
+      // 2. Kategori yang ADA pada transaksi periode ini
+      const catNamesSet = new Set();
+      periodTxs.forEach(tx => {
+        if (tx.type !== 'transfer' && tx.categoryId) {
+          const c = categories.find(cat => cat.id === tx.categoryId);
+          if (c && c.name && c.name.trim()) catNamesSet.add(c.name.trim());
+        }
+      });
+
+      const sortedCatNames = Array.from(catNamesSet).sort((a, b) => a.localeCompare(b, 'id'));
+      searchableFilterData['filter-category'] = [
+        { value: 'ALL', label: 'Semua Kategori' },
+        ...sortedCatNames.map(name => ({ value: name, label: name }))
+      ];
+
+      // Jika kategori yang sedang aktif tidak ada di transaksi periode ini, kembalikan ke 'ALL'
+      const curCatInput = document.getElementById('filter-category');
+      let curCatVal = curCatInput ? curCatInput.value : 'ALL';
+      if (curCatVal !== 'ALL' && !catNamesSet.has(curCatVal)) {
+        curCatVal = 'ALL';
+        if (curCatInput) curCatInput.value = 'ALL';
+      }
+      const curCatOpt = searchableFilterData['filter-category'].find(o => o.value === curCatVal) || searchableFilterData['filter-category'][0];
+      const labelCat = document.getElementById('label-filter-category');
+      if (labelCat) labelCat.textContent = curCatOpt.label;
+
+      // 3. Subkategori yang ADA pada transaksi periode & kategori aktif
+      const subNamesSet = new Set();
+      periodTxs.forEach(tx => {
+        if (tx.type !== 'transfer' && tx.subcategory && tx.subcategory.trim()) {
+          if (curCatVal === 'ALL') {
+            subNamesSet.add(tx.subcategory.trim());
+          } else {
+            const c = categories.find(cat => cat.id === tx.categoryId);
+            if (c && c.name && c.name.trim().toLowerCase() === curCatVal.trim().toLowerCase()) {
+              subNamesSet.add(tx.subcategory.trim());
+            }
+          }
+        }
+      });
+
+      const sortedSubNames = Array.from(subNamesSet).sort((a, b) => a.localeCompare(b, 'id'));
+      const subAllLabel = (curCatVal === 'ALL') ? 'Semua Subkategori' : `Semua Subkategori (${curCatVal})`;
+      searchableFilterData['filter-subcategory'] = [
+        { value: 'ALL', label: subAllLabel },
+        ...sortedSubNames.map(name => ({ value: name, label: name }))
+      ];
+
+      // Jika subkategori aktif tidak ada di list baru, kembalikan ke 'ALL'
+      const curSubInput = document.getElementById('filter-subcategory');
+      let curSubVal = curSubInput ? curSubInput.value : 'ALL';
+      if (curSubVal !== 'ALL' && !subNamesSet.has(curSubVal)) {
+        curSubVal = 'ALL';
+        if (curSubInput) curSubInput.value = 'ALL';
+      }
+      const curSubOpt = searchableFilterData['filter-subcategory'].find(o => o.value === curSubVal) || searchableFilterData['filter-subcategory'][0];
+      const labelSub = document.getElementById('label-filter-subcategory');
+      if (labelSub) labelSub.textContent = curSubOpt.label;
+    }
+
+    function onFilterCategoryChange() {
+      allTimeCurrentPage = 1;
+      updateDynamicTransactionFilters();
+      renderTransactions();
+    }
+	
+	// ==================== NAVIGASI PAGINASI (SEMUA WAKTU) ====================
+    function changeAllTimePage(delta) {
+      setAllTimePage(allTimeCurrentPage + delta);
+    }
+
+    function setAllTimePage(pageNum) {
+      allTimeCurrentPage = pageNum;
+      renderTransactions();
+
+      // Scroll halus kembali ke atas tabel saat berpindah halaman
+      const tableWrap = document.getElementById('view-transactions');
+      if (tableWrap) {
+        const topPos = tableWrap.getBoundingClientRect().top + window.scrollY - 70;
+        window.scrollTo({ top: Math.max(0, topPos), behavior: 'smooth' });
+      }
+    }
+
+    function changeAllTimePageSize(val) {
+      allTimePageSize = parseInt(val) || 25;
+      allTimeCurrentPage = 1;
       renderTransactions();
     }
 
@@ -3036,6 +3455,7 @@
 
       const filtered = getFilteredTransactions();
 
+      // Ringkasan Periode (Total Pemasukan & Pengeluaran tetap menghitung SELURUH data yang cocok)
       let periodInflow = 0;
       let periodOutflow = 0;
 
@@ -3053,7 +3473,6 @@
       });
 
       const periodNetSavings = periodInflow - periodOutflow;
-
       const inDisplay = dashPrivacy.income ? 'Rp ••••••' : `+${formatCurrency(periodInflow)}`;
       const outDisplay = dashPrivacy.expense ? 'Rp ••••••' : `-${formatCurrency(periodOutflow)}`;
       const savDisplay = dashPrivacy.savings 
@@ -3085,13 +3504,66 @@
         `;
       }
 
-      if (filtered.length === 0) {
+      // ==================== LOGIKA PAGINASI ====================
+      const isAllTime = document.getElementById('filter-all-time')?.checked;
+      const paginationWrap = document.getElementById('all-time-pagination');
+
+      let displayedTxs = filtered;
+
+      if (isAllTime) {
+        // Tampilkan bilah paginasi hanya pada mode "Semua Waktu"
+        if (paginationWrap) paginationWrap.classList.remove('hidden');
+
+        const totalRecords = filtered.length;
+        const totalPages = Math.ceil(totalRecords / allTimePageSize) || 1;
+
+        if (allTimeCurrentPage > totalPages) allTimeCurrentPage = totalPages;
+        if (allTimeCurrentPage < 1) allTimeCurrentPage = 1;
+
+        const startIdx = (allTimeCurrentPage - 1) * allTimePageSize;
+        const endIdx = Math.min(startIdx + allTimePageSize, totalRecords);
+
+        displayedTxs = filtered.slice(startIdx, endIdx);
+
+        // Perbarui Info Paginasi
+        const infoText = document.getElementById('pagination-info-text');
+        if (infoText) {
+          infoText.textContent = totalRecords === 0 
+            ? 'Tidak ada data' 
+            : `Menampilkan ${startIdx + 1}–${endIdx} dari ${totalRecords} transaksi`;
+        }
+
+        const pagesBadge = document.getElementById('pagination-pages-badge');
+        if (pagesBadge) {
+          pagesBadge.textContent = `${allTimeCurrentPage} / ${totalPages}`;
+        }
+
+        const btnFirst = document.getElementById('btn-page-first');
+        const btnPrev = document.getElementById('btn-page-prev');
+        const btnNext = document.getElementById('btn-page-next');
+        const btnLast = document.getElementById('btn-page-last');
+
+        if (btnFirst) btnFirst.disabled = (allTimeCurrentPage <= 1);
+        if (btnPrev) btnPrev.disabled = (allTimeCurrentPage <= 1);
+        if (btnNext) btnNext.disabled = (allTimeCurrentPage >= totalPages);
+        if (btnLast) btnLast.disabled = (allTimeCurrentPage >= totalPages);
+
+        const pageSizeSelect = document.getElementById('pagination-page-size');
+        if (pageSizeSelect) pageSizeSelect.value = String(allTimePageSize);
+      } else {
+        // Sembunyikan paginasi pada mode bulanan (seluruh transaksi bulan ini tertampil utuh)
+        if (paginationWrap) paginationWrap.classList.add('hidden');
+        displayedTxs = filtered;
+      }
+
+      if (displayedTxs.length === 0) {
         if (noTx) noTx.classList.remove('hidden');
         return;
       }
       if (noTx) noTx.classList.add('hidden');
 
-      filtered.forEach((tx, idx) => {
+      // Render tabel dan kartu mobile menggunakan data displayedTxs
+      displayedTxs.forEach((tx, idx) => {
         const acc = accounts.find(a => a.id === tx.accountId)?.name || 'Tidak Diketahui';
         const isExpense = tx.type === 'expense';
         const isTransfer = tx.type === 'transfer';
@@ -3121,8 +3593,8 @@
           amountColHtml = `<span class="${isExpense ? 'text-rose-600' : 'text-emerald-600'} font-bold whitespace-nowrap">${isExpense ? '-' : '+'}${formatCurrency(tx.amount)}</span>`;
         }
 
-        const canMoveUp = (idx > 0 && filtered[idx - 1].date === tx.date);
-        const canMoveDown = (idx < filtered.length - 1 && filtered[idx + 1].date === tx.date);
+        const canMoveUp = (idx > 0 && displayedTxs[idx - 1].date === tx.date);
+        const canMoveDown = (idx < displayedTxs.length - 1 && displayedTxs[idx + 1].date === tx.date);
 
         const rawNote = String(tx.note || '');
         const isLongNote = rawNote.length > 35 || rawNote.includes('\n');
@@ -3198,7 +3670,7 @@
           tbody.appendChild(tr);
         }
 
-        // Tampilan Mobile (Kartu)
+        // Tampilan Mobile (Kartu Responsif)
         if (mobileCards) {
           const card = document.createElement('div');
           card.className = "bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-sm space-y-2.5";
@@ -6263,39 +6735,38 @@
     // ==================== DROPDOWN & FORM SELECTORS ====================
     function populateDropdowns() {
       const txAccSelect = document.getElementById('tx-account');
-      const filterAcc = document.getElementById('filter-account');
       const prefAcc = document.getElementById('pref-default-account');
-
-      const prevAcc = filterAcc?.value || 'ALL';
-      const prevCat = document.getElementById('filter-category')?.value || 'ALL';
-      const prevSub = document.getElementById('filter-subcategory')?.value || 'ALL';
 
       const sortedAccounts = [...accounts].sort((a, b) => a.name.localeCompare(b.name, 'id'));
       const accOptions = accounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.type)})</option>`).join('');
+      
+      // Dropdown rekening pada form transaksi baru
       if (txAccSelect) txAccSelect.innerHTML = accOptions;
-      if (filterAcc) {
-        filterAcc.innerHTML = `<option value="ALL">Semua Rekening</option>` + sortedAccounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
-        if ([...filterAcc.options].some(o => o.value === prevAcc)) {
-          filterAcc.value = prevAcc;
-        }
-      }
+
+      // Dropdown preferensi akun di pengaturan
       if (prefAcc) {
         prefAcc.innerHTML = accOptions;
         prefAcc.value = accounts.some(a => a.id === txPreferences.defaultAccountId) ? txPreferences.defaultAccountId : (accounts[0]?.id || '');
       }
 
-      const filterCat = document.getElementById('filter-category');
+      // =========================================================
+      // PENGISIAN DATA KE SEARCHABLE FILTER (BISA DIKETIK/SEARCH)
+      // =========================================================
+      searchableFilterData['filter-account'] = [
+        { value: 'ALL', label: 'Semua Rekening' },
+        ...sortedAccounts.map(a => ({ value: a.id, label: a.name }))
+      ];
+      const curAcc = document.getElementById('filter-account')?.value || 'ALL';
+      const accOpt = searchableFilterData['filter-account'].find(o => o.value === curAcc) || searchableFilterData['filter-account'][0];
+      const accLbl = document.getElementById('label-filter-account');
+      if (accLbl) accLbl.textContent = accOpt.label;
+
+      // Perbarui opsi filter kategori & subkategori riil
+      updateDynamicTransactionFilters();
+      // =========================================================
+
+      // Dropdown kategori di menu Tren
       const trendCat = document.getElementById('trend-category-filter');
-      const prefCat = document.getElementById('pref-default-category');
-
-      const uniqueCategoryNames = Array.from(new Set(categories.map(c => c.name.trim()))).sort((a, b) => a.localeCompare(b, 'id'));
-      if (filterCat) {
-        filterCat.innerHTML = `<option value="ALL">Semua Kategori</option>` + uniqueCategoryNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
-        if ([...filterCat.options].some(o => o.value === prevCat)) {
-          filterCat.value = prevCat;
-        }
-      }
-
       if (trendCat) {
         const prevTrendCat = trendCat.value || 'ALL';
         const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
@@ -6306,25 +6777,28 @@
         updateTrendSubcategoryDropdown();
       }
 
+      // Dropdown preferensi kategori di menu Pengaturan
+      const prefCat = document.getElementById('pref-default-category');
       if (prefCat) {
         const sortedAllCats = [...categories].sort((a, b) => a.name.localeCompare(b.name, 'id'));
         prefCat.innerHTML = sortedAllCats.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${c.type === 'income' ? 'Pemasukan' : 'Pengeluaran'})</option>`).join('');
         prefCat.value = categories.some(c => c.id === txPreferences.defaultCategoryId) ? txPreferences.defaultCategoryId : (categories[0]?.id || '');
       }
 
+      // Dropdown kategori di modal Limit Anggaran
       const budgetCatSelect = document.getElementById('budget-cat-select');
       if (budgetCatSelect) {
         const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
         budgetCatSelect.innerHTML = expenseCatsSorted.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
       }
 
+      // Dropdown sumber dana di menu Tren
       const trendSourceSelect = document.getElementById('trend-source-select');
       if (trendSourceSelect) {
         trendSourceSelect.innerHTML = `<option value="ALL">Semua Rekening (Tampilkan Semua)</option>` + 
           sortedAccounts.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.type)})</option>`).join('');
       }
 
-      onFilterCategoryChange(true, prevSub);
       onTxTypeChange();
     }
 
@@ -6407,7 +6881,12 @@
       if (!tabName) tabName = 'dashboard';
       if (currentActiveTab === tabName && !isBackNavigation) return;
 
-      // 1. UPLOAD INSTAN: Jika ada perubahan lokal yang belum terunggah, langsung dorong saat pindah menu
+      // 1. Simpan posisi scroll menu saat ini sebelum berpindah
+      if (currentActiveTab && tabScrollPositions.hasOwnProperty(currentActiveTab)) {
+        tabScrollPositions[currentActiveTab] = window.scrollY || document.documentElement.scrollTop || 0;
+      }
+
+      // Upload instan jika ada pending data lokal
       flushPendingCloudPush();
 
       if (!isBackNavigation) {
@@ -6452,7 +6931,7 @@
 
       closeMobileMenu();
 
-      // 2. AUTO-SINKRON MASUK MENU TRANSAKSI: Tarik data terbaru dari Cloud secara instan
+      // Render dan sinkronisasi tab transaksi
       if (tabName === 'transactions') {
         renderTransactions();
         if (navigator.onLine && isGdriveSessionActive()) {
@@ -6472,6 +6951,13 @@
         renderDashboardYearlyChart();
       }
       lucide.createIcons();
+
+      // 2. Kembalikan posisi scroll menu tujuan (instan tanpa animasi jump)
+      const targetScroll = tabScrollPositions[tabName] || 0;
+      window.scrollTo(0, targetScroll);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, targetScroll);
+      });
     }
 
     // ==================== E2EE & GOOGLE DRIVE CLOUD SYNC ====================
