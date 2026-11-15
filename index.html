@@ -714,33 +714,47 @@
       </div>
 
       <!-- Toolbar Sort & Filter Menu Anggaran -->
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="flex items-center gap-1.5">
-            <span class="text-slate-500 font-semibold">Filter Klasifikasi:</span>
-            <select id="budget-filter-class" onchange="renderBudgets()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
-              <option value="ALL">Semua Klasifikasi</option>
-              <option value="fixed">Tetap (Fixed)</option>
-              <option value="periodic">Berkala (Periodic)</option>
-              <option value="dynamic">Dinamis (Dynamic)</option>
-            </select>
+      <!-- Toolbar Search, Sort & Filter Menu Anggaran -->
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full md:w-auto flex-1">
+          
+          <!-- KOLOM PENCARIAN KATEGORI ANGGARAN -->
+          <div class="relative w-full sm:w-64">
+            <input type="text" id="budget-search-input" oninput="renderBudgets()" placeholder="Cari kategori anggaran..." class="w-full pl-8 pr-7 py-1.5 border border-slate-300 rounded-lg text-xs bg-slate-50 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none"></i>
+            <button type="button" id="budget-search-clear" onclick="clearBudgetSearch()" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
 
-          <div class="flex items-center gap-1.5">
-            <span class="text-slate-500 font-semibold">Urutkan Nama:</span>
-            <select id="budget-sort-name" onchange="renderBudgets()" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
-              <option value="default">Default</option>
-              <option value="name-asc">Nama (A &rarr; Z)</option>
-              <option value="name-desc">Nama (Z &rarr; A)</option>
-            </select>
-          </div>
+          <!-- FILTER KLASIFIKASI & URUTKAN -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold text-[11px]">Klasifikasi:</span>
+              <select id="budget-filter-class" onchange="renderBudgets()" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs">
+                <option value="ALL">Semua</option>
+                <option value="fixed">Tetap (Fixed)</option>
+                <option value="periodic">Berkala (Periodic)</option>
+                <option value="dynamic">Dinamis (Dynamic)</option>
+              </select>
+            </div>
 
-          <button onclick="resetBudgetFilterAndSort()" title="Kembalikan filter & urutan anggaran ke awal" class="text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
-          </button>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-500 font-semibold text-[11px]">Urutkan:</span>
+              <select id="budget-sort-name" onchange="renderBudgets()" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs">
+                <option value="default">Default</option>
+                <option value="name-asc">Nama (A &rarr; Z)</option>
+                <option value="name-desc">Nama (Z &rarr; A)</option>
+              </select>
+            </div>
+
+            <button type="button" onclick="resetBudgetFilterAndSort()" title="Kembalikan pencarian & filter ke awal" class="text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+				<i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+			</button>
+          </div>
         </div>
 
-        <div id="budget-filter-count" class="text-slate-400 text-[11px] font-medium"></div>
+        <div id="budget-filter-count" class="text-slate-400 text-[11px] font-medium self-end md:self-auto shrink-0"></div>
       </div>
 
       <div id="budget-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
@@ -808,7 +822,7 @@
 
         <div id="trend-category-body" class="p-5 sm:p-6 border-t border-slate-100 space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
+            <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs w-fit">
               <label class="flex items-center gap-1 cursor-pointer select-none font-medium text-slate-600 hover:text-slate-900">
                 <input type="checkbox" id="trend-toggle-avg" checked onchange="toggleTrendLine('avg')" class="rounded text-amber-500 h-3.5 w-3.5" />
                 <span>Rata-rata</span>
@@ -833,7 +847,7 @@
           <div id="trend-standard-controls" class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div class="flex flex-wrap items-center gap-3">
-                <div class="flex items-center bg-slate-100 p-1 rounded-lg">
+                <div class="flex items-center bg-slate-100 p-1 rounded-lg w-fit">
                   <button id="btn-trend-scope-year" onclick="setTrendScope('year')" class="px-3 py-1 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm">
                     Tahunan (12 Bulan)
                   </button>
@@ -864,7 +878,7 @@
                   </button>
                 </div>
 
-                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg w-fit">
                   <button id="btn-trend-entity-cat" onclick="setTrendEntity('category')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition">
                     Kategori
                   </button>
@@ -874,21 +888,47 @@
                 </div>
               </div>
 
-              <!-- Filter Dropdown Kategori & Subkategori -->
+              <!-- Filter Dropdown Kategori & Subkategori (Searchable / Bisa Diketik) -->
               <div class="flex flex-wrap items-center gap-2">
+                
+                <!-- 1. SEARCHABLE KATEGORI TREN -->
                 <div class="flex items-center gap-1.5">
                   <label class="text-xs font-semibold text-slate-500">Kategori:</label>
-                  <select id="trend-category-filter" onchange="onTrendCategoryFilterChange()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="ALL">Semua Kategori</option>
-                  </select>
+                  <div class="relative searchable-filter-wrap" id="wrap-trend-category-filter">
+                    <input type="hidden" id="trend-category-filter" value="ALL" />
+                    <button type="button" onclick="toggleSearchableDropdown('trend-category-filter', event)" class="min-w-[130px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 hover:border-emerald-500 transition shadow-sm text-left">
+                      <span id="label-trend-category-filter" class="truncate font-medium">Semua Kategori</span>
+                      <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                    </button>
+                    <div id="dropdown-trend-category-filter" class="hidden absolute left-0 top-full mt-1 w-56 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                      <div class="relative">
+                        <input type="text" id="input-search-trend-category-filter" oninput="onSearchableDropdownInput('trend-category-filter')" onkeydown="onSearchableDropdownKeydown('trend-category-filter', event)" placeholder="Ketik kategori..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                      </div>
+                      <div id="list-trend-category-filter" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+                    </div>
+                  </div>
                 </div>
 
+                <!-- 2. SEARCHABLE SUBKATEGORI TREN -->
                 <div id="trend-subcat-filter-wrap" class="hidden flex items-center gap-1.5">
                   <label class="text-xs font-semibold text-slate-500">Subkategori:</label>
-                  <select id="trend-subcategory-filter" onchange="renderTrendsChart()" class="text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="ALL">Semua Subkategori</option>
-                  </select>
+                  <div class="relative searchable-filter-wrap" id="wrap-trend-subcategory-filter">
+                    <input type="hidden" id="trend-subcategory-filter" value="ALL" />
+                    <button type="button" onclick="toggleSearchableDropdown('trend-subcategory-filter', event)" class="min-w-[130px] flex items-center justify-between gap-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 hover:border-emerald-500 transition shadow-sm text-left">
+                      <span id="label-trend-subcategory-filter" class="truncate font-medium">Semua Subkategori</span>
+                      <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                    </button>
+                    <div id="dropdown-trend-subcategory-filter" class="hidden absolute left-0 top-full mt-1 w-56 max-w-[90vw] bg-white border border-slate-200 rounded-xl shadow-xl z-40 p-2 space-y-1.5 text-xs">
+                      <div class="relative">
+                        <input type="text" id="input-search-trend-subcategory-filter" oninput="onSearchableDropdownInput('trend-subcategory-filter')" onkeydown="onSearchableDropdownKeydown('trend-subcategory-filter', event)" placeholder="Ketik subkategori..." class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium" />
+                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-2 text-slate-400 pointer-events-none"></i>
+                      </div>
+                      <div id="list-trend-subcategory-filter" class="max-h-48 overflow-y-auto space-y-0.5 divide-y divide-slate-50"></div>
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -898,7 +938,7 @@
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-slate-700">Tipe Perbandingan:</span>
-                <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200">
+                <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200 w-fit">
                   <button id="btn-cmp-type-month" onclick="setCompareType('month')" class="px-3 py-1 text-xs font-bold rounded bg-emerald-600 text-white">
                     Bandingkan 2 Bulan
                   </button>
@@ -910,7 +950,7 @@
 
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold text-slate-700">Tampilan:</span>
-                <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200">
+                <div class="flex items-center bg-white p-1 rounded-lg border border-slate-200 w-fit">
                   <button id="btn-cmp-entity-cat" onclick="setCompareEntity('category')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white">
                     Per Kategori
                   </button>
@@ -976,7 +1016,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
             <div class="flex items-center gap-2">
               <span class="text-xs font-semibold text-slate-600">Tipe Visualisasi:</span>
-              <div class="flex items-center bg-slate-100 p-1 rounded-lg">
+              <div class="flex items-center bg-slate-100 p-1 rounded-lg w-fit">
                 <button id="btn-trend-class-stacked" onclick="setTrendClassChartType('bar')" class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-600 text-white transition">
                   Stacked Bar (Tumpuk)
                 </button>
@@ -1064,75 +1104,97 @@
       </div>
 
       <!-- 2. MANAGE CATEGORIES & SUBCATEGORIES -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="tag" class="w-5 h-5 text-emerald-600"></i> Kategori & Subkategori Kustom
-            </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Kelola kategori pemasukan & pengeluaran. Subkategori otomatis tersusun A-Z.</p>
+      <!-- 2. MANAGE CATEGORIES & SUBCATEGORIES (DILENGKAPI FITUR COLLAPSE) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <!-- HEADER KATEGORI DENGAN TOMBOL COLLAPSE / EXPAND -->
+        <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleSettingCategoryCollapse()" class="cursor-pointer select-none group flex items-start sm:items-center gap-2.5 flex-1" title="Klik untuk melipat / membuka daftar kategori">
+            <div class="p-2 bg-emerald-100 text-emerald-700 rounded-lg shrink-0 mt-0.5 sm:mt-0 group-hover:bg-emerald-200 transition">
+              <i data-lucide="tag" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">
+                  Kategori & Subkategori Kustom
+                </h3>
+                <span id="badge-cat-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 Kategori</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Klik area ini untuk menyembunyikan / menampilkan daftar kartu.</p>
+            </div>
           </div>
           
-          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition border border-slate-200 shadow-sm">
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+            <label class="cursor-pointer bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition border border-slate-200 shadow-sm">
               <i data-lucide="file-up" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Impor Excel</span>
+              <span class="hidden sm:inline">Impor</span>
               <input type="file" id="category-excel-input" accept=".xlsx, .xls" class="hidden" onchange="importCategoriesFromExcel(event)" />
             </label>
 
-            <button onclick="exportCategoriesToExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition shadow-sm">
+            <button onclick="exportCategoriesToExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow-sm">
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Ekspor Excel</span>
+              <span class="hidden sm:inline">Ekspor</span>
             </button>
 
-            <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
+            <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
               <i data-lucide="plus" class="w-4 h-4"></i>
-              <span>Tambah Kategori</span>
+              <span>Tambah</span>
+            </button>
+
+            <!-- TOMBOL TOGGLE LIPAT / BUKA -->
+            <button type="button" onclick="toggleSettingCategoryCollapse()" id="btn-toggle-cat-collapse" title="Buka/Tutup Daftar Kategori" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition flex items-center gap-1.5 text-xs font-bold shadow-sm ml-1">
+              <span id="text-toggle-cat-collapse">Sembunyikan</span>
+              <i data-lucide="chevron-up" id="icon-chevron-cat-setting" class="w-4 h-4 transition-transform duration-200"></i>
             </button>
           </div>
         </div>
 
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-500 font-semibold">Tipe:</span>
-              <select id="setting-category-filter-type" onchange="changeCategoryFilterType(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
-                <option value="ALL">Semua Tipe</option>
-                <option value="expense">Pengeluaran</option>
-                <option value="income">Pemasukan</option>
-              </select>
+        <!-- ISI DAFTAR KATEGORI YANG DAPAT DI-COLLAPSE -->
+        <div id="setting-category-body" class="p-4 sm:p-6 space-y-4">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold">Tipe:</span>
+                <select id="setting-category-filter-type" onchange="changeCategoryFilterType(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                  <option value="ALL">Semua Tipe</option>
+                  <option value="expense">Pengeluaran</option>
+                  <option value="income">Pemasukan</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold">Klasifikasi:</span>
+                <select id="setting-category-filter-class" onchange="changeCategoryFilterClass(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                  <option value="ALL">Semua Klasifikasi</option>
+                  <option value="fixed">Tetap (Fixed)</option>
+                  <option value="periodic">Berkala (Periodic)</option>
+                  <option value="dynamic">Dinamis (Dynamic)</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold">Urutkan:</span>
+                <select id="setting-category-sort" onchange="changeCategorySort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                  <option value="default">Default (Urutan Input)</option>
+                  <option value="name-asc">Nama (A &rarr; Z)</option>
+                  <option value="name-desc">Nama (Z &rarr; A)</option>
+                  <option value="class-fixed">Klasifikasi (Tetap &rarr; Dinamis)</option>
+                  <option value="class-dynamic">Klasifikasi (Dinamis &rarr; Tetap)</option>
+                </select>
+              </div>
+
+              <button onclick="resetCategoryFilterAndSort()" title="Kembalikan filter & urutan kategori ke awal" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+              </button>
             </div>
 
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-500 font-semibold">Klasifikasi:</span>
-              <select id="setting-category-filter-class" onchange="changeCategoryFilterClass(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
-                <option value="ALL">Semua Klasifikasi</option>
-                <option value="fixed">Tetap (Fixed)</option>
-                <option value="periodic">Berkala (Periodic)</option>
-                <option value="dynamic">Dinamis (Dynamic)</option>
-              </select>
-            </div>
-
-            <div class="flex items-center gap-1.5">
-			 <span class="text-slate-500 font-semibold">Urutkan:</span>
-              <select id="setting-category-sort" onchange="changeCategorySort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
-                <option value="default">Default (Urutan Input)</option>
-                <option value="name-asc">Nama (A &rarr; Z)</option>
-                <option value="name-desc">Nama (Z &rarr; A)</option>
-                <option value="class-fixed">Klasifikasi (Tetap &rarr; Dinamis)</option>
-                <option value="class-dynamic">Klasifikasi (Dinamis &rarr; Tetap)</option>
-              </select>
-            </div>
-
-            <button onclick="resetCategoryFilterAndSort()" title="Kembalikan filter & urutan kategori ke awal" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
-            </button>
+            <div id="setting-category-count" class="text-slate-400 text-[11px] font-medium ml-auto"></div>
           </div>
 
-          <div id="setting-category-count" class="text-slate-400 text-[11px] font-medium ml-auto"></div>
+          <!-- GRID DAFTAR KARTU KATEGORI -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="category-settings-list"></div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="category-settings-list"></div>
       </div>
 
       <!-- 3. DEFAULT TRANSACTION FORM PREFERENCES -->
@@ -1673,7 +1735,7 @@
       <form onsubmit="saveBudget(event)" class="space-y-4">
         <div>
           <label class="text-xs font-semibold text-slate-600 block mb-1">Kategori Pengeluaran</label>
-          <select id="budget-cat-select" onchange="updateBudgetModalAnalytics()" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500"></select>
+          <select id="budget-cat-select" onchange="updateBudgetModalAnalytics()" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-medium text-slate-800"></select>
         </div>
 
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5" id="budget-modal-ref-box">
@@ -3182,15 +3244,20 @@
         { value: 'fixed', label: 'Tetap (Fixed)' },
         { value: 'periodic', label: 'Berkala (Periodic)' },
         { value: 'dynamic', label: 'Dinamis (Dynamic)' }
-      ]
+      ],
+      'trend-category-filter': [],
+      'trend-subcategory-filter': []
     };
 
     // ==================== MESIN SEARCHABLE DROPDOWN ====================
     function toggleSearchableDropdown(filterId, event) {
       if (event) event.stopPropagation();
 
-      // Tutup dropdown lain yang sedang terbuka
-      const allFilterKeys = ['filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class'];
+      // 1. Tutup dropdown lain yang sedang terbuka
+      const allFilterKeys = [
+        'filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class',
+        'trend-category-filter', 'trend-subcategory-filter'
+      ];
       allFilterKeys.forEach(k => {
         if (k !== filterId) {
           const d = document.getElementById('dropdown-' + k);
@@ -3204,6 +3271,29 @@
       const isHidden = dropdown.classList.contains('hidden');
       if (isHidden) {
         dropdown.classList.remove('hidden');
+
+        // =========================================================================
+        // SMART AUTO-ALIGN TEPI KANAN (MENCEGAH DROPDOWN TERPOTONG BORDER)
+        // =========================================================================
+        // Reset posisi awal ke left-0 untuk mengukur posisi alaminya
+        dropdown.classList.remove('right-0');
+        dropdown.classList.add('left-0');
+
+        // Hitung batas maksimal tepi kanan (border kartu atau tepi layar HP)
+        const wrap = document.getElementById('wrap-' + filterId);
+        const parentCard = wrap ? (wrap.closest('.bg-white') || wrap.closest('.searchable-filter-wrap')) : null;
+        const boxRight = parentCard ? parentCard.getBoundingClientRect().right : window.innerWidth;
+        const boundaryLimit = Math.min(window.innerWidth - 14, boxRight - 10);
+
+        // Ukur posisi dropdown
+        const rect = dropdown.getBoundingClientRect();
+        if (rect.right > boundaryLimit) {
+          // Jika menabrak atau mepet batas kanan, tempelkan ke kanan (right-0) agar melebar ke arah kiri
+          dropdown.classList.remove('left-0');
+          dropdown.classList.add('right-0');
+        }
+        // =========================================================================
+
         const searchInput = document.getElementById('input-search-' + filterId);
         if (searchInput) {
           searchInput.value = '';
@@ -3283,18 +3373,26 @@
       const dropdown = document.getElementById('dropdown-' + filterId);
       if (dropdown) dropdown.classList.add('hidden');
 
-      allTimeCurrentPage = 1; // Reset ke halaman 1 saat filter diubah
-
+      // Panggil aksi sesuai filter yang dipilih
       if (filterId === 'filter-category') {
         onFilterCategoryChange();
+      } else if (filterId === 'trend-category-filter') {
+        onTrendCategoryFilterChange();
+      } else if (filterId === 'trend-subcategory-filter') {
+        renderTrendsChart();
       } else {
+        allTimeCurrentPage = 1;
         renderTransactions();
       }
     }
 
     // Tutup dropdown searchable jika user mengklik area lain
+    // Listener klik di luar area dropdown untuk menutup otomatis
     document.addEventListener('click', (e) => {
-      const allFilterKeys = ['filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class'];
+      const allFilterKeys = [
+        'filter-account', 'filter-category', 'filter-subcategory', 'filter-type', 'filter-expense-class',
+        'trend-category-filter', 'trend-subcategory-filter'
+      ];
       allFilterKeys.forEach(k => {
         const wrap = document.getElementById('wrap-' + k);
         const dropdown = document.getElementById('dropdown-' + k);
@@ -5168,11 +5266,26 @@
       const monthBudgets = budgets[month] || {};
       let expenseCats = categories.filter(c => c.type === 'expense');
 
+      // 1. Filter Klasifikasi
       const filterClass = document.getElementById('budget-filter-class')?.value || 'ALL';
       if (filterClass !== 'ALL') {
         expenseCats = expenseCats.filter(c => (c.expenseClass || 'dynamic') === filterClass);
       }
 
+      // 2. Filter Pencarian Nama Kategori (Search)
+      const searchInput = document.getElementById('budget-search-input');
+      const searchQuery = (searchInput?.value || '').trim().toLowerCase();
+      const clearBtn = document.getElementById('budget-search-clear');
+      if (clearBtn) {
+        if (searchQuery) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      if (searchQuery) {
+        expenseCats = expenseCats.filter(c => c.name.toLowerCase().includes(searchQuery));
+      }
+
+      // 3. Urutkan Nama Kategori
       const sortName = document.getElementById('budget-sort-name')?.value || 'default';
       if (sortName === 'name-asc') {
         expenseCats.sort((a, b) => a.name.localeCompare(b.name, 'id'));
@@ -5191,7 +5304,11 @@
       });
 
       if (expenseCats.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs">Tidak ada kategori pengeluaran yang cocok dengan filter klasifikasi ini.</div>`;
+        if (searchQuery) {
+          grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs">Tidak ada kategori yang cocok dengan pencarian "<strong>${escapeHtml(searchQuery)}</strong>".</div>`;
+        } else {
+          grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs">Tidak ada kategori pengeluaran yang cocok dengan filter klasifikasi ini.</div>`;
+        }
         return;
       }
 
@@ -5265,28 +5382,34 @@
         `;
         grid.appendChild(card);
       });
-    }
-
-    function quickSetBudget(catId, currentVal) {
-      setVal('budget-cat-select', catId);
-      const monthInput = document.getElementById('budget-month-selector');
-      const targetMonthStr = monthInput?.value || dashboardSelectedMonth;
-      const ana = calculateCategoryAnalytics(catId, targetMonthStr);
-      const refAvg = Math.round(ana.avgSpend) || 0;
-      const btnDel = document.getElementById('btn-delete-budget');
-
-      if (currentVal && currentVal > 0) {
-        if (btnDel) btnDel.classList.remove('hidden');
-        setBudgetAmountField(currentVal, false, refAvg);
-      } else {
-        if (btnDel) btnDel.classList.add('hidden');
-        setBudgetAmountField(refAvg, refAvg > 0, refAvg);
-      }
-      openSetBudgetModal();
       lucide.createIcons();
     }
 
-    function openSetBudgetModal() {
+    // ==================== PENGENDALI MODAL ATUR LIMIT ANGGARAN ====================
+    function populateBudgetModalCategoryOptions(selectedCatId = null) {
+      const catSelect = document.getElementById('budget-cat-select');
+      if (!catSelect) return;
+
+      const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      
+      catSelect.innerHTML = expenseCatsSorted.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+
+      // Pilih kategori yang sesuai target (misal saat klik Ubah/Atur Limit dari kartu tertentu)
+      if (selectedCatId && expenseCatsSorted.some(c => c.id === selectedCatId)) {
+        catSelect.value = selectedCatId;
+      } else if (catSelect.value && expenseCatsSorted.some(c => c.id === catSelect.value)) {
+        // Pertahankan kategori yang sedang terpilih
+      } else if (expenseCatsSorted.length > 0) {
+        catSelect.value = expenseCatsSorted[0].id;
+      }
+    }
+
+    function onBudgetModalCatSearch(query) {
+      populateBudgetModalCategoryOptions(query);
+      updateBudgetModalAnalytics();
+    }
+
+    function openSetBudgetModal(selectedCatId = null) {
       const monthInput = document.getElementById('budget-month-selector');
       const targetMonthStr = monthInput?.value || dashboardSelectedMonth;
       const parts = targetMonthStr.split('-').map(Number);
@@ -5297,8 +5420,19 @@
       setText('budget-scope-single-text', `Hanya Bulan Ini (${monthLabel})`);
       setText('budget-scope-year-text', `Seluruh 12 Bulan di Tahun ${selYear}`);
 
+      // 1. Isi opsi kategori ke dalam dropdown dan pilih kategori target
+      populateBudgetModalCategoryOptions(selectedCatId);
+
+      // 2. Perbarui analitik historis & nilai limit
       updateBudgetModalAnalytics();
+
+      // 3. Buka pop-up modal
       openModal('budget-modal');
+      lucide.createIcons();
+    }
+	
+	function quickSetBudget(catId, currentVal) {
+       openSetBudgetModal(catId);
     }
 
 	function deleteActiveBudget() {
@@ -5460,8 +5594,27 @@
     }
 
     function resetBudgetFilterAndSort() {
+      // 1. Kosongkan teks di search box
+      setVal('budget-search-input', '');
+      
+      // 2. Sembunyikan ikon silang (x) pembersih search
+      const clearBtn = document.getElementById('budget-search-clear');
+      if (clearBtn) clearBtn.classList.add('hidden');
+
+      // 3. Kembalikan filter klasifikasi dan urutan ke awal
       setVal('budget-filter-class', 'ALL');
       setVal('budget-sort-name', 'default');
+
+      // 4. Render ulang seluruh kartu anggaran
+      renderBudgets();
+    }
+	
+	function clearBudgetSearch() {
+      setVal('budget-search-input', '');
+      const clearBtn = document.getElementById('budget-search-clear');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      const searchInput = document.getElementById('budget-search-input');
+      if (searchInput) searchInput.focus();
       renderBudgets();
     }
 
@@ -5793,27 +5946,86 @@
       const elapsed = (trendScope === 'year') ? getElapsedMonthsCount(parseInt(yearVal) || curYear) : 12;
 
       // =========================================================================
-      // PEMBAGIAN ENTITAS: KATEGORI vs SUBKATEGORI (SUDAH DIPERBAIKI)
+      // 1. PENGECEKAN STATUS AKTIF BATAS LIMIT ANGGARAN (DISABLE / ENABLE CHECKBOX)
+      // =========================================================================
+      let hasBudgetConfigured = false;
+
+      if (trendScope === 'year') {
+        const checkMonths = Array.from({ length: 12 }, (_, i) => `${yearVal}-${String(i + 1).padStart(2, '0')}`);
+
+        for (const mKey of checkMonths) {
+          const monthBudgets = (typeof budgets === 'object' && budgets !== null) ? (budgets[mKey] || {}) : {};
+
+          if (trendEntity === 'subcategory') {
+            // Mode Subkategori: limit hanya aktif jika kategori induk dipilih secara spesifik
+            if (catFilter !== 'ALL') {
+              if (parseFloat(monthBudgets[catFilter]) > 0) {
+                hasBudgetConfigured = true;
+                break;
+              }
+            }
+          } else {
+            // Mode Kategori
+            if (catFilter !== 'ALL') {
+              if (parseFloat(monthBudgets[catFilter]) > 0) {
+                hasBudgetConfigured = true;
+                break;
+              }
+            } else {
+              // Semua Kategori: cek apakah ada setidaknya satu kategori yang limitnya > 0
+              const anyLimit = Object.values(monthBudgets).some(v => parseFloat(v) > 0);
+              if (anyLimit) {
+                hasBudgetConfigured = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      // Terapkan Disable / Enable pada elemen Checkbox dan Labelnya
+      const budgetCheckbox = document.getElementById('trend-toggle-budget');
+      const budgetLabel = document.getElementById('trend-toggle-budget-label');
+
+      if (budgetCheckbox && budgetLabel) {
+        if (!hasBudgetConfigured) {
+          budgetCheckbox.disabled = true;
+          budgetCheckbox.checked = false;
+          budgetLabel.classList.add('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
+
+          if (trendScope !== 'year') {
+            budgetLabel.title = "Batas limit hanya tersedia pada tampilan Tahunan (12 Bulan)";
+          } else if (trendEntity === 'subcategory' && catFilter === 'ALL') {
+            budgetLabel.title = "Pilih salah satu kategori terlebih dahulu untuk melihat batas limit";
+          } else {
+            budgetLabel.title = "Belum ada limit anggaran yang diatur untuk kategori/periode ini";
+          }
+        } else {
+          budgetCheckbox.disabled = false;
+          budgetCheckbox.checked = trendShowBudget;
+          budgetLabel.classList.remove('opacity-30', 'cursor-not-allowed', 'pointer-events-none');
+          budgetLabel.removeAttribute('title');
+        }
+      }
+
+      // =========================================================================
+      // 2. PEMILIHAN ENTITAS (KATEGORI vs SUBKATEGORI)
       // =========================================================================
       let seriesItems = [];
 
       if (trendEntity === 'category') {
-        // Mode Kategori
         const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
         seriesItems = targetCats.map(c => ({ key: c.id, label: c.name }));
       } else {
-        // Mode Subkategori
         const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
-        const subSet = new Set(); // Menggunakan nama variabel subSet secara konsisten
+        const subSet = new Set();
 
-        // 1. Ambil subkategori master dari kategori terpilih
         targetCats.forEach(c => {
           (c.subcategories || []).forEach(sub => {
             if (sub && sub.trim()) subSet.add(sub.trim());
           });
         });
 
-        // 2. Ambil subkategori riil dari riwayat transaksi
         transactions.forEach(tx => {
           if (tx.type === 'expense' && tx.subcategory && tx.subcategory.trim()) {
             if (catFilter === 'ALL' || tx.categoryId === catFilter) {
@@ -5823,16 +6035,15 @@
         });
 
         let subList = Array.from(subSet).sort((a, b) => a.localeCompare(b, 'id'));
-
-        // Filter subkategori tunggal jika user memilih subkategori tertentu
         if (subFilter !== 'ALL') {
           subList = subList.filter(s => s === subFilter);
         }
-
         seriesItems = subList.map(sub => ({ key: sub, label: sub }));
       }
 
-      // Bangun dataset grafik
+      // =========================================================================
+      // 3. PEMBUATAN DATASET GRAFIK
+      // =========================================================================
       const datasets = [];
       let colorIndex = 0;
 
@@ -5858,7 +6069,6 @@
         });
 
         const totalSpent = dataPoints.reduce((a, b) => a + (b || 0), 0);
-        // Tampilkan garis jika ada transaksi atau jika user memfilter subkategori tunggal
         if (totalSpent > 0 || (trendEntity === 'subcategory' && subFilter !== 'ALL') || seriesItems.length <= 3) {
           const color = palette[colorIndex % palette.length];
           datasets.push({
@@ -5874,15 +6084,17 @@
         }
       });
 
-      // Hitung garis rata-rata & limit anggaran
+      // =========================================================================
+      // 4. GARIS RATA-RATA & GARIS BATAS LIMIT ANGGARAN
+      // =========================================================================
       if (trendScope === 'year') {
         const year = yearVal;
         const divisor = Math.max(1, elapsed);
 
+        // Garis Rata-Rata
         if (trendShowAvg && datasets.length > 0) {
           let avgVal = 0;
           if (trendEntity === 'subcategory' && subFilter !== 'ALL') {
-            // Rata-rata khusus untuk subkategori spesifik yang dipilih
             const totalSub = transactions.reduce((sum, tx) => {
               if (tx.type === 'expense' && (tx.subcategory || '').trim() === subFilter && tx.date && tx.date.startsWith(year)) {
                 if (catFilter === 'ALL' || tx.categoryId === catFilter) {
@@ -5923,16 +6135,20 @@
           });
         }
 
-        // Garis batas limit anggaran kategori
-        const hasBudgetConfigured = budgets && (catFilter !== 'ALL' ? Boolean(budgets[`${year}-01`]?.[catFilter]) : false);
-        if (hasBudgetConfigured && trendShowBudget && catFilter !== 'ALL') {
+        // Garis Batas Limit Anggaran (Hanya muncul jika limit aktif dan checkbox dicentang)
+        if (hasBudgetConfigured && trendShowBudget && budgetCheckbox && budgetCheckbox.checked) {
           const budgetData = timeKeys.map((timeKey, idx) => {
             if (idx + 1 > elapsed) return null;
-            return budgets[timeKey]?.[catFilter] || 0;
+            const monthBudgets = (typeof budgets === 'object' && budgets !== null) ? (budgets[timeKey] || {}) : {};
+            if (catFilter !== 'ALL') {
+              return parseFloat(monthBudgets[catFilter]) || 0;
+            } else {
+              return Object.values(monthBudgets).reduce((a, b) => a + (parseFloat(b) || 0), 0);
+            }
           });
 
           datasets.push({
-            label: 'Batas Limit Kategori',
+            label: (trendEntity === 'subcategory' || catFilter !== 'ALL') ? 'Batas Limit Kategori' : 'Total Limit Anggaran',
             data: budgetData,
             borderColor: '#f43f5e',
             borderDash: [3, 3],
@@ -5944,7 +6160,9 @@
         }
       }
 
-      // Hancurkan instance grafik lama dan gambar ulang
+      // =========================================================================
+      // 5. RENDER INSTANCE CHART.JS BARU
+      // =========================================================================
       if (trendsChartInstance) trendsChartInstance.destroy();
 
       trendsChartInstance = new Chart(ctx, {
@@ -6189,12 +6407,9 @@
     }
 
     function updateTrendSubcategoryDropdown() {
-      const catSelect = document.getElementById('trend-category-filter');
-      const subSelect = document.getElementById('trend-subcategory-filter');
-      if (!subSelect) return;
-
-      const catFilter = catSelect ? catSelect.value : 'ALL';
-      const prevSub = subSelect.value || 'ALL';
+      const catFilter = document.getElementById('trend-category-filter')?.value || 'ALL';
+      const curSubInput = document.getElementById('trend-subcategory-filter');
+      const prevSub = curSubInput ? curSubInput.value : 'ALL';
       const subSet = new Set();
 
       const targetCats = categories.filter(c => c.type === 'expense' && (catFilter === 'ALL' || c.id === catFilter));
@@ -6213,14 +6428,22 @@
       });
 
       const sortedSubs = Array.from(subSet).sort((a, b) => a.localeCompare(b, 'id'));
-      subSelect.innerHTML = `<option value="ALL">Semua Subkategori</option>` + 
-        sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      const subOptions = [
+        { value: 'ALL', label: 'Semua Subkategori' },
+        ...sortedSubs.map(s => ({ value: s, label: s }))
+      ];
+      searchableFilterData['trend-subcategory-filter'] = subOptions;
 
-      if ([...subSelect.options].some(o => o.value === prevSub)) {
-        subSelect.value = prevSub;
-      } else {
-        subSelect.value = 'ALL';
+      // Pertahankan nilai subkategori jika masih relevan di kategori baru
+      let selectedVal = 'ALL';
+      if (prevSub !== 'ALL' && subSet.has(prevSub)) {
+        selectedVal = prevSub;
       }
+      if (curSubInput) curSubInput.value = selectedVal;
+
+      const optSub = subOptions.find(o => o.value === selectedVal) || subOptions[0];
+      const labelSub = document.getElementById('label-trend-subcategory-filter');
+      if (labelSub) labelSub.textContent = optSub.label;
     }
 	
     function setTrendEntity(entity) {
@@ -6617,7 +6840,44 @@
         catCountEl.textContent = `Menampilkan ${displayCategories.length} kategori`;
       }
 
+      // Perbarui badge jumlah total kategori pada header
+      const headerBadge = document.getElementById('badge-cat-count-header');
+      if (headerBadge) {
+        headerBadge.textContent = `${categories.length} Kategori`;
+      }
+
+      // Terapkan status buka/tutup (collapse) yang tersimpan
+      applySettingCategoryCollapseUI();
+
       renderBackupSettingsView();
+      lucide.createIcons();
+    }
+	
+	// ==================== FITUR COLLAPSE KATEGORI DI PENGATURAN ====================
+    let isSettingCategoryCollapsed = JSON.parse(localStorage.getItem('vf_setting_cat_collapsed') || 'false');
+
+    function toggleSettingCategoryCollapse() {
+      isSettingCategoryCollapsed = !isSettingCategoryCollapsed;
+      localStorage.setItem('vf_setting_cat_collapsed', JSON.stringify(isSettingCategoryCollapsed));
+      applySettingCategoryCollapseUI();
+    }
+
+    function applySettingCategoryCollapseUI() {
+      const body = document.getElementById('setting-category-body');
+      const icon = document.getElementById('icon-chevron-cat-setting');
+      const text = document.getElementById('text-toggle-cat-collapse');
+
+      if (!body) return;
+
+      if (isSettingCategoryCollapsed) {
+        body.classList.add('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+        if (text) text.textContent = 'Tampilkan';
+      } else {
+        body.classList.remove('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+        if (text) text.textContent = 'Sembunyikan';
+      }
       lucide.createIcons();
     }
 
@@ -6889,9 +7149,7 @@
         prefAcc.value = accounts.some(a => a.id === txPreferences.defaultAccountId) ? txPreferences.defaultAccountId : (accounts[0]?.id || '');
       }
 
-      // =========================================================
-      // PENGISIAN DATA KE SEARCHABLE FILTER (BISA DIKETIK/SEARCH)
-      // =========================================================
+      // 1. Masukkan opsi rekening ke data dropdown pencarian transaksi
       searchableFilterData['filter-account'] = [
         { value: 'ALL', label: 'Semua Rekening' },
         ...sortedAccounts.map(a => ({ value: a.id, label: a.name }))
@@ -6901,21 +7159,31 @@
       const accLbl = document.getElementById('label-filter-account');
       if (accLbl) accLbl.textContent = accOpt.label;
 
-      // Perbarui opsi filter kategori & subkategori riil
+      // 2. Perbarui opsi Kategori & Subkategori transaksi riil
       updateDynamicTransactionFilters();
-      // =========================================================
 
-      // Dropdown kategori di menu Tren
-      const trendCat = document.getElementById('trend-category-filter');
-      if (trendCat) {
-        const prevTrendCat = trendCat.value || 'ALL';
-        const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
-        trendCat.innerHTML = `<option value="ALL">Semua Kategori</option>` + expenseCatsSorted.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
-        if ([...trendCat.options].some(o => o.value === prevTrendCat)) {
-          trendCat.value = prevTrendCat;
-        }
-        updateTrendSubcategoryDropdown();
+      // =======================================================================
+      // 3. POIN NOMOR 2: PENGISIAN SEARCHABLE KATEGORI TREN
+      // =======================================================================
+      const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      const trendCatOptions = [
+        { value: 'ALL', label: 'Semua Kategori' },
+        ...expenseCatsSorted.map(c => ({ value: c.id, label: c.name }))
+      ];
+      searchableFilterData['trend-category-filter'] = trendCatOptions;
+
+      const curTrendCatInput = document.getElementById('trend-category-filter');
+      let curTrendCatVal = curTrendCatInput ? curTrendCatInput.value : 'ALL';
+      if (curTrendCatVal !== 'ALL' && !expenseCatsSorted.some(c => c.id === curTrendCatVal)) {
+        curTrendCatVal = 'ALL';
+        if (curTrendCatInput) curTrendCatInput.value = 'ALL';
       }
+      const optTrendCat = trendCatOptions.find(o => o.value === curTrendCatVal) || trendCatOptions[0];
+      const labelTrendCat = document.getElementById('label-trend-category-filter');
+      if (labelTrendCat) labelTrendCat.textContent = optTrendCat.label;
+
+      updateTrendSubcategoryDropdown();
+      // =======================================================================
 
       // Dropdown preferensi kategori di menu Pengaturan
       const prefCat = document.getElementById('pref-default-category');
@@ -6928,7 +7196,6 @@
       // Dropdown kategori di modal Limit Anggaran
       const budgetCatSelect = document.getElementById('budget-cat-select');
       if (budgetCatSelect) {
-        const expenseCatsSorted = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
         budgetCatSelect.innerHTML = expenseCatsSorted.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
       }
 
@@ -6971,7 +7238,9 @@
 
         const txCatSelect = document.getElementById('tx-category');
         if (txCatSelect) {
-          const filtered = categories.filter(c => c.type === type);
+          const filtered = categories
+            .filter(c => c.type === type)
+            .sort((a, b) => a.name.localeCompare(b.name, 'id'));
           txCatSelect.innerHTML = filtered.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
         }
         populateSubcategoriesDropdown();
