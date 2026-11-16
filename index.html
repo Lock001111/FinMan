@@ -2069,6 +2069,51 @@
       </div>
     </div>
   </div>
+  
+  <!-- MODAL READ-ONLY DRILL-DOWN TRANSAKSI DARI GRAFIK DASHBOARD -->
+  <div id="chart-drilldown-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 flex flex-col max-h-[90vh]">
+      
+      <!-- Header Pop-up -->
+      <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-3">
+          <div id="drilldown-modal-icon-wrap" class="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl shrink-0">
+            <i data-lucide="receipt" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 leading-tight" id="drilldown-modal-title">Rincian Transaksi</h3>
+            <p class="text-xs text-slate-500 mt-0.5" id="drilldown-modal-subtitle">Daftar transaksi kategori terpilih</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('chart-drilldown-modal')" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Ringkasan Akumulasi Nominal -->
+      <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between text-xs">
+        <span class="text-slate-500 font-semibold" id="drilldown-modal-count">0 Transaksi</span>
+        <div class="text-right">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Total Akumulasi</span>
+          <span class="text-sm font-extrabold" id="drilldown-modal-total">Rp 0</span>
+        </div>
+      </div>
+
+      <!-- Daftar List Transaksi (Read-Only) -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100" id="drilldown-modal-list"></div>
+
+      <!-- Footer Tombol Aksi -->
+      <div class="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2">
+        <button type="button" onclick="closeModal('chart-drilldown-modal')" class="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+          Tutup
+        </button>
+        <button type="button" onclick="openInTransactionsTabFromDrillDown()" class="w-full sm:w-auto px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5">
+          <span>Kelola / Edit di Menu Transaksi</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- PWA NOTIFIKASI UPDATE BANNER (RESPONSIF, MODERN & DIAM) -->
   <div id="pwa-update-banner" class="fixed bottom-5 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-auto sm:max-w-md z-[120] hidden bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-md transition-all duration-300">
@@ -2562,7 +2607,8 @@
       'sync-conflict-modal',
       'budget-history-modal',
       'applock-reset-modal',
-      'budget-overrun-modal'
+      'budget-overrun-modal',
+	  'chart-drilldown-modal'
     ];
 
     let navStack = ['dashboard'];
@@ -3132,7 +3178,7 @@
               const idx = elements[0].index;
               const catName = labels[idx];
               if (catName && catName !== 'Belum Ada Pengeluaran') {
-                drillDownToTransactions({
+                showChartDrillDownModal({
                   month: dashboardSelectedMonth,
                   category: catName,
                   type: 'expense'
@@ -3230,7 +3276,7 @@
               const targetMonthStr = `${year}-${String(monthIdx + 1).padStart(2, '0')}`;
               const targetType = (datasetIdx === 0) ? 'income' : 'expense';
 
-              drillDownToTransactions({
+              showChartDrillDownModal({
                 month: targetMonthStr,
                 type: targetType,
                 category: 'ALL'
@@ -3665,6 +3711,100 @@
     function clearDrillDownView() {
       resetDrillDownFilter();
       renderTransactions();
+    }
+	
+	// ==================== POP-UP DRILL-DOWN READ-ONLY ====================
+    let activeChartDrillDownParams = null;
+
+    function showChartDrillDownModal(params) {
+      activeChartDrillDownParams = params;
+
+      // 1. Ambil transaksi yang sesuai dengan parameter grafik
+      const isExpense = (params.type === 'expense');
+      const filtered = transactions.filter(tx => {
+        if (params.month && tx.date && !tx.date.startsWith(params.month)) return false;
+        if (params.type && params.type !== 'ALL' && tx.type !== params.type) return false;
+        if (params.category && params.category !== 'ALL') {
+          const cat = categories.find(c => c.id === tx.categoryId);
+          if (!cat || cat.name.trim().toLowerCase() !== params.category.trim().toLowerCase()) return false;
+        }
+        return true;
+      }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+
+      // 2. Hitung total nominal
+      let totalAmount = 0;
+      filtered.forEach(t => totalAmount += (parseFloat(t.amount) || 0));
+
+      // 3. Format teks judul dan periode
+      let monthLabel = params.month || 'Periode Terpilih';
+      if (params.month && params.month.includes('-')) {
+        const p = params.month.split('-').map(Number);
+        monthLabel = `${monthNamesID[p[1] - 1]} ${p[0]}`;
+      }
+
+      const catLabel = (params.category && params.category !== 'ALL') ? params.category : (params.type === 'income' ? 'Semua Pemasukan' : 'Semua Pengeluaran');
+      
+      setText('drilldown-modal-title', catLabel);
+      setText('drilldown-modal-subtitle', `Bulan: ${monthLabel} (${params.type === 'income' ? 'Pemasukan' : 'Pengeluaran'})`);
+      setText('drilldown-modal-count', `${filtered.length} Transaksi`);
+
+      const totalEl = document.getElementById('drilldown-modal-total');
+      if (totalEl) {
+        totalEl.textContent = (isExpense ? '-' : '+') + formatCurrency(totalAmount);
+        totalEl.className = `text-sm font-extrabold ${isExpense ? 'text-rose-600' : 'text-emerald-600'}`;
+      }
+
+      // Atur warna ikon header
+      const iconWrap = document.getElementById('drilldown-modal-icon-wrap');
+      if (iconWrap) {
+        iconWrap.className = `p-2.5 rounded-2xl shrink-0 ${isExpense ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`;
+      }
+
+      // 4. Render daftar transaksi ke dalam pop-up
+      const listContainer = document.getElementById('drilldown-modal-list');
+      if (listContainer) {
+        if (filtered.length === 0) {
+          listContainer.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Tidak ada transaksi yang cocok.</div>`;
+        } else {
+          listContainer.innerHTML = filtered.map(tx => {
+            const accName = accounts.find(a => a.id === tx.accountId)?.name || 'Sumber Dana';
+            const catName = categories.find(c => c.id === tx.categoryId)?.name || 'Kategori';
+            const amtStr = (tx.type === 'expense' ? '-' : '+') + formatCurrency(tx.amount);
+            const amtColor = (tx.type === 'expense' ? 'text-rose-600' : 'text-emerald-600');
+
+            return `
+              <div class="pt-2.5 pb-1 flex items-start justify-between gap-3 text-xs">
+                <div class="space-y-0.5 flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5 font-semibold text-slate-800">
+                    <span class="truncate">${escapeHtml(tx.note || catName)}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-400 flex items-center gap-2 flex-wrap">
+                    <span>${tx.date}</span>
+                    <span>•</span>
+                    <span class="font-medium text-slate-500">${escapeHtml(accName)}</span>
+                    ${tx.subcategory ? `<span>•</span><span class="bg-slate-100 px-1.5 py-0.2 rounded text-[10px] text-slate-600">${escapeHtml(tx.subcategory)}</span>` : ''}
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="font-bold text-xs sm:text-sm ${amtColor}">${amtStr}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 5. Tampilkan modal
+      openModal('chart-drilldown-modal');
+      lucide.createIcons();
+    }
+
+    // Fungsi tombol aksi jika user ingin pindah ke menu transaksi untuk mengedit
+    function openInTransactionsTabFromDrillDown() {
+      closeModal('chart-drilldown-modal');
+      if (activeChartDrillDownParams) {
+        drillDownToTransactions(activeChartDrillDownParams);
+      }
     }
 	
 	// ==================== NAVIGASI PAGINASI (SEMUA WAKTU) ====================
