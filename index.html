@@ -2072,10 +2072,10 @@
   
   <!-- MODAL READ-ONLY DRILL-DOWN TRANSAKSI DARI GRAFIK DASHBOARD -->
   <div id="chart-drilldown-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 flex flex-col max-h-[90vh]">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-3.5 border border-slate-100 flex flex-col max-h-[88vh] overflow-hidden">
       
-      <!-- Header Pop-up -->
-      <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+      <!-- Header Pop-up (shrink-0 agar tidak tertekan) -->
+      <div class="shrink-0 flex items-start justify-between border-b border-slate-100 pb-3">
         <div class="flex items-center gap-3">
           <div id="drilldown-modal-icon-wrap" class="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl shrink-0">
             <i data-lucide="receipt" class="w-6 h-6"></i>
@@ -2090,8 +2090,11 @@
         </button>
       </div>
 
-      <!-- Ringkasan Akumulasi Nominal -->
-      <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between text-xs">
+      <!-- TAB / CHIPS PEMILIH KATEGORI (shrink-0 agar bentuk tombol tetap kokoh & elegan saat scroll) -->
+      <div id="drilldown-modal-tabs" class="hidden shrink-0 flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 text-xs w-full"></div>
+
+      <!-- Ringkasan Akumulasi Nominal (shrink-0) -->
+      <div class="shrink-0 p-3 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between text-xs">
         <span class="text-slate-500 font-semibold" id="drilldown-modal-count">0 Transaksi</span>
         <div class="text-right">
           <span class="text-[10px] text-slate-400 uppercase font-bold block">Total Akumulasi</span>
@@ -2099,11 +2102,11 @@
         </div>
       </div>
 
-      <!-- Daftar List Transaksi (Read-Only) -->
-      <div class="flex-1 overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100" id="drilldown-modal-list"></div>
+      <!-- Daftar List Transaksi (flex-1 min-h-0 agar hanya bagian ini yang scrolling) -->
+      <div class="flex-1 min-h-[140px] overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100" id="drilldown-modal-list"></div>
 
-      <!-- Footer Tombol Aksi -->
-      <div class="pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2">
+      <!-- Footer Tombol Aksi (shrink-0) -->
+      <div class="shrink-0 pt-3 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2">
         <button type="button" onclick="closeModal('chart-drilldown-modal')" class="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
           Tutup
         </button>
@@ -3623,18 +3626,18 @@
     function drillDownToTransactions(params) {
       isDrillDownFilter = true;
 
-      // 1. Matikan 'Semua Waktu' jika aktif
       const chkAllTime = document.getElementById('filter-all-time');
       if (chkAllTime) chkAllTime.checked = false;
       const monthWrapper = document.getElementById('month-selector-wrapper');
       if (monthWrapper) monthWrapper.classList.remove('opacity-40', 'pointer-events-none');
 
-      // 2. Set periode bulan
+      // Set tanggal atau bulan
       if (params.month) {
         setVal('filter-month', params.month);
+      } else if (params.date) {
+        setVal('filter-month', params.date.substring(0, 7));
       }
 
-      // 3. Reset kolom pencarian teks & nominal
       setVal('filter-search', '');
       setVal('filter-amount-op', 'ALL');
       setVal('filter-amount-val', '');
@@ -3642,17 +3645,16 @@
       const labelClass = document.getElementById('label-filter-expense-class');
       if (labelClass) labelClass.textContent = 'Semua Klasifikasi';
 
-      // 4. Set Tipe (expense / income / ALL)
+      // Set Tipe
       const targetType = params.type || 'ALL';
       setVal('filter-type', targetType);
       const typeOpt = (searchableFilterData['filter-type'] || []).find(o => o.value === targetType);
       const labelType = document.getElementById('label-filter-type');
       if (labelType && typeOpt) labelType.textContent = typeOpt.label;
 
-      // 5. Perbarui opsi filter kategori & subkategori riil periode ini
       updateDynamicTransactionFilters();
 
-      // 6. Set Kategori terpilih
+      // Set Kategori
       const targetCat = params.category || 'ALL';
       setVal('filter-category', targetCat);
       const curCatOpt = (searchableFilterData['filter-category'] || []).find(o => o.value === targetCat) 
@@ -3660,30 +3662,34 @@
       const labelCat = document.getElementById('label-filter-category');
       if (labelCat) labelCat.textContent = curCatOpt.label;
 
-      // 7. Update subkategori untuk kategori ini & reset subkategori ke ALL
       onFilterCategoryChange();
 
-      // 8. Reset Rekening ke ALL
+      // Set Subkategori (jika yang diklik adalah garis subkategori)
+      if (params.subcategory && params.subcategory !== 'ALL') {
+        setVal('filter-subcategory', params.subcategory);
+        const curSubOpt = (searchableFilterData['filter-subcategory'] || []).find(o => o.value === params.subcategory) 
+                       || { label: params.subcategory };
+        const labelSub = document.getElementById('label-filter-subcategory');
+        if (labelSub) labelSub.textContent = curSubOpt.label;
+      }
+
       setVal('filter-account', 'ALL');
       const labelAcc = document.getElementById('label-filter-account');
       if (labelAcc) labelAcc.textContent = 'Semua Rekening';
 
-      // 9. Reset pagination ke halaman 1
       allTimeCurrentPage = 1;
 
-      // 10. Tampilkan banner info rincian dari dashboard
       const banner = document.getElementById('drilldown-banner');
       const desc = document.getElementById('drilldown-desc');
       if (banner && desc) {
-        let text = '';
-        if (params.category && params.category !== 'ALL') text += params.category;
+        let text = params.subcategory || (params.category !== 'ALL' ? params.category : '');
         if (params.type && params.type !== 'ALL') text += (text ? ' (' : '') + (params.type === 'income' ? 'Pemasukan' : 'Pengeluaran') + (text ? ')' : '');
-        if (params.month) text += ' • ' + params.month;
+        if (params.date) text += ' • ' + params.date;
+        else if (params.month) text += ' • ' + params.month;
         desc.textContent = text || 'Rincian Grafik';
         banner.classList.remove('hidden');
       }
 
-      // 11. Buka halaman transaksi
       switchTab('transactions');
     }
 
@@ -3713,39 +3719,131 @@
       renderTransactions();
     }
 	
-	// ==================== POP-UP DRILL-DOWN READ-ONLY ====================
+    // ==================== PENGENDALI DRILL-DOWN READ-ONLY MULTI-TITIK ====================
     let activeChartDrillDownParams = null;
+    let drillDownOverlappingList = [];
 
-    function showChartDrillDownModal(params) {
+    function showChartDrillDownModal(paramsOrList) {
+      const tabsContainer = document.getElementById('drilldown-modal-tabs');
+
+      // Cek apakah parameter berupa daftar titik bertumpuk (Array) atau objek tunggal
+      if (Array.isArray(paramsOrList)) {
+        drillDownOverlappingList = paramsOrList;
+        if (drillDownOverlappingList.length === 0) return;
+
+        // Tampilkan deretan tab pemilih jika terdeteksi LEBIH DARI 1 garis pada titik tersebut
+        if (tabsContainer && drillDownOverlappingList.length > 1) {
+          tabsContainer.classList.remove('hidden');
+          renderDrillDownModalTabs(0);
+        } else if (tabsContainer) {
+          tabsContainer.classList.add('hidden');
+        }
+
+        renderDrillDownContent(drillDownOverlappingList[0]);
+      } else {
+        drillDownOverlappingList = [paramsOrList];
+        if (tabsContainer) tabsContainer.classList.add('hidden');
+        renderDrillDownContent(paramsOrList);
+      }
+
+      openModal('chart-drilldown-modal');
+      lucide.createIcons();
+    }
+
+    function renderDrillDownModalTabs(activeIdx = 0) {
+      const tabsContainer = document.getElementById('drilldown-modal-tabs');
+      if (!tabsContainer) return;
+
+      tabsContainer.innerHTML = drillDownOverlappingList.map((item, idx) => {
+        const isActive = (idx === activeIdx);
+        
+        let tabLabel = '';
+        if (item.subcategory && item.subcategory !== 'ALL') {
+          tabLabel = item.subcategory;
+        } else if (item.category && item.category !== 'ALL') {
+          tabLabel = item.category;
+        } else {
+          tabLabel = 'Garis ' + (idx + 1);
+        }
+
+        const formattedAmt = formatCurrency(item.totalAmount || item.value || 0);
+
+        return `
+          <button type="button" onclick="switchDrillDownModalTab(${idx})" class="shrink-0 px-3 py-1.5 rounded-xl border font-bold text-xs whitespace-nowrap transition flex items-center gap-1.5 shadow-2xs ${
+            isActive 
+              ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' 
+              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+          }">
+            <span>${escapeHtml(tabLabel)}</span>
+            <span class="text-[10px] ${isActive ? 'text-emerald-100' : 'text-slate-400'} font-semibold">(${formattedAmt})</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function switchDrillDownModalTab(idx) {
+      if (!drillDownOverlappingList[idx]) return;
+      renderDrillDownModalTabs(idx);
+      renderDrillDownContent(drillDownOverlappingList[idx]);
+    }
+
+    function renderDrillDownContent(params) {
       activeChartDrillDownParams = params;
 
-      // 1. Ambil transaksi yang sesuai dengan parameter grafik
       const isExpense = (params.type === 'expense');
+
+      // Filter data transaksi riil
       const filtered = transactions.filter(tx => {
-        if (params.month && tx.date && !tx.date.startsWith(params.month)) return false;
+        if (params.date) {
+          if (tx.date !== params.date) return false;
+        } else if (params.month) {
+          if (!tx.date || !tx.date.startsWith(params.month)) return false;
+        }
+
         if (params.type && params.type !== 'ALL' && tx.type !== params.type) return false;
+
+        // Cek subkategori
+        if (params.subcategory && params.subcategory !== 'ALL') {
+          if ((tx.subcategory || '').trim().toLowerCase() !== params.subcategory.trim().toLowerCase()) return false;
+        }
+
+        // Cek kategori (hanya jika bukan 'ALL')
         if (params.category && params.category !== 'ALL') {
           const cat = categories.find(c => c.id === tx.categoryId);
           if (!cat || cat.name.trim().toLowerCase() !== params.category.trim().toLowerCase()) return false;
         }
+
         return true;
       }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
 
-      // 2. Hitung total nominal
       let totalAmount = 0;
       filtered.forEach(t => totalAmount += (parseFloat(t.amount) || 0));
 
-      // 3. Format teks judul dan periode
-      let monthLabel = params.month || 'Periode Terpilih';
-      if (params.month && params.month.includes('-')) {
-        const p = params.month.split('-').map(Number);
-        monthLabel = `${monthNamesID[p[1] - 1]} ${p[0]}`;
+      // Format judul & subjudul
+      let displayTitle = '';
+      let displaySubtitle = '';
+
+      if (params.subcategory && params.subcategory !== 'ALL') {
+        displayTitle = params.subcategory;
+        displaySubtitle = params.parentCategory 
+          ? `Kategori: ${params.parentCategory}` 
+          : 'Subkategori Pengeluaran';
+      } else if (params.category && params.category !== 'ALL') {
+        displayTitle = params.category;
+        displaySubtitle = params.type === 'income' ? 'Kategori Pemasukan' : 'Kategori Pengeluaran';
+      } else {
+        displayTitle = params.type === 'income' ? 'Semua Pemasukan' : 'Semua Pengeluaran';
+        displaySubtitle = 'Rincian Keseluruhan';
       }
 
-      const catLabel = (params.category && params.category !== 'ALL') ? params.category : (params.type === 'income' ? 'Semua Pemasukan' : 'Semua Pengeluaran');
-      
-      setText('drilldown-modal-title', catLabel);
-      setText('drilldown-modal-subtitle', `Bulan: ${monthLabel} (${params.type === 'income' ? 'Pemasukan' : 'Pengeluaran'})`);
+      let timeDesc = params.date || params.month || 'Periode Terpilih';
+      if (params.month && params.month.includes('-') && !params.date) {
+        const p = params.month.split('-').map(Number);
+        timeDesc = `${monthNamesID[p[1] - 1]} ${p[0]}`;
+      }
+
+      setText('drilldown-modal-title', displayTitle);
+      setText('drilldown-modal-subtitle', `${displaySubtitle} • ${timeDesc}`);
       setText('drilldown-modal-count', `${filtered.length} Transaksi`);
 
       const totalEl = document.getElementById('drilldown-modal-total');
@@ -3754,17 +3852,15 @@
         totalEl.className = `text-sm font-extrabold ${isExpense ? 'text-rose-600' : 'text-emerald-600'}`;
       }
 
-      // Atur warna ikon header
       const iconWrap = document.getElementById('drilldown-modal-icon-wrap');
       if (iconWrap) {
         iconWrap.className = `p-2.5 rounded-2xl shrink-0 ${isExpense ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`;
       }
 
-      // 4. Render daftar transaksi ke dalam pop-up
       const listContainer = document.getElementById('drilldown-modal-list');
       if (listContainer) {
         if (filtered.length === 0) {
-          listContainer.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Tidak ada transaksi yang cocok.</div>`;
+          listContainer.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Tidak ada catatan transaksi.</div>`;
         } else {
           listContainer.innerHTML = filtered.map(tx => {
             const accName = accounts.find(a => a.id === tx.accountId)?.name || 'Sumber Dana';
@@ -3782,7 +3878,7 @@
                     <span>${tx.date}</span>
                     <span>•</span>
                     <span class="font-medium text-slate-500">${escapeHtml(accName)}</span>
-                    ${tx.subcategory ? `<span>•</span><span class="bg-slate-100 px-1.5 py-0.2 rounded text-[10px] text-slate-600">${escapeHtml(tx.subcategory)}</span>` : ''}
+                    ${tx.subcategory ? `<span>•</span><span class="bg-slate-100 px-1.5 py-0.2 rounded text-[10px] text-slate-600 font-medium">${escapeHtml(tx.subcategory)}</span>` : ''}
                   </div>
                 </div>
                 <div class="text-right shrink-0">
@@ -3793,9 +3889,6 @@
           }).join('');
         }
       }
-
-      // 5. Tampilkan modal
-      openModal('chart-drilldown-modal');
       lucide.createIcons();
     }
 
@@ -6315,7 +6408,9 @@
             backgroundColor: color,
             fill: false,
             tension: 0.25,
-            pointRadius: 3
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointHitRadius: 20 // Area sentuh jari diperlebar 20px agar sangat mudah diketuk di HP
           });
           colorIndex++;
         }
@@ -6416,6 +6511,107 @@
           responsive: true,
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
+          // ==================== SENSOR SENTUH JARAK 2D (AKURAT & ANTI-SALAH KATEGORI) ====================
+          onClick: (evt) => {
+            // 1. Dapatkan posisi koordinat piksel sentuhan jempol pada kanvas
+            const canvasPos = Chart.helpers.getRelativePosition(evt, trendsChartInstance);
+            const clickX = canvasPos.x;
+            const clickY = canvasPos.y;
+
+            // 2. Tentukan indeks waktu (X) terdekat
+            const xScale = trendsChartInstance.scales.x;
+            const timeIdx = xScale.getValueForPixel(clickX);
+            if (timeIdx < 0 || timeIdx >= timeKeys.length) return;
+
+            const targetTimeKey = timeKeys[timeIdx];
+            const isSub = (trendEntity === 'subcategory');
+
+            // 3. Cari titik garis yang paling dekat dengan jari berdasarkan jarak fisik 2D (X dan Y)
+            let closestItem = null;
+            let minDistance = Infinity;
+            const candidates = [];
+
+            trendsChartInstance.data.datasets.forEach((ds, dsIdx) => {
+              // Abaikan garis referensi Rata-rata dan Batas Limit
+              if (ds.label.startsWith('Rata-rata') || ds.label.startsWith('Batas Limit') || ds.label.startsWith('Total Limit')) return;
+
+              const val = ds.data[timeIdx];
+              if (val === null || val === undefined || val <= 0) return;
+
+              const meta = trendsChartInstance.getDatasetMeta(dsIdx);
+              if (!meta || !meta.data || !meta.data[timeIdx]) return;
+
+              const pt = meta.data[timeIdx];
+              // Hitung jarak Euclidean 2D riil antara jari dan titik lingkaran
+              const dist = Math.hypot(pt.x - clickX, pt.y - clickY);
+
+              candidates.push({ ds, dsIdx, val, pt, dist });
+
+              if (dist < minDistance) {
+                minDistance = dist;
+                closestItem = { ds, dsIdx, val, pt, dist };
+              }
+            });
+
+            // Jika jari menekan area kosong yang terlalu jauh (> 45px), abaikan
+            if (!closestItem || minDistance > 45) return;
+
+            // 4. Kumpulkan garis terdekat dan deteksi jika ada garis lain yang bertumpuk pada koordinat yang sama
+            const overlappingItems = [];
+            const seenKeys = new Set();
+
+            const registerItem = (c) => {
+              if (seenKeys.has(c.ds.label)) return;
+              seenKeys.add(c.ds.label);
+
+              let catName = 'ALL';
+              let subName = '';
+              let parentCatName = '';
+
+              if (isSub) {
+                subName = c.ds.label;
+                if (catFilter !== 'ALL') {
+                  const foundCat = categories.find(cat => cat.id === catFilter);
+                  if (foundCat) { catName = foundCat.name; parentCatName = foundCat.name; }
+                } else {
+                  // Cari kategori pemilik subkategori ini untuk keterangan di pop-up
+                  const foundCat = categories.find(cat => (cat.subcategories || []).includes(c.ds.label));
+                  if (foundCat) { parentCatName = foundCat.name; }
+                  catName = 'ALL';
+                }
+              } else {
+                catName = c.ds.label;
+              }
+
+              overlappingItems.push({
+                category: catName,
+                subcategory: subName,
+                parentCategory: parentCatName,
+                type: 'expense',
+                month: (trendScope === 'year') ? targetTimeKey : null,
+                date: (trendScope === 'month') ? targetTimeKey : null,
+                totalAmount: c.val
+              });
+            };
+
+            // Masukkan item yang paling dekat secara fisik
+            registerItem(closestItem);
+
+            // Masukkan juga garis lain yang bertumpuk pada nilai yang sama (selisih < 1) atau koordinat titiknya berhimpitan (< 12px)
+            candidates.forEach(c => {
+              if (c !== closestItem && (Math.abs(c.val - closestItem.val) < 1 || Math.hypot(c.pt.x - closestItem.pt.x, c.pt.y - closestItem.pt.y) < 12)) {
+                registerItem(c);
+              }
+            });
+
+            if (overlappingItems.length > 0) {
+              showChartDrillDownModal(overlappingItems);
+            }
+          },
+          onHover: (event, chartElement) => {
+            event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
+          },
+          // =====================================================================
           plugins: {
             legend: { 
               position: 'bottom',
