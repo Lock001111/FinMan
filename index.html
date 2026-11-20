@@ -7699,9 +7699,24 @@
       closeModal('restore-confirm-modal');
       pendingRestoreData = null;
 
+      // =========================================================================
+      // PENGAMAN RESTORE: RESET STATUS SYNC AGAR TIDAK MENIMPA CLOUD
+      // =========================================================================
+      localStorage.setItem('vf_data_restored_offline', 'true');
+      localStorage.removeItem('vf_last_sync_timestamp'); // Batalkan stempel waktu lama
+      localStorage.setItem('vf_local_modified_timestamp', String(Date.now()));
+      // =========================================================================
+
       initPickers();
       renderAll();
       alert('Data rekening, transaksi, kategori, dan pengaturan berhasil dipulihkan!');
+
+      // Jika akun Google sedang aktif, langsung cocokkan dengan Cloud saat itu juga
+      if (navigator.onLine && isGdriveSessionActive()) {
+        setTimeout(() => {
+          autoPullFromCloud();
+        }, 500);
+      }
     }
 
     function renderBackupSettingsView() {
@@ -8501,18 +8516,24 @@
         const localModifiedTime = parseInt(localStorage.getItem('vf_local_modified_timestamp') || '0');
 
         // TERDETEKSI DATA DI CLOUD LEBIH BARU DARI SINKRONISASI TERAKHIR
-        if (cloudModifiedTime > lastSyncTime) {
-          // Unduh isi cloud sementara ke memori untuk pemeriksaan / komparasi
+        const isRestoredOffline = localStorage.getItem('vf_data_restored_offline') === 'true';
+
+        // Deteksi apakah Cloud lebih baru ATAU data lokal baru saja dipulihkan dari backup
+        if (cloudModifiedTime > lastSyncTime || isRestoredOffline) {
           const res = await fetch(`https://www.googleapis.com/drive/v3/files/${cloudFile.id}?alt=media`, {
             headers: { Authorization: `Bearer ${gdriveAccessToken}` }
           });
           const encryptedContent = await res.text();
           const decryptedPayload = await decryptE2EE(encryptedContent, pin);
 
-          // Jika perangkat lokal juga memiliki editan baru yang belum diunggah: TERJADI KONFLIK!
-          if (localModifiedTime > lastSyncTime) {
+          // Cek apakah ada transaksi cloud yang tidak ada di lokal
+          const cloudTxs = decryptedPayload?.data?.transactions || [];
+          const localTxIds = new Set(transactions.map(t => t.id));
+          const hasMissingTransactions = cloudTxs.some(t => !localTxIds.has(t.id));
+
+          // JIKA ADA KONFLIK / DATA HILANG / HABIS RESTORE:
+          if (localModifiedTime > lastSyncTime || hasMissingTransactions || isRestoredOffline) {
             pendingConflictPayload = cloudFile;
-            // Buka jendela komparasi visual lengkap (tanpa menimpa data lokal)
             await showConflictComparisonModal(cloudFile, decryptedPayload);
             return;
           }
@@ -8572,15 +8593,47 @@
       }, 60000);
     }
 
-    async function executeCloudPush(pin) {
+    async function executeCloudPush(pin, forcePush = false) {
       const token = await ensureValidGdriveToken();
       if (!token) return;
 
       try {
-        setSyncBadge('syncing', 'Mengunggah ke Cloud...');
+        setSyncBadge('syncing', 'Memeriksa & Mengunggah...');
+        const existingFile = await findGdriveBackupFile();
+
+        // =========================================================================
+        // PRE-UPLOAD CONFLICT CHECK: CEK DATA CLOUD SEBELUM MENIMPA
+        // =========================================================================
+        if (existingFile && !forcePush) {
+          const cloudModifiedTime = new Date(existingFile.modifiedTime).getTime();
+          const lastSyncTime = parseInt(localStorage.getItem('vf_last_sync_timestamp') || '0');
+          const isRestoredOffline = localStorage.getItem('vf_data_restored_offline') === 'true';
+
+          // Unduh dan dekripsi file cloud sementara ke memori untuk verifikasi
+          const checkRes = await fetch(`https://www.googleapis.com/drive/v3/files/${existingFile.id}?alt=media`, {
+            headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+          });
+          const encryptedCheck = await checkRes.text();
+          const cloudPayload = await decryptE2EE(encryptedCheck, pin);
+          const cloudTxs = cloudPayload?.data?.transactions || [];
+
+          // Cek apakah di Cloud ada transaksi yang TIDAK ADA di HP ini (data tertinggal/hilang)
+          const localTxIds = new Set(transactions.map(t => t.id));
+          const hasMissingTransactions = cloudTxs.some(t => !localTxIds.has(t.id));
+
+          // JIKA CLOUD LEBIH BARU, ATAU ADA TRANSAKSI CLOUD YANG HILANG DI LOKAL, ATAU HABIS DIRESTORE:
+          if (cloudModifiedTime > lastSyncTime || hasMissingTransactions || isRestoredOffline) {
+            // STOP! JANGAN UPLOAD!
+            isSyncConflictLocked = true;
+            pendingConflictPayload = existingFile;
+            await showConflictComparisonModal(existingFile, cloudPayload);
+            return; // Batalkan proses penimpaan ke Cloud
+          }
+        }
+        // =========================================================================
+
         const rawPayload = buildBackupPayload();
         const encryptedBody = await encryptE2EE(rawPayload, pin);
-        const existingFile = await findGdriveBackupFile();
 
         let uploadRes;
         if (existingFile) {
@@ -8607,9 +8660,8 @@
 
         if (!uploadRes.ok) {
           if (uploadRes.status === 401) {
-            // Coba perbarui token sekali lagi jika ditolak
             const newToken = await ensureValidGdriveToken(true);
-            if (newToken) return executeCloudPush(pin);
+            if (newToken) return executeCloudPush(pin, forcePush);
             setSyncBadge('error', 'Sesi Berakhir (48 Jam)');
             throw new Error('Sesi Google kedaluwarsa.');
           }
@@ -8621,6 +8673,8 @@
         const serverModifiedTime = dataRes.modifiedTime ? new Date(dataRes.modifiedTime).getTime() : Date.now();
         const nowIso = new Date(serverModifiedTime).toISOString();
 
+        // Sinkronisasi berhasil: hapus tanda restore offline dan simpan waktu baru
+        localStorage.removeItem('vf_data_restored_offline');
         localStorage.setItem('vf_last_sync_timestamp', String(serverModifiedTime));
         localStorage.setItem('vf_local_modified_timestamp', String(serverModifiedTime));
         localStorage.setItem('vf_gdrive_last_sync', nowIso);
@@ -8639,13 +8693,15 @@
 
     async function resolveConflictKeepLocal() {
       closeModal('sync-conflict-modal');
-      isSyncConflictLocked = false; // Buka kunci pengaman
+      isSyncConflictLocked = false;
       cachedCloudConflictPayload = null;
 
       const pin = document.getElementById('gdrive-encryption-pin')?.value.trim() || localStorage.getItem('vf_gdrive_pin_persistent');
       if (pin) {
         try {
-          await executeCloudPush(pin);
+          // Kirim parameter forcePush = true karena user secara sadar memilih menimpa Cloud
+          await executeCloudPush(pin, true);
+          localStorage.removeItem('vf_data_restored_offline');
           alert('Berhasil! Data perangkat ini telah diunggah dan memperbarui Google Drive.');
         } catch (e) {
           alert('Gagal mengunggah data lokal ke cloud: ' + (e.message || e));
