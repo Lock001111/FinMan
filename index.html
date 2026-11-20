@@ -1646,7 +1646,7 @@
           <label class="text-xs font-semibold text-slate-600 block mb-1">
             Catatan / Keterangan <span class="text-[10px] text-slate-400 font-normal">(Shift+Enter untuk baris baru)</span>
           </label>
-          <textarea id="tx-note" tabindex="6" rows="2" placeholder="Beli makan siang, transfer kas, dll." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none"></textarea>
+          <textarea id="tx-note" onblur="handleTxNoteBlur(this)" tabindex="6" rows="2" placeholder="Beli makan siang, transfer kas, dll." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none"></textarea>
         </div>
 
         <!-- Buttons -->
@@ -1666,7 +1666,7 @@
         <input type="hidden" id="acc-id" />
         <div>
           <label class="text-xs font-semibold text-slate-600 block mb-1">Nama Rekening / Akun</label>
-          <input type="text" id="acc-name" placeholder="BCA, Mandiri, GoPay, Tunai Dompet" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input type="text" id="acc-name" onblur="handleAccNameBlur(this)" placeholder="BCA, Mandiri, GoPay, Tunai Dompet" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600 block mb-1">Jenis</label>
@@ -1710,7 +1710,7 @@
         <input type="hidden" id="cat-id" />
         <div>
           <label class="text-xs font-semibold text-slate-600 block mb-1">Nama Kategori</label>
-          <input type="text" id="cat-name" placeholder="Makanan & Minuman, Utilitas..." required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input type="text" id="cat-name" onblur="handleCatNameBlur(this)" placeholder="Makanan & Minuman, Utilitas..." required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -1731,7 +1731,7 @@
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-600 block mb-1">Subkategori (Pisahkan dengan koma)</label>
-          <input type="text" id="cat-subs" placeholder="Restoran, Kopi, Groceries" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input type="text" id="cat-subs" onblur="handleCatSubsBlur(this)" placeholder="Restoran, Kopi, Groceries" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeModal('category-modal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Batal</button>
@@ -1964,46 +1964,90 @@
     </div>
   </div>
 
-  <!-- MODAL PENYELESAIAN KONFLIK DATA -->
-  <div id="sync-conflict-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center gap-3 text-rose-600">
-        <div class="p-2.5 bg-rose-50 rounded-xl">
-          <i data-lucide="git-merge" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <h3 class="text-base font-bold text-slate-900">Terdeteksi Konflik Data Cloud!</h3>
-          <p class="text-xs text-slate-500">Data di Cloud telah diubah perangkat lain, sementara perangkat ini juga memiliki perubahan baru.</p>
-        </div>
-      </div>
-
-      <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
-        <span class="font-bold block">Pilih versi data yang ingin dipertahankan:</span>
-      </div>
-
-      <div class="space-y-2 pt-1">
-        <button onclick="resolveConflictKeepLocal()" class="w-full text-left p-3 border-2 border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl transition flex justify-between items-center">
-          <div>
-            <span class="text-xs font-bold text-emerald-950 block">Gunakan Data Perangkat Ini (Lokal)</span>
-            <span class="text-[11px] text-emerald-700">Unggah data perangkat ini dan timpa data di Google Drive.</span>
+  <!-- MODAL KOMPARASI & PENYELESAIAN KONFLIK DATA (VISUAL DIFF) -->
+  <div id="sync-conflict-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-rose-100 flex flex-col max-h-[90vh]">
+      
+      <!-- Header Pop-up -->
+      <div class="shrink-0 flex items-start justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0">
+            <i data-lucide="git-merge" class="w-6 h-6"></i>
           </div>
-          <i data-lucide="cloud-upload" class="w-4 h-4 text-emerald-600"></i>
-        </button>
-
-        <button onclick="resolveConflictKeepCloud()" class="w-full text-left p-3 border-2 border-blue-500 bg-blue-50/50 hover:bg-blue-50 rounded-xl transition flex justify-between items-center">
           <div>
-            <span class="text-xs font-bold text-blue-950 block">Gunakan Data Cloud (Google Drive)</span>
-            <span class="text-[11px] text-blue-700">Unduh data dari cloud dan batalkan perubahan lokal.</span>
+            <h3 class="text-base font-bold text-slate-900 leading-tight">Konflik Data Terdeteksi!</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Data Cloud diubah perangkat lain dan perangkat ini juga memiliki perubahan baru.</p>
           </div>
-          <i data-lucide="cloud-download" class="w-4 h-4 text-blue-600"></i>
+        </div>
+        <button type="button" onclick="cancelSyncConflict()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition" title="Tutup Sementara">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="text-right pt-2 border-t">
-        <button onclick="closeModal('sync-conflict-modal')" class="px-4 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-lg">
-          Tutup & Tinjau Nanti
-        </button>
+      <!-- Ringkasan Komparasi Berdampingan (Side-by-Side Summary) -->
+      <div class="shrink-0 grid grid-cols-2 gap-3 text-xs">
+        <!-- Kolom Data Lokal -->
+        <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-900 text-xs">Perangkat Ini (Lokal)</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <div class="text-[11px] text-slate-500">Terakhir diedit: <span id="conflict-local-time" class="font-semibold text-slate-700">-</span></div>
+          <div class="text-[11px] text-slate-500">Total Transaksi: <strong id="conflict-local-count" class="text-emerald-700">0</strong></div>
+          <div class="text-[11px] text-slate-500">Kekayaan Bersih: <strong id="conflict-local-balance" class="text-slate-800">Rp 0</strong></div>
+        </div>
+
+        <!-- Kolom Data Cloud -->
+        <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-2xl space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-blue-900 text-xs">Google Drive (Cloud)</span>
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          </div>
+          <div class="text-[11px] text-slate-500">Terakhir diunggah: <span id="conflict-cloud-time" class="font-semibold text-slate-700">-</span></div>
+          <div class="text-[11px] text-slate-500">Total Transaksi: <strong id="conflict-cloud-count" class="text-blue-700">0</strong></div>
+          <div class="text-[11px] text-slate-500">Kekayaan Bersih: <strong id="conflict-cloud-balance" class="text-slate-800">Rp 0</strong></div>
+        </div>
       </div>
+
+      <!-- Rincian Daftar Perbedaan Transaksi (Scrollable) -->
+      <div class="shrink-0 flex items-center justify-between px-1 text-xs">
+        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>Perbedaan Catatan Transaksi:</span>
+        </span>
+        <span id="conflict-diff-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">0 Perbedaan</span>
+      </div>
+
+      <div class="flex-1 min-h-[140px] max-h-56 overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100 border border-slate-200 rounded-2xl p-2.5 bg-slate-50/40 text-xs" id="conflict-diff-list"></div>
+
+      <!-- Pilihan Tindakan & Tombol Batal -->
+      <div class="shrink-0 pt-2 space-y-2 border-t border-slate-100">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button type="button" onclick="resolveConflictKeepLocal()" class="w-full text-left p-2.5 border-2 border-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition flex justify-between items-center shadow-xs">
+            <div>
+              <span class="text-xs font-bold text-emerald-950 block">Gunakan Data Perangkat Ini</span>
+              <span class="text-[10px] text-emerald-700 leading-tight block">Unggah data HP ini dan perbarui data di Cloud.</span>
+            </div>
+            <i data-lucide="cloud-upload" class="w-4 h-4 text-emerald-600 shrink-0 ml-2"></i>
+          </button>
+
+          <button type="button" onclick="resolveConflictKeepCloud()" class="w-full text-left p-2.5 border-2 border-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition flex justify-between items-center shadow-xs">
+            <div>
+              <span class="text-xs font-bold text-blue-950 block">Gunakan Data Cloud (Drive)</span>
+              <span class="text-[10px] text-blue-700 leading-tight block">Unduh data Cloud dan batalkan perubahan di HP ini.</span>
+            </div>
+            <i data-lucide="cloud-download" class="w-4 h-4 text-blue-600 shrink-0 ml-2"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[10px] text-slate-400">Auto-sinkronisasi dibekukan sampai Anda memilih salah satu.</span>
+          <button type="button" onclick="cancelSyncConflict()" class="px-4 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+            Batal (Tinjau Nanti)
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2307,6 +2351,94 @@
     function formatCurrency(val) {
       const num = parseFloat(val);
       return idrFormatter.format(isNaN(num) ? 0 : num);
+    }
+	
+	// ==================== ENGINE SMART TITLE CASE (OFFLINE & BILINGUAL) ====================
+    const SMART_LOWERCASE_WORDS = new Set([
+      // Bahasa Indonesia (Kata Sambung & Kata Depan Baku)
+      'di', 'ke', 'dari', 'dan', 'atau', 'yang', 'untuk', 'pada', 'dengan', 'tentang',
+      'oleh', 'sampai', 'hingga', 'karena', 'sebagai', 'dalam', 'atas', 'terhadap',
+      'bagi', 'per', 'pun', 'si', 'sang',
+      // Bahasa Inggris (Prepositions, Conjunctions & Articles)
+      'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'from',
+      'by', 'with', 'in', 'of', 'as', 'into', 'onto', 'off', 'via'
+    ]);
+
+    function toSmartTitleCase(str) {
+      if (!str || typeof str !== 'string') return '';
+
+      // Proses per baris agar baris baru (\n) pada catatan transaksi tetap terjaga
+      return str.split('\n').map(line => {
+        const words = line.split(/(\s+)/);
+        let isFirstWordInLine = true;
+
+        return words.map(token => {
+          if (/^\s+$/.test(token)) return token;
+
+          // Tangkap tanda baca depan & belakang kata, misal "(makan," -> "(", "makan", ","
+          const match = token.match(/^([^a-zA-Z0-9]*)([a-zA-Z0-9'-]+)([^a-zA-Z0-9]*)$/);
+          if (!match) return token;
+
+          const leadingPunct = match[1];
+          const word = match[2];
+          const trailingPunct = match[3];
+          const lowerWord = word.toLowerCase();
+
+          let formattedWord;
+          if (isFirstWordInLine) {
+            // Kata pertama pada baris selalu kapital
+            formattedWord = lowerWord.charAt(0).toUpperCase() + lowerWord.slice(1);
+            isFirstWordInLine = false;
+          } else if (SMART_LOWERCASE_WORDS.has(lowerWord)) {
+            // Kata sambung/depan di tengah kalimat tetap huruf kecil
+            formattedWord = lowerWord;
+          } else {
+            // Kata reguler diawali huruf besar
+            formattedWord = lowerWord.charAt(0).toUpperCase() + lowerWord.slice(1);
+          }
+
+          return leadingPunct + formattedWord + trailingPunct;
+        }).join('');
+      }).join('\n');
+    }
+
+    // Format subkategori yang dipisahkan koma
+    function formatSubcategoriesSmartTitleCase(rawStr) {
+      if (!rawStr || typeof rawStr !== 'string') return '';
+      return rawStr.split(',').map(s => toSmartTitleCase(s.trim())).filter(Boolean).join(', ');
+    }
+
+    // ==================== PENGAWAS BLUR: HANYA BERLAKU SAAT DATA BARU ====================
+    function handleTxNoteBlur(el) {
+      // Hanya kapitalisasi jika tx-id KOSONG (berarti sedang mencatat transaksi baru)
+      const txId = document.getElementById('tx-id')?.value;
+      if (!txId && el.value) {
+        el.value = toSmartTitleCase(el.value);
+      }
+    }
+
+    function handleAccNameBlur(el) {
+      // Hanya kapitalisasi jika acc-id KOSONG (menambah rekening baru)
+      const accId = document.getElementById('acc-id')?.value;
+      if (!accId && el.value) {
+        el.value = toSmartTitleCase(el.value);
+      }
+    }
+
+    function handleCatNameBlur(el) {
+      // Hanya kapitalisasi jika cat-id KOSONG (menambah kategori baru)
+      const catId = document.getElementById('cat-id')?.value;
+      if (!catId && el.value) {
+        el.value = toSmartTitleCase(el.value);
+      }
+    }
+
+    function handleCatSubsBlur(el) {
+      // Hanya kapitalisasi jika cat-id KOSONG (menambah kategori baru)
+      const catId = document.getElementById('cat-id')?.value;
+      if (!catId && el.value) {
+        el.value = formatSubcategoriesSmartTitleCase(el.value);
+      }
     }
 
     const monthNamesID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -4454,10 +4586,12 @@
             toAccountId: type === 'transfer' ? toAccountId : null, 
             categoryId: type === 'transfer' ? '' : categoryId, 
             subcategory: type === 'transfer' ? '' : subcategory, 
-            note 
+            note // PENTING: Saat mode edit, catatan disimpan 100% persis seperti ketikan user tanpa auto-capitalize
           };
         }
       } else {
+        // PENTING: Saat transaksi baru, catatan otomatis diformat dengan Smart Title Case
+        const formattedNote = toSmartTitleCase(note);
         transactions.unshift({
           id: 'tx-' + Date.now(),
           type,
@@ -4468,7 +4602,7 @@
           toAccountId: type === 'transfer' ? toAccountId : null,
           categoryId: type === 'transfer' ? '' : categoryId,
           subcategory: type === 'transfer' ? '' : subcategory,
-          note
+          note: formattedNote
         });
       }
 
@@ -6996,7 +7130,7 @@
     function saveAccount(e) {
       e.preventDefault();
       const id = document.getElementById('acc-id')?.value;
-      const name = document.getElementById('acc-name')?.value?.trim();
+      let name = document.getElementById('acc-name')?.value?.trim();
       const type = document.getElementById('acc-type')?.value || 'Bank';
       const initialBalance = parseDotsNumber(document.getElementById('acc-balance')?.value);
       const isHidden = document.getElementById('acc-hidden-chk')?.checked ?? true;
@@ -7005,10 +7139,13 @@
       if (!name) return;
 
       if (id) {
+        // Mode Edit: Simpan persis sesuai ketikan user
         const idx = accounts.findIndex(a => a.id === id);
         if (idx !== -1) accounts[idx] = { id, name, type, initialBalance, isHidden, showOnDashboard };
       } else {
-        accounts.push({ id: 'acc-' + Date.now(), name, type, initialBalance, isHidden, showOnDashboard });
+        // Mode Baru: Terapkan Smart Title Case
+        const formattedName = toSmartTitleCase(name);
+        accounts.push({ id: 'acc-' + Date.now(), name: formattedName, type, initialBalance, isHidden, showOnDashboard });
       }
 
       persistState(true);
@@ -7052,19 +7189,25 @@
     function saveCategory(e) {
       e.preventDefault();
       const id = document.getElementById('cat-id')?.value;
-      const name = document.getElementById('cat-name')?.value?.trim();
+      let name = document.getElementById('cat-name')?.value?.trim();
       const type = document.getElementById('cat-type')?.value || 'expense';
       const expenseClass = document.getElementById('cat-class')?.value || 'dynamic';
-      const subsRaw = document.getElementById('cat-subs')?.value || '';
-      const subcategories = subsRaw ? subsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      let subsRaw = document.getElementById('cat-subs')?.value || '';
 
       if (!name) return;
 
       if (id) {
+        // Mode Edit: Biarkan subkategori dan nama persis seperti editan user
+        const subcategories = subsRaw ? subsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
         const idx = categories.findIndex(c => c.id === id);
         if (idx !== -1) categories[idx] = { id, name, type, expenseClass, subcategories };
       } else {
-        categories.push({ id: 'cat-' + Date.now(), name, type, expenseClass, subcategories });
+        // Mode Baru: Terapkan Smart Title Case pada nama dan subkategori
+        const formattedName = toSmartTitleCase(name);
+        const formattedSubs = formatSubcategoriesSmartTitleCase(subsRaw);
+        const subcategories = formattedSubs ? formattedSubs.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+        categories.push({ id: 'cat-' + Date.now(), name: formattedName, type, expenseClass, subcategories });
       }
 
       persistState(true);
@@ -7847,8 +7990,8 @@
         window.scrollTo(0, targetScroll);
       });
     }
-
-    // ==================== E2EE & GOOGLE DRIVE CLOUD SYNC ====================
+	
+	// ==================== E2EE & GOOGLE DRIVE CLOUD SYNC ====================
     let gdriveAccessToken = null;
     let gdriveTokenClient = null;
     let autoSyncPushTimer = null;
@@ -7951,6 +8094,148 @@
       localStorage.setItem('vf_gdrive_client_id', clientId);
       localStorage.setItem('vf_gdrive_pin_persistent', pin);
     }
+	
+	// ==================== STATE PENGUNCIAN KONFLIK SINKRONISASI ====================
+    let isSyncConflictLocked = false;
+    let cachedCloudConflictPayload = null;
+
+    // Batalkan sinkronisasi (Zero Overwrite) saat user memilih "Batal / Tinjau Nanti"
+    function cancelSyncConflict() {
+      closeModal('sync-conflict-modal');
+      isSyncConflictLocked = true;
+      setSyncBadge('error', 'Konflik Data (Terkunci)');
+    }
+
+    // Menghitung komparasi data lokal vs data cloud secara mendalam
+    async function showConflictComparisonModal(cloudFileMeta, cloudDecryptedPayload) {
+      cachedCloudConflictPayload = cloudDecryptedPayload;
+      isSyncConflictLocked = true;
+      setSyncBadge('error', 'Konflik Data');
+
+      // 1. Data Ringkasan Lokal
+      const localModTime = parseInt(localStorage.getItem('vf_local_modified_timestamp') || '0');
+      const localModStr = localModTime ? new Date(localModTime).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : 'Baru saja';
+      setText('conflict-local-time', localModStr);
+      setText('conflict-local-count', `${transactions.length} Transaksi`);
+
+      let localNetWorth = 0;
+      const accBalances = {};
+      accounts.forEach(a => accBalances[a.id] = parseFloat(a.initialBalance || 0));
+      transactions.forEach(tx => {
+        const amt = parseFloat(tx.amount) || 0;
+        const fee = parseFloat(tx.adminFee) || 0;
+        if (tx.type === 'income' && accBalances[tx.accountId] !== undefined) accBalances[tx.accountId] += amt;
+        else if (tx.type === 'expense' && accBalances[tx.accountId] !== undefined) accBalances[tx.accountId] -= amt;
+        else if (tx.type === 'transfer') {
+          if (accBalances[tx.accountId] !== undefined) accBalances[tx.accountId] -= (amt + fee);
+          if (accBalances[tx.toAccountId] !== undefined) accBalances[tx.toAccountId] += amt;
+        }
+      });
+      localNetWorth = Object.values(accBalances).reduce((a, b) => a + b, 0);
+      setText('conflict-local-balance', formatCurrency(localNetWorth));
+
+      // 2. Data Ringkasan Cloud
+      const cloudModTime = cloudFileMeta.modifiedTime ? new Date(cloudFileMeta.modifiedTime).getTime() : Date.now();
+      const cloudModStr = new Date(cloudModTime).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+      setText('conflict-cloud-time', cloudModStr);
+
+      const cloudTxs = cloudDecryptedPayload?.data?.transactions || [];
+      const cloudAccs = cloudDecryptedPayload?.data?.accounts || [];
+      setText('conflict-cloud-count', `${cloudTxs.length} Transaksi`);
+
+      let cloudNetWorth = 0;
+      const cAccBalances = {};
+      cloudAccs.forEach(a => cAccBalances[a.id] = parseFloat(a.initialBalance || 0));
+      cloudTxs.forEach(tx => {
+        const amt = parseFloat(tx.amount) || 0;
+        const fee = parseFloat(tx.adminFee) || 0;
+        if (tx.type === 'income' && cAccBalances[tx.accountId] !== undefined) cAccBalances[tx.accountId] += amt;
+        else if (tx.type === 'expense' && cAccBalances[tx.accountId] !== undefined) cAccBalances[tx.accountId] -= amt;
+        else if (tx.type === 'transfer') {
+          if (cAccBalances[tx.accountId] !== undefined) cAccBalances[tx.accountId] -= (amt + fee);
+          if (cAccBalances[tx.toAccountId] !== undefined) cAccBalances[tx.toAccountId] += amt;
+        }
+      });
+      cloudNetWorth = Object.values(cAccBalances).reduce((a, b) => a + b, 0);
+      setText('conflict-cloud-balance', formatCurrency(cloudNetWorth));
+
+      // 3. Cari Transaksi yang Berbeda (Diff Analysis)
+      const cloudTxMap = new Map();
+      cloudTxs.forEach(t => cloudTxMap.set(t.id, t));
+
+      const localTxMap = new Map();
+      transactions.forEach(t => localTxMap.set(t.id, t));
+
+      const diffItems = [];
+
+      // Transaksi yang HANYA ADA DI LOKAL
+      transactions.forEach(t => {
+        if (!cloudTxMap.has(t.id)) {
+          diffItems.push({
+            origin: 'local',
+            tx: t,
+            accName: accounts.find(a => a.id === t.accountId)?.name || 'Sumber Dana',
+            catName: categories.find(c => c.id === t.categoryId)?.name || (t.type === 'transfer' ? 'Transfer' : 'Kategori')
+          });
+        }
+      });
+
+      // Transaksi yang HANYA ADA DI CLOUD
+      cloudTxs.forEach(t => {
+        if (!localTxMap.has(t.id)) {
+          diffItems.push({
+            origin: 'cloud',
+            tx: t,
+            accName: cloudAccs.find(a => a.id === t.accountId)?.name || 'Sumber Dana',
+            catName: (cloudDecryptedPayload?.data?.categories || categories).find(c => c.id === t.categoryId)?.name || (t.type === 'transfer' ? 'Transfer' : 'Kategori')
+          });
+        }
+      });
+
+      // Tampilkan badge jumlah perbedaan
+      const diffBadge = document.getElementById('conflict-diff-badge');
+      if (diffBadge) diffBadge.textContent = `${diffItems.length} Perbedaan Transaksi`;
+
+      // Render daftar perbedaan
+      const listContainer = document.getElementById('conflict-diff-list');
+      if (listContainer) {
+        if (diffItems.length === 0) {
+          listContainer.innerHTML = `<div class="py-6 text-center text-slate-400 italic text-xs">Catatan transaksi identik, perbedaan terletak pada perubahan akun/saldo awal.</div>`;
+        } else {
+          listContainer.innerHTML = diffItems.map(item => {
+            const isLocal = item.origin === 'local';
+            const badgeClass = isLocal ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800';
+            const originText = isLocal ? 'Hanya di HP Ini (Lokal)' : 'Hanya di Cloud (Drive)';
+            const t = item.tx;
+            const amtStr = (t.type === 'expense' ? '-' : '+') + formatCurrency(t.amount);
+            const amtColor = (t.type === 'expense' ? 'text-rose-600' : 'text-emerald-600');
+
+            return `
+              <div class="pt-2 pb-1 flex items-start justify-between gap-2.5">
+                <div class="space-y-0.5 flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-md ${badgeClass}">${originText}</span>
+                    <span class="font-bold text-slate-800 truncate">${escapeHtml(t.note || item.catName)}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                    <span>${t.date}</span>
+                    <span>•</span>
+                    <span class="text-slate-500 font-medium">${escapeHtml(item.accName)}</span>
+                    ${t.subcategory ? `<span>•</span><span class="bg-slate-100 px-1 rounded text-slate-600 text-[10px]">${escapeHtml(t.subcategory)}</span>` : ''}
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="font-extrabold ${amtColor}">${amtStr}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      openModal('sync-conflict-modal');
+      lucide.createIcons();
+    }
 
 	// ==================== SESI GOOGLE 48 JAM & INSTANT SYNC ====================
     const GDRIVE_SESSION_MAX_IDLE = 48 * 60 * 60 * 1000; // 48 Jam dalam milidetik
@@ -8031,6 +8316,9 @@
 
     // Cek apakah ada perubahan data lokal yang belum sempat terunggah ke Cloud
     function hasPendingCloudChanges() {
+      // Jika status konflik terkunci, batalkan auto-sync untuk mencegah overwrite
+      if (isSyncConflictLocked) return false;
+
       const lastSync = parseInt(localStorage.getItem('vf_last_sync_timestamp') || '0');
       const localMod = parseInt(localStorage.getItem('vf_local_modified_timestamp') || '0');
       return (localMod > lastSync) || (autoSyncPushTimer !== null);
@@ -8038,7 +8326,10 @@
 
     // Eksekusi unggah instan saat berpindah menu atau keluar aplikasi
     async function flushPendingCloudPush() {
+      // KUNCI PENGAMAN: Batalkan pengunggahan jika konflik belum diselesaikan user
+      if (isSyncConflictLocked) return;
       if (!hasPendingCloudChanges()) return;
+
       const pin = document.getElementById('gdrive-encryption-pin')?.value.trim() || localStorage.getItem('vf_gdrive_pin_persistent');
       if (!pin) return;
 
@@ -8209,21 +8500,24 @@
         const lastSyncTime = parseInt(localStorage.getItem('vf_last_sync_timestamp') || '0');
         const localModifiedTime = parseInt(localStorage.getItem('vf_local_modified_timestamp') || '0');
 
+        // TERDETEKSI DATA DI CLOUD LEBIH BARU DARI SINKRONISASI TERAKHIR
         if (cloudModifiedTime > lastSyncTime) {
-          if (localModifiedTime > lastSyncTime) {
-            setSyncBadge('error', 'Konflik Data');
-            pendingConflictPayload = cloudFile;
-            openModal('sync-conflict-modal');
-            return;
-          }
-
-          setSyncBadge('syncing', 'Mengunduh Data Baru...');
+          // Unduh isi cloud sementara ke memori untuk pemeriksaan / komparasi
           const res = await fetch(`https://www.googleapis.com/drive/v3/files/${cloudFile.id}?alt=media`, {
             headers: { Authorization: `Bearer ${gdriveAccessToken}` }
           });
           const encryptedContent = await res.text();
           const decryptedPayload = await decryptE2EE(encryptedContent, pin);
 
+          // Jika perangkat lokal juga memiliki editan baru yang belum diunggah: TERJADI KONFLIK!
+          if (localModifiedTime > lastSyncTime) {
+            pendingConflictPayload = cloudFile;
+            // Buka jendela komparasi visual lengkap (tanpa menimpa data lokal)
+            await showConflictComparisonModal(cloudFile, decryptedPayload);
+            return;
+          }
+
+          // Jika tidak ada konflik (hanya ada pembaruan dari cloud), terapkan pembaruan secara normal
           if (decryptedPayload && decryptedPayload.data) {
             accounts = decryptedPayload.data.accounts || accounts;
             categories = decryptedPayload.data.categories || categories;
@@ -8244,7 +8538,14 @@
             setTimeout(() => setSyncBadge('synced'), 4000);
           }
         } else {
-          setSyncBadge('synced');
+          // Jika status konflik terkunci namun user membuka transaksi, ingatkan kembali
+          if (isSyncConflictLocked && pendingConflictPayload && cachedCloudConflictPayload) {
+            openModal('sync-conflict-modal');
+            return;
+          }
+          if (!isSyncConflictLocked) {
+            setSyncBadge('synced');
+          }
         }
       } catch (err) {
         console.warn("Auto pull error:", err);
@@ -8253,6 +8554,7 @@
     }
 
     function scheduleCloudAutoPush() {
+      if (isSyncConflictLocked) return; // Jangan jadwalkan jika dalam status konflik
       if (!gdriveAccessToken) return;
       const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
       if (!pin) return;
@@ -8264,7 +8566,9 @@
       setSyncBadge('waiting');
 
       autoSyncPushTimer = setTimeout(async () => {
-        await executeCloudPush(pin);
+        if (!isSyncConflictLocked) {
+          await executeCloudPush(pin);
+        }
       }, 60000);
     }
 
@@ -8335,37 +8639,63 @@
 
     async function resolveConflictKeepLocal() {
       closeModal('sync-conflict-modal');
-      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
-      if (pin) await executeCloudPush(pin);
+      isSyncConflictLocked = false; // Buka kunci pengaman
+      cachedCloudConflictPayload = null;
+
+      const pin = document.getElementById('gdrive-encryption-pin')?.value.trim() || localStorage.getItem('vf_gdrive_pin_persistent');
+      if (pin) {
+        try {
+          await executeCloudPush(pin);
+          alert('Berhasil! Data perangkat ini telah diunggah dan memperbarui Google Drive.');
+        } catch (e) {
+          alert('Gagal mengunggah data lokal ke cloud: ' + (e.message || e));
+        }
+      }
     }
 
     async function resolveConflictKeepCloud() {
       closeModal('sync-conflict-modal');
-      const pin = localStorage.getItem('vf_gdrive_pin_persistent') || sessionStorage.getItem('vf_gdrive_pin');
-      if (pin && pendingConflictPayload) {
-        const res = await fetch(`https://www.googleapis.com/drive/v3/files/${pendingConflictPayload.id}?alt=media`, {
-          headers: { Authorization: `Bearer ${gdriveAccessToken}` }
-        });
-        const encryptedContent = await res.text();
-        const decryptedPayload = await decryptE2EE(encryptedContent, pin);
+      isSyncConflictLocked = false; // Buka kunci pengaman
 
-        if (decryptedPayload && decryptedPayload.data) {
-          accounts = decryptedPayload.data.accounts || accounts;
-          categories = decryptedPayload.data.categories || categories;
-          transactions = decryptedPayload.data.transactions || transactions;
-          budgets = decryptedPayload.data.budgets || budgets;
+      const pin = document.getElementById('gdrive-encryption-pin')?.value.trim() || localStorage.getItem('vf_gdrive_pin_persistent');
+      if (!pin) return;
 
-          const cloudTime = new Date(pendingConflictPayload.modifiedTime).getTime();
+      try {
+        let payload = cachedCloudConflictPayload;
+
+        // Jika belum ada di memori cache, unduh kembali dari cloud
+        if (!payload && pendingConflictPayload) {
+          const res = await fetch(`https://www.googleapis.com/drive/v3/files/${pendingConflictPayload.id}?alt=media`, {
+            headers: { Authorization: `Bearer ${gdriveAccessToken}` }
+          });
+          const encryptedContent = await res.text();
+          payload = await decryptE2EE(encryptedContent, pin);
+        }
+
+        if (payload && payload.data) {
+          accounts = payload.data.accounts || accounts;
+          categories = payload.data.categories || categories;
+          transactions = payload.data.transactions || transactions;
+          budgets = payload.data.budgets || budgets;
+
+          const cloudTime = pendingConflictPayload?.modifiedTime ? new Date(pendingConflictPayload.modifiedTime).getTime() : Date.now();
           const syncTimeIso = new Date(cloudTime).toISOString();
           localStorage.setItem('vf_last_sync_timestamp', String(cloudTime));
           localStorage.setItem('vf_local_modified_timestamp', String(cloudTime));
           localStorage.setItem('vf_gdrive_last_sync', syncTimeIso);
+          updateGdriveSessionActivity();
           loadGdrivePrefs();
 
           persistState(false);
           renderAll();
+
+          cachedCloudConflictPayload = null;
+          pendingConflictPayload = null;
           setSyncBadge('synced');
+          alert('Berhasil! Data perangkat ini telah diperbarui mengikuti data Google Drive.');
         }
+      } catch (err) {
+        alert('Gagal memulihkan data dari cloud: ' + (err.message || err));
       }
     }
 
