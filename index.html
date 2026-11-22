@@ -200,6 +200,34 @@
           <div class="text-xs text-slate-500 mt-1">Pemasukan - Pengeluaran</div>
         </div>
       </div>
+	  
+	  <!-- WIDGET PROYEKSI BATAS AMAN BELANJA HARIAN (IDE #3) -->
+      <div id="dash-daily-spend-widget" class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <div class="p-2 bg-white/20 rounded-xl backdrop-blur-xs">
+              <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-100 block">Proyeksi Batas Belanja Harian</span>
+              <h3 class="text-base font-extrabold text-white">Batas Aman Belanja Hari Ini</h3>
+            </div>
+          </div>
+          <span id="daily-spend-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20 text-white border border-white/20 self-start sm:self-auto">
+            Terkendali
+          </span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pt-1 border-t border-white/20">
+          <div>
+            <div class="text-3xl font-black tracking-tight" id="daily-spend-amount">Rp 0</div>
+            <div class="text-xs text-emerald-100 mt-0.5" id="daily-spend-subtext">Dialokasikan untuk sisa hari di bulan ini</div>
+          </div>
+          <div class="text-xs text-emerald-100/90 sm:text-right mt-2 sm:mt-0 font-medium" id="daily-spend-detail">
+            Sisa Anggaran: Rp 0 • Sisa Hari: 0 Hari
+          </div>
+        </div>
+      </div>
 
       <!-- Money Sources List -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -248,6 +276,7 @@
           <canvas id="dashYearlyChart"></canvas>
         </div>
       </div>
+	  
     </div>
 
     <!-- ==================== TAB 2: TRANSACTIONS & HISTORY ==================== -->
@@ -636,6 +665,125 @@
           </div>
         </div>
       </div>
+	  
+	  <!-- 2. KALENDER AKTIVITAS TRANSAKSI (DOT INDICATOR) & PELACAK KEBIASAAN -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- KALENDER DOT INTERAKTIF DENGAN BULAN/TAHUN & BANNER SOROTAN -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 lg:col-span-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-1.5">
+                  <i data-lucide="calendar" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Kalender Aktivitas Transaksi</span>
+                </h3>
+                <!-- NAMA BULAN & TAHUN DINAMIS -->
+                <span id="ana-calendar-month-year" class="text-xs font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg shadow-2xs">-</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Ketuk tanggal bertitik untuk melihat transaksi, atau ketuk item frekuensi untuk menandai tanggalnya.</p>
+            </div>
+            
+            <div class="flex items-center gap-2 text-[11px] font-medium text-slate-500 self-start sm:self-auto flex-wrap">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Pengeluaran</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Pemasukan</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Transfer</span>
+            </div>
+          </div>
+
+          <!-- BANNER INDIKATOR SOROTAN KATEGORI (MUNCUL SAAT SALAH SATU ITEM FREKUENSI DIKLIK) -->
+          <div id="ana-calendar-highlight-banner" class="hidden flex items-center justify-between text-xs p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 font-medium">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <span>Menandai tanggal transaksi: <strong id="ana-calendar-highlight-name" class="font-extrabold text-amber-950">-</strong></span>
+            </div>
+            <button type="button" onclick="clearHabitHighlight()" class="text-xs font-bold text-amber-800 hover:text-amber-950 underline px-2 py-0.5 rounded transition">
+              Hapus Tanda
+            </button>
+          </div>
+	  
+		  <!-- GRID HARI (SENIN - MINGGU DENGAN WARNA SABTU BIRU & MINGGU MERAH) -->
+          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] py-1 border-b border-slate-100 select-none">
+            <div class="text-slate-500">Sen</div>
+            <div class="text-slate-500">Sel</div>
+            <div class="text-slate-500">Rab</div>
+            <div class="text-slate-500">Kam</div>
+            <div class="text-slate-500">Jum</div>
+            <div class="text-blue-600 font-extrabold bg-blue-50/50 rounded-md py-0.5">Sab</div>
+            <div class="text-rose-600 font-extrabold bg-rose-50/50 rounded-md py-0.5">Min</div>
+          </div>
+
+          <!-- GRID TANGGAL -->
+          <div id="ana-calendar-grid" class="grid grid-cols-7 gap-1.5 pt-1"></div>
+
+          <!-- ==================== AREA ANALISIS MENGISI SPACE PC (IDE 1 & IDE 3) ==================== -->
+          <div id="calendar-extra-analytics" class="pt-4 border-t border-slate-100 space-y-4">
+            
+            <!-- IDE 1: METRIK HARI TANPA BELANJA, HARI TERBOROS & RATA-RATA HARIAN -->
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">Evaluasi Perilaku Belanja Harian</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                
+                <!-- No-Spend Days -->
+                <div class="p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-emerald-950 uppercase">Bebas Belanja</span>
+                    <i data-lucide="award" class="w-4 h-4 text-emerald-600"></i>
+                  </div>
+                  <div class="text-base sm:text-lg font-black text-emerald-900" id="stat-nospend-days">0 Hari</div>
+                  <div class="text-[10px] text-emerald-700" id="stat-nospend-desc">Hari tanpa pengeluaran</div>
+                </div>
+
+                <!-- Peak Spending Day -->
+                <div class="p-3 bg-rose-50/60 border border-rose-200/80 rounded-xl space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-rose-950 uppercase">Hari Terboros</span>
+                    <i data-lucide="trending-up" class="w-4 h-4 text-rose-600"></i>
+                  </div>
+                  <div class="text-xs sm:text-sm font-bold text-rose-900 truncate" id="stat-peak-day">-</div>
+                  <div class="text-[10px] text-rose-700" id="stat-peak-amount">Pengeluaran: Rp 0</div>
+                </div>
+
+                <!-- Average Active Daily Spend -->
+                <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-700 uppercase">Rata-Rata Hari Aktif</span>
+                    <i data-lucide="calculator" class="w-4 h-4 text-slate-400"></i>
+                  </div>
+                  <div class="text-base sm:text-lg font-bold text-slate-900" id="stat-avg-active-day">Rp 0</div>
+                  <div class="text-[10px] text-slate-500">Khusus hari ada transaksi</div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- IDE 3: ARUS KAS MINGGUAN (WEEKLY BURN RATE: MINGGU 1 - 4+) -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Laju Pengeluaran Mingguan (Weekly Cashflow)</span>
+                <span class="text-[10px] text-slate-400">Total 4 Blok Minggu</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="stat-weekly-breakdown"></div>
+            </div>
+
+          </div>
+          <!-- ======================================================================================= -->
+        </div>
+
+        <!-- PELACAK KEBIASAAN BELANJA (TOP FREQUENCY SPENDING) -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+              <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
+              <span>Frekuensi Tertinggi (Habit)</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Subkategori yang paling sering menyedot uang Anda bulan ini.</p>
+          </div>
+
+          <div id="ana-top-frequency-list" class="space-y-3"></div>
+        </div>
+
+      </div>
 
       <!-- Rekapitulasi Rinci Arus Kategori (Bulanan & Tahunan) -->
       <div id="ana-breakdown-container" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -674,6 +822,47 @@
           <div id="analysis-abnormal-list" class="space-y-2.5 max-h-72 overflow-y-auto"></div>
         </div>
       </div>
+	  
+	  <!-- 1. SKOR KESEHATAN DANA DARURAT (IDE #5) -->
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="p-2 bg-indigo-100 text-indigo-700 rounded-xl shrink-0">
+              <i data-lucide="shield-alert" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base">Ketahanan Dana Darurat (Emergency Fund)</h3>
+              <p class="text-xs text-slate-500">Kemampuan bertahan hidup jika terjadi kehilangan penghasilan mendadak.</p>
+            </div>
+          </div>
+          <span id="emg-fund-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 self-start sm:self-auto">
+            Menghitung...
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+            <span class="text-[11px] font-semibold text-slate-400 block uppercase">Total Saldo Likuid</span>
+            <div class="text-lg font-bold text-slate-900" id="emg-fund-liquid">Rp 0</div>
+            <span class="text-[10px] text-slate-500">Bank, E-Wallet & Kas Tunai</span>
+          </div>
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+            <span class="text-[11px] font-semibold text-slate-400 block uppercase">Biaya Hidup Wajib / Bulan</span>
+            <div class="text-lg font-bold text-rose-600" id="emg-fund-cost">Rp 0</div>
+            <span class="text-[10px] text-slate-500">Rata-rata Biaya Tetap + Berkala</span>
+          </div>
+          <div class="p-3.5 bg-indigo-50/60 rounded-xl border border-indigo-200 space-y-1">
+            <span class="text-[11px] font-bold text-indigo-900 block uppercase">Ketahanan Hidup</span>
+            <div class="text-2xl font-black text-indigo-950" id="emg-fund-months">0 Bulan</div>
+            <span class="text-[10px] text-indigo-700 font-medium" id="emg-fund-eval">Standar ideal: 3–6 bulan</span>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+          <div id="emg-fund-progress" class="bg-indigo-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+	  
     </div>
 
     <!-- ==================== TAB 4: BUDGETS ==================== -->
@@ -1143,7 +1332,6 @@
 
             <!-- TOMBOL TOGGLE LIPAT / BUKA -->
             <button type="button" onclick="toggleSettingCategoryCollapse()" id="btn-toggle-cat-collapse" title="Buka/Tutup Daftar Kategori" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition flex items-center gap-1.5 text-xs font-bold shadow-sm ml-1">
-              <span id="text-toggle-cat-collapse">Sembunyikan</span>
               <i data-lucide="chevron-up" id="icon-chevron-cat-setting" class="w-4 h-4 transition-transform duration-200"></i>
             </button>
           </div>
@@ -1210,63 +1398,91 @@
         </div>
 
       </div>
-
-      <!-- 3. DEFAULT TRANSACTION FORM PREFERENCES -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div>
-          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i> Preferensi Default Form Transaksi Baru
-          </h3>
-          <p class="text-xs text-slate-500">Pilih sumber dana dan kategori utama yang otomatis terpilih saat pop-up pencatatan transaksi dibuka.</p>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div>
-            <label class="font-semibold text-slate-600 block mb-1">Default Sumber Dana (Rekening)</label>
-            <select id="pref-default-account" onchange="updateDefaultTxPreferences()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"></select>
-          </div>
-          <div>
-            <label class="font-semibold text-slate-600 block mb-1">Default Kategori Utama</label>
-            <select id="pref-default-category" onchange="updateDefaultTxPreferences()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"></select>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. PENGATURAN KUNCI LAYAR PIN (APPLOCK) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-          <div>
-            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="lock" class="w-4 h-4 text-emerald-600"></i> Kunci Layar Aplikasi (PIN AppLock)
-            </h3>
-            <p class="text-xs text-slate-500">Kunci otomatis aplikasi saat ditinggal agar tidak dibuka orang lain saat akun Google tetap terhubung.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold" id="applock-status-badge">Nonaktif</span>
-            <input type="checkbox" id="applock-toggle" onchange="toggleAppLockEnable()" class="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
-          </div>
-        </div>
-
-        <div id="applock-settings-detail" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Ubah / Pasang PIN Baru (4-6 Angka):</label>
-            <div class="flex gap-2">
-              <input type="password" id="applock-new-pin" maxlength="6" placeholder="Masukkan 4-6 angka" class="border border-slate-300 rounded-lg px-3 py-1.5 w-full font-mono text-center tracking-widest text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
-              <button onclick="saveAppLockPin()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-sm">
-                Simpan PIN
-              </button>
+	  
+	  <!-- WIDGET PENGINGAT TAGIHAN BERULANG DI PENGATURAN (COLLAPSIBLE, SEARCH, FILTER & SORT) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <!-- HEADER DENGAN TOMBOL COLLAPSE & TAMBAH REMINDER -->
+        <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleRecurringCollapse()" class="cursor-pointer select-none group flex items-start sm:items-center gap-2.5 flex-1" title="Klik untuk melipat / membuka pengingat">
+            <div class="p-2 bg-amber-100 text-amber-800 rounded-lg shrink-0 mt-0.5 sm:mt-0 group-hover:bg-amber-200 transition">
+              <i data-lucide="bell-ring" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-amber-700 transition">
+                  Pengingat Tagihan & Siklus Berulang
+                </h3>
+                <span id="badge-rec-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 Reminder</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Pantau tagihan dengan masa berlaku dinamis (misal: kuota 28 hari, Wi-Fi 30 hari).</p>
             </div>
           </div>
-          <div>
-            <label class="font-semibold text-slate-700 block mb-1">Kunci Otomatis Saat Tidak Ada Aktivitas (Idle):</label>
-            <select id="applock-timeout-select" onchange="updateAppLockTimeout()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
-              <option value="1">1 Menit Tanpa Aktivitas</option>
-              <option value="2">2 Menit Tanpa Aktivitas</option>
-              <option value="5">5 Menit Tanpa Aktivitas</option>
-              <option value="10">10 Menit Tanpa Aktivitas</option>
-              <option value="15">15 Menit Tanpa Aktivitas</option>
-            </select>
+          
+          <div class="flex items-center gap-2 shrink-0">
+            <!-- TOMBOL TAMBAH REMINDER -->
+            <button type="button" onclick="openRecurringModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Tambah Reminder</span>
+            </button>
+
+            <!-- TOMBOL TOGGLE COLLAPSE -->
+            <button type="button" onclick="toggleRecurringCollapse()" id="btn-toggle-rec-collapse" title="Buka/Tutup Pengingat" class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition">
+              <i data-lucide="chevron-up" id="icon-chevron-rec-setting" class="w-4 h-4 transition-transform duration-200"></i>
+            </button>
           </div>
         </div>
+
+        <!-- ISI KONTEN PENGINGAT (COLLAPSIBLE BODY) -->
+        <div id="setting-recurring-body" class="p-4 sm:p-6 space-y-4">
+          
+          <!-- TOOLBAR SEARCH, FILTER & SORT REMINDER -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-2.5 text-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:w-auto flex-1">
+              
+              <!-- SEARCH BOX -->
+              <div class="relative w-full sm:w-60">
+                <input type="text" id="rec-search-input" oninput="renderRecurringBillsWidget()" placeholder="Cari tagihan / subkategori..." class="w-full pl-8 pr-7 py-1.5 border border-slate-300 rounded-lg text-xs bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none"></i>
+                <button type="button" id="rec-search-clear" onclick="clearRecurringSearch()" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+
+              <!-- FILTER STATUS TEMPO -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold text-[11px]">Status:</span>
+                <select id="rec-filter-status" onchange="renderRecurringBillsWidget()" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
+                  <option value="ALL">Semua Status</option>
+                  <option value="overdue">Lewat Tempo</option>
+                  <option value="today">Jatuh Tempo Hari Ini</option>
+                  <option value="soon">Segera (H-3)</option>
+                  <option value="safe">Masih Aman</option>
+                </select>
+              </div>
+
+              <!-- URUTKAN (SORT) -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold text-[11px]">Urutkan:</span>
+                <select id="rec-sort" onchange="renderRecurringBillsWidget()" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
+                  <option value="due-asc">Deadline Terdekat</option>
+                  <option value="name-asc">Nama (A &rarr; Z)</option>
+                  <option value="amount-desc">Nominal Terbesar</option>
+                </select>
+              </div>
+
+              <button type="button" onclick="resetRecurringFilterAndSort()" title="Reset pencarian & filter" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+              </button>
+            </div>
+
+            <div id="rec-filter-count" class="text-slate-400 text-[11px] font-medium self-end md:self-auto shrink-0"></div>
+          </div>
+
+          <!-- GRID DAFTAR KARTU PENGINGAT -->
+          <div id="recurring-bills-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+
       </div>
 
       <!-- 5. BACKUP & RESTORE SECTION WITH GOOGLE DRIVE E2EE & FILE EXPLORER AUTO-SYNC -->
@@ -2184,6 +2400,130 @@
       </div>
     </div>
   </div>
+  
+  <!-- MODAL FORMULIR PENGINGAT TAGIHAN BERULANG (IDE #2) -->
+  <!-- MODAL FORMULIR REMINDER CERDAS BERBASIS RIWAYAT & NOTIFIKASI H-1 -->
+  <!-- MODAL FORMULIR REMINDER CERDAS (READONLY TANGGAL & DEADLINE) -->
+  <div id="recurring-bill-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 max-h-[92vh] flex flex-col">
+      <div class="shrink-0 flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-amber-100 text-amber-800 rounded-xl">
+            <i data-lucide="bell-ring" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="rec-modal-title">Tambah Reminder Tagihan</h3>
+            <p class="text-xs text-slate-500">Pilih subkategori untuk deteksi riwayat & kalkulasi deadline.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('recurring-bill-modal')" class="p-1 text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveRecurringBill(event)" class="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+        <input type="hidden" id="rec-id" />
+        
+        <!-- LANGKAH 1: PILIH KATEGORI & SUBKATEGORI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">1. Kategori *</label>
+            <select id="rec-category" onchange="onRecCategoryChange()" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium bg-white"></select>
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">2. Subkategori *</label>
+            <select id="rec-subcategory" onchange="onRecSubcategoryChange()" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium bg-white"></select>
+          </div>
+        </div>
+
+        <!-- AREA PILIHAN RIWAYAT SERUPA (HANYA MUNCUL JIKA LEBIH DARI 1 TRANSAKSI COCOK) -->
+        <div id="rec-history-picker-wrap" class="hidden p-3 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between text-blue-950 font-bold text-[11px]">
+            <span class="flex items-center gap-1"><i data-lucide="history" class="w-3.5 h-3.5 text-blue-600"></i> Ditemukan Riwayat Serupa (>1):</span>
+            <span class="text-[10px] text-blue-700 font-normal">Ketuk untuk terapkan</span>
+          </div>
+          <div id="rec-history-options" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- DETAIL TAGIHAN -->
+        <div class="space-y-2.5">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Nama Tagihan / Pengingat *</label>
+            <input type="text" id="rec-name" onblur="if(!document.getElementById('rec-id').value) this.value = toSmartTitleCase(this.value);" required placeholder="Contoh: Paket Data Telkomsel, Listrik PLN" class="w-full px-3 py-2 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-semibold" />
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Nominal Tagihan (Rp) *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2 text-slate-400 font-bold text-xs">Rp</span>
+              <input type="text" inputmode="numeric" id="rec-amount" required oninput="formatTxAmountInput(this)" placeholder="0" class="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-sm" />
+            </div>
+          </div>
+
+          <!-- MASA BERLAKU HARI (BISA DIEDIT MANUAL) -->
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Masa Berlaku Tagihan (Hari) *</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="rec-validity-days" oninput="updateRecDeadlineDisplay()" required min="1" max="365" value="28" class="w-28 px-3 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center text-sm" />
+              <span class="text-xs text-slate-500">Hari sejak pembayaran terakhir</span>
+            </div>
+          </div>
+
+          <!-- TANGGAL PEMBAYARAN TERAKHIR & DEADLINE BERIKUTNYA (READONLY) -->
+          <div class="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div>
+              <label class="font-bold text-slate-500 block mb-1 text-[11px]">Terakhir Dibayar (Readonly)</label>
+              <input type="date" id="rec-last-paid" readonly class="w-full px-2 py-1 bg-slate-200/80 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs cursor-not-allowed outline-none" />
+              <span class="text-[9px] text-slate-400 block mt-0.5">Otomatis dari transaksi</span>
+            </div>
+            <div>
+              <label class="font-bold text-emerald-800 block mb-1 text-[11px]">Deadline Berikutnya (Readonly)</label>
+              <input type="text" id="rec-next-due" readonly placeholder="Terhitung otomatis" class="w-full px-2 py-1 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-900 font-bold text-xs cursor-not-allowed outline-none" />
+              <span class="text-[9px] text-emerald-600 block mt-0.5">Jatuh tempo sistem</span>
+            </div>
+          </div>
+
+          <!-- OPSI NOTIFIKASI H-1 -->
+          <label class="flex items-center gap-2.5 p-2.5 rounded-2xl border border-slate-200 bg-slate-50/70 cursor-pointer select-none">
+            <input type="checkbox" id="rec-notify" checked class="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4 shrink-0" />
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">Aktifkan Notifikasi Pengingat (H-1)</span>
+              <span class="text-[10px] text-slate-500 block leading-tight">Ingatkan ke HP/PC 1 hari sebelum masa berlaku berakhir.</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('recurring-bill-modal')" class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-sm">Simpan Reminder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- MODAL KONFIRMASI PEMILIHAN REMINDER (JIKA ADA >= 2 REMINDER COCOK DENGAN TRANSAKSI BARU) -->
+  <div id="recurring-conflict-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl space-y-3.5 border border-amber-100 animate-in fade-in zoom-in duration-200">
+      <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="bell" class="w-6 h-6"></i>
+      </div>
+      <div class="text-center">
+        <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Perbarui Pengingat Tagihan?</h3>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          Transaksi ini cocok dengan beberapa pengingat. Pilih tagihan mana yang ingin diperbarui tanggal pembayarannya:
+        </p>
+      </div>
+
+      <!-- DAFTAR PILIHAN REMINDER DIURUTKAN DARI DEADLINE TERDEKAT -->
+      <div id="rec-conflict-candidates-list" class="space-y-2 max-h-56 overflow-y-auto pr-1 text-xs"></div>
+
+      <div class="pt-2 border-t border-slate-100 flex items-center justify-end">
+        <button type="button" onclick="closeModal('recurring-conflict-modal')" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          Lewati (Jangan Perbarui Reminder)
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- POP-UP MODAL KONFIRMASI BERHASIL UPDATE APLIKASI -->
   <div id="pwa-update-success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
@@ -2617,6 +2957,66 @@
         }
       }, { passive: true });
     }
+	
+	// State navigation & filters
+    let dashboardSelectedMonth = `${curYear}-${curMonth}`;
+    let dashboardSelectedYear = curYear;
+    let analysisScope = 'month';
+    let trendMode = 'standard';
+    let trendScope = 'year';
+    let trendEntity = 'category';
+    let compareType = 'month';
+    let compareEntity = 'category';
+
+    let trendAccordionState = { source: false, category: true, class: false };
+    let trendShowAvg = true;
+    let trendShowBudget = true;
+    let trendClassChartType = 'bar';
+
+    let yearlyCatSort = { by: 'nominal', dir: 'desc' };
+    let monthlyCatSort = { by: 'nominal', dir: 'desc' };
+    let activeExpandedAnalysisCatId = null;
+
+    let settingAccountSortBy = 'default';
+    let settingAccountFilterType = 'ALL';
+    let settingCategorySortBy = 'default';
+    let settingCategoryFilterType = 'ALL';
+    let settingCategoryFilterClass = 'ALL';
+
+    let pendingRestoreData = null;
+    let activeCalendarTargetInputId = null;
+    let activeCalendarCallback = null;
+
+    // --- NAVIGATION BACKSTACK ANTI-LOOP ---
+    const allModalIds = [
+      'transaction-modal',
+      'account-modal',
+      'category-modal',
+      'budget-modal',
+      'restore-confirm-modal',
+      'export-options-modal',
+      'calendar-picker-modal',
+      'sync-badge-modal',
+      'sync-conflict-modal',
+      'budget-history-modal',
+      'applock-reset-modal',
+      'budget-overrun-modal',
+      'chart-drilldown-modal',
+      'recurring-bill-modal',
+	  'recurring-conflict-modal'
+    ];
+
+    // Data Siklus Tagihan Berulang Berbasis Masa Berlaku Hari
+    let recurringBills = [];
+    const defaultRecurringBills = [
+      { id: 'rec-1', name: 'Paket Data Internet (28 Hari)', amount: 100000, validityDays: 28, lastPaidDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2' },
+      { id: 'rec-2', name: 'Langganan Wi-Fi Rumah', amount: 350000, validityDays: 30, lastPaidDate: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2' },
+      { id: 'rec-3', name: 'Langganan Streaming Musik', amount: 55000, validityDays: 30, lastPaidDate: new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0], categoryId: 'cat-4' }
+    ];
+
+    let navStack = ['dashboard'];
+    let currentActiveTab = 'dashboard';
+    let suppressNextPopstate = false;
 
     function sanitizeState() {
       try {
@@ -2696,59 +3096,14 @@
       try {
         fsBackupConfig = JSON.parse(localStorage.getItem('vf_fs_backup_config')) || defaultFsBackupConfig;
       } catch(e) { fsBackupConfig = defaultFsBackupConfig; }
+	  
+	  try {
+        recurringBills = JSON.parse(localStorage.getItem('vf_recurring_bills')) || defaultRecurringBills;
+      } catch(e) { recurringBills = defaultRecurringBills; }
+      if (!Array.isArray(recurringBills)) recurringBills = JSON.parse(JSON.stringify(defaultRecurringBills));
     }
 
     sanitizeState();
-
-    // State navigation & filters
-    let dashboardSelectedMonth = `${curYear}-${curMonth}`;
-    let dashboardSelectedYear = curYear;
-    let analysisScope = 'month';
-    let trendMode = 'standard';
-    let trendScope = 'year';
-    let trendEntity = 'category';
-    let compareType = 'month';
-    let compareEntity = 'category';
-
-    let trendAccordionState = { source: false, category: true, class: false };
-    let trendShowAvg = true;
-    let trendShowBudget = true;
-    let trendClassChartType = 'bar';
-
-    let yearlyCatSort = { by: 'nominal', dir: 'desc' };
-    let monthlyCatSort = { by: 'nominal', dir: 'desc' };
-    let activeExpandedAnalysisCatId = null;
-
-    let settingAccountSortBy = 'default';
-    let settingAccountFilterType = 'ALL';
-    let settingCategorySortBy = 'default';
-    let settingCategoryFilterType = 'ALL';
-    let settingCategoryFilterClass = 'ALL';
-
-    let pendingRestoreData = null;
-    let activeCalendarTargetInputId = null;
-    let activeCalendarCallback = null;
-
-    // --- NAVIGATION BACKSTACK ANTI-LOOP ---
-    const allModalIds = [
-      'transaction-modal',
-      'account-modal',
-      'category-modal',
-      'budget-modal',
-      'restore-confirm-modal',
-      'export-options-modal',
-      'calendar-picker-modal',
-      'sync-badge-modal',
-      'sync-conflict-modal',
-      'budget-history-modal',
-      'applock-reset-modal',
-      'budget-overrun-modal',
-	  'chart-drilldown-modal'
-    ];
-
-    let navStack = ['dashboard'];
-    let currentActiveTab = 'dashboard';
-    let suppressNextPopstate = false;
 
     // --- MODAL UTILITIES ---
     function openModal(id) { 
@@ -2930,6 +3285,7 @@
       localStorage.setItem('vf_dash_privacy', JSON.stringify(dashPrivacy));
       localStorage.setItem('vf_tx_prefs', JSON.stringify(txPreferences));
       localStorage.setItem('vf_fs_backup_config', JSON.stringify(fsBackupConfig));
+	  localStorage.setItem('vf_recurring_bills', JSON.stringify(recurringBills));
 
       if (triggerAutoBackup) {
         if (backupConfig.frequency === 'on_change') {
@@ -2981,6 +3337,9 @@
       checkPostUpdateNotice();
 	  initSwipeNavigation();
 	  setupMoneyInputsForNumpad();
+	  checkDueRecurringNotifications();
+      // Periksa notifikasi setiap 30 menit
+      setInterval(checkDueRecurringNotifications, 30 * 60 * 1000);
     });
 
     function initPickers() {
@@ -3063,6 +3422,8 @@
     }
 
     function stepAnalysisMonth(delta) {
+	  activeHighlightedHabitItem = null;
+	  isHabitTrackerExpanded = false;
       const input = document.getElementById('analysis-month-picker');
       if (!input) return;
       const val = input.value || dashboardSelectedMonth;
@@ -3073,11 +3434,14 @@
     }
 
     function resetAnalysisMonthToCurrent() {
+	  activeHighlightedHabitItem = null;
+	  isHabitTrackerExpanded = false;
       setVal('analysis-month-picker', `${curYear}-${curMonth}`);
       renderAnalysisView();
     }
 
     function stepAnalysisYear(delta) {
+	  activeHighlightedHabitItem = null;
       const input = document.getElementById('analysis-year-picker');
       if (input) {
         input.value = parseInt(input.value || curYear) + delta;
@@ -3254,6 +3618,59 @@
           }).join('');
         }
       }
+	  
+	  // ==================== KALKULASI BATAS BELANJA HARIAN (IDE #3) ====================
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      const thisMonth = String(today.getMonth() + 1).padStart(2, '0');
+      const isViewingCurrentMonth = (selectedMonthVal === `${thisYear}-${thisMonth}`);
+
+      const parts = selectedMonthVal.split('-').map(Number);
+      const daysInSelectedMonth = new Date(parts[0], parts[1], 0).getDate();
+      
+      let remainingDays = 1;
+      if (isViewingCurrentMonth) {
+        remainingDays = Math.max(1, daysInSelectedMonth - today.getDate() + 1);
+      } else {
+        remainingDays = daysInSelectedMonth;
+      }
+
+      // Hitung total limit bulan ini (atau gunakan sisa kas jika tanpa limit)
+      const monthBudgets = budgets[selectedMonthVal] || {};
+      const totalBudgetLimit = Object.values(monthBudgets).reduce((a, b) => a + (parseFloat(b) || 0), 0);
+      
+      let availableFundsForDaily = 0;
+      let basisText = '';
+
+      if (totalBudgetLimit > 0) {
+        availableFundsForDaily = Math.max(0, totalBudgetLimit - monthlyExpense);
+        basisText = `Sisa Anggaran: ${formatCurrency(availableFundsForDaily)} • Sisa: ${remainingDays} Hari`;
+      } else {
+        // Jika belum ada anggaran, gunakan sisa arus kas (Pemasukan - Pengeluaran)
+        availableFundsForDaily = Math.max(0, monthlyIncome - monthlyExpense);
+        basisText = `Sisa Kas Bulanan: ${formatCurrency(availableFundsForDaily)} • Sisa: ${remainingDays} Hari`;
+      }
+
+      const safeDailyAmount = Math.floor(availableFundsForDaily / remainingDays);
+      setText('daily-spend-amount', formatCurrency(safeDailyAmount) + ' / hari');
+      setText('daily-spend-detail', basisText);
+
+      const dailyBadge = document.getElementById('daily-spend-badge');
+      if (dailyBadge) {
+        if (safeDailyAmount <= 0) {
+          dailyBadge.textContent = 'Anggaran Habis';
+          dailyBadge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/80 text-white border border-rose-300';
+        } else if (safeDailyAmount < 50000) {
+          dailyBadge.textContent = 'Perlu Berhemat';
+          dailyBadge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/80 text-white border border-amber-300';
+        } else {
+          dailyBadge.textContent = 'Aman & Terkendali';
+          dailyBadge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/80 text-white border border-emerald-300';
+        }
+      }
+
+      // Render daftar tagihan berulang
+      renderRecurringBillsWidget();
 
       renderDashboardPie(categorySpendMap);
       lucide.createIcons();
@@ -3922,9 +4339,7 @@
     function renderDrillDownContent(params) {
       activeChartDrillDownParams = params;
 
-      const isExpense = (params.type === 'expense');
-
-      // Filter data transaksi riil
+      // 1. Filter transaksi sesuai tanggal / bulan yang diklik
       const filtered = transactions.filter(tx => {
         if (params.date) {
           if (tx.date !== params.date) return false;
@@ -3934,12 +4349,10 @@
 
         if (params.type && params.type !== 'ALL' && tx.type !== params.type) return false;
 
-        // Cek subkategori
         if (params.subcategory && params.subcategory !== 'ALL') {
           if ((tx.subcategory || '').trim().toLowerCase() !== params.subcategory.trim().toLowerCase()) return false;
         }
 
-        // Cek kategori (hanya jika bukan 'ALL')
         if (params.category && params.category !== 'ALL') {
           const cat = categories.find(c => c.id === tx.categoryId);
           if (!cat || cat.name.trim().toLowerCase() !== params.category.trim().toLowerCase()) return false;
@@ -3948,73 +4361,160 @@
         return true;
       }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
 
-      let totalAmount = 0;
-      filtered.forEach(t => totalAmount += (parseFloat(t.amount) || 0));
+      // 2. Hitung Arus Kas Masuk, Keluar, dan Bersih
+      let totalIn = 0;
+      let totalOut = 0;
 
-      // Format judul & subjudul
+      filtered.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        const fee = parseFloat(t.adminFee) || 0;
+
+        if (t.type === 'income') {
+          totalIn += amt;
+        } else if (t.type === 'expense') {
+          totalOut += amt;
+        } else if (t.type === 'transfer') {
+          if (fee > 0) totalOut += fee; // Biaya admin dihitung pengeluaran
+        }
+      });
+
+      let totalDisplayStr = '';
+      let totalColorClass = 'text-slate-800';
+      const countLabelEl = document.getElementById('drilldown-modal-count');
+
+      if (params.type === 'expense') {
+        totalDisplayStr = `-${formatCurrency(totalOut)}`;
+        totalColorClass = 'text-rose-600';
+        if (countLabelEl) countLabelEl.innerHTML = `<span class="font-bold text-slate-700">${filtered.length} Transaksi</span>`;
+      } else if (params.type === 'income') {
+        totalDisplayStr = `+${formatCurrency(totalIn)}`;
+        totalColorClass = 'text-emerald-600';
+        if (countLabelEl) countLabelEl.innerHTML = `<span class="font-bold text-slate-700">${filtered.length} Transaksi</span>`;
+      } else {
+        // TAMPILAN ALL (SAAT TANGGAL KALENDER DIKLIK)
+        const netCashflow = totalIn - totalOut;
+        if (netCashflow > 0) {
+          totalDisplayStr = `+${formatCurrency(netCashflow)}`;
+          totalColorClass = 'text-emerald-600';
+        } else if (netCashflow < 0) {
+          totalDisplayStr = `-${formatCurrency(Math.abs(netCashflow))}`;
+          totalColorClass = 'text-rose-600';
+        } else {
+          totalDisplayStr = formatCurrency(0);
+          totalColorClass = 'text-slate-700';
+        }
+
+        if (countLabelEl) {
+          countLabelEl.innerHTML = `
+            <span class="font-bold text-slate-800 block sm:inline">${filtered.length} Transaksi</span>
+            <span class="text-[10px] text-slate-400 block sm:inline sm:ml-1">
+              (Masuk: <strong class="text-emerald-600">+${formatCurrency(totalIn)}</strong> • Keluar: <strong class="text-rose-600">-${formatCurrency(totalOut)}</strong>)
+            </span>
+          `;
+        }
+      }
+
+      const totalEl = document.getElementById('drilldown-modal-total');
+      if (totalEl) {
+        totalEl.textContent = totalDisplayStr;
+        totalEl.className = `text-sm sm:text-base font-extrabold ${totalColorClass}`;
+      }
+
+      // 3. Penentuan Judul Pop-up
       let displayTitle = '';
       let displaySubtitle = '';
 
-      if (params.subcategory && params.subcategory !== 'ALL') {
+      if (params.date) {
+        // Format tanggal hari (misal: "Kamis, 5 November 2026")
+        const dObj = new Date(params.date + 'T00:00:00');
+        displayTitle = dObj.toLocaleDateString('id-ID', { dateStyle: 'full' });
+        displaySubtitle = 'Rincian Arus Kas Harian';
+      } else if (params.subcategory && params.subcategory !== 'ALL') {
         displayTitle = params.subcategory;
-        displaySubtitle = params.parentCategory 
-          ? `Kategori: ${params.parentCategory}` 
-          : 'Subkategori Pengeluaran';
+        displaySubtitle = params.parentCategory ? `Kategori: ${params.parentCategory}` : 'Subkategori Pengeluaran';
       } else if (params.category && params.category !== 'ALL') {
         displayTitle = params.category;
         displaySubtitle = params.type === 'income' ? 'Kategori Pemasukan' : 'Kategori Pengeluaran';
       } else {
-        displayTitle = params.type === 'income' ? 'Semua Pemasukan' : 'Semua Pengeluaran';
+        displayTitle = params.type === 'income' ? 'Semua Pemasukan' : (params.type === 'expense' ? 'Semua Pengeluaran' : 'Rincian Transaksi');
         displaySubtitle = 'Rincian Keseluruhan';
       }
 
-      let timeDesc = params.date || params.month || 'Periode Terpilih';
       if (params.month && params.month.includes('-') && !params.date) {
         const p = params.month.split('-').map(Number);
-        timeDesc = `${monthNamesID[p[1] - 1]} ${p[0]}`;
+        displaySubtitle += ` • ${monthNamesID[p[1] - 1]} ${p[0]}`;
       }
 
       setText('drilldown-modal-title', displayTitle);
-      setText('drilldown-modal-subtitle', `${displaySubtitle} • ${timeDesc}`);
-      setText('drilldown-modal-count', `${filtered.length} Transaksi`);
+      setText('drilldown-modal-subtitle', displaySubtitle);
 
-      const totalEl = document.getElementById('drilldown-modal-total');
-      if (totalEl) {
-        totalEl.textContent = (isExpense ? '-' : '+') + formatCurrency(totalAmount);
-        totalEl.className = `text-sm font-extrabold ${isExpense ? 'text-rose-600' : 'text-emerald-600'}`;
-      }
-
+      // Icon Header
       const iconWrap = document.getElementById('drilldown-modal-icon-wrap');
       if (iconWrap) {
-        iconWrap.className = `p-2.5 rounded-2xl shrink-0 ${isExpense ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`;
+        if (params.date) {
+          iconWrap.className = 'p-2.5 rounded-2xl shrink-0 bg-blue-50 text-blue-600';
+          iconWrap.innerHTML = '<i data-lucide="calendar" class="w-6 h-6"></i>';
+        } else if (params.type === 'expense') {
+          iconWrap.className = 'p-2.5 rounded-2xl shrink-0 bg-rose-50 text-rose-600';
+          iconWrap.innerHTML = '<i data-lucide="receipt" class="w-6 h-6"></i>';
+        } else {
+          iconWrap.className = 'p-2.5 rounded-2xl shrink-0 bg-emerald-50 text-emerald-600';
+          iconWrap.innerHTML = '<i data-lucide="arrow-down-left" class="w-6 h-6"></i>';
+        }
       }
 
+      // 4. Render Daftar Transaksi
       const listContainer = document.getElementById('drilldown-modal-list');
       if (listContainer) {
         if (filtered.length === 0) {
-          listContainer.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Tidak ada catatan transaksi.</div>`;
+          listContainer.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Tidak ada catatan transaksi di hari ini.</div>`;
         } else {
           listContainer.innerHTML = filtered.map(tx => {
             const accName = accounts.find(a => a.id === tx.accountId)?.name || 'Sumber Dana';
             const catName = categories.find(c => c.id === tx.categoryId)?.name || 'Kategori';
-            const amtStr = (tx.type === 'expense' ? '-' : '+') + formatCurrency(tx.amount);
-            const amtColor = (tx.type === 'expense' ? 'text-rose-600' : 'text-emerald-600');
+
+            let sourceHtml = escapeHtml(accName);
+            let categoryBadgeHtml = '';
+            let amountHtml = '';
+
+            if (tx.type === 'transfer') {
+              const toAcc = accounts.find(a => a.id === tx.toAccountId)?.name || 'Tujuan';
+              const fee = parseFloat(tx.adminFee) || 0;
+
+              sourceHtml = `<span class="text-slate-700 font-semibold">${escapeHtml(accName)}</span> <span class="text-blue-500 font-bold">→</span> <span class="text-slate-700 font-semibold">${escapeHtml(toAcc)}</span>`;
+              categoryBadgeHtml = `<span class="bg-blue-50 text-blue-700 font-bold border border-blue-200 px-1.5 py-0.2 rounded text-[10px]">Transfer Antar Rekening</span>`;
+              amountHtml = `
+                <span class="font-bold text-xs sm:text-sm text-blue-600 whitespace-nowrap">⇄ ${formatCurrency(tx.amount)}</span>
+                ${fee > 0 ? `<div class="text-[10px] text-rose-500 font-medium mt-0.5">(Admin: -${formatCurrency(fee)})</div>` : ''}
+              `;
+            } else if (tx.type === 'expense') {
+              categoryBadgeHtml = `<span class="bg-rose-50 text-rose-700 font-semibold border border-rose-200 px-1.5 py-0.2 rounded text-[10px]">${escapeHtml(catName)}</span>`;
+              if (tx.subcategory) {
+                categoryBadgeHtml += `<span class="bg-slate-100 text-slate-600 font-medium px-1.5 py-0.2 rounded text-[10px] ml-1">${escapeHtml(tx.subcategory)}</span>`;
+              }
+              amountHtml = `<span class="font-bold text-xs sm:text-sm text-rose-600 whitespace-nowrap">-${formatCurrency(tx.amount)}</span>`;
+            } else {
+              categoryBadgeHtml = `<span class="bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 px-1.5 py-0.2 rounded text-[10px]">${escapeHtml(catName)}</span>`;
+              if (tx.subcategory) {
+                categoryBadgeHtml += `<span class="bg-slate-100 text-slate-600 font-medium px-1.5 py-0.2 rounded text-[10px] ml-1">${escapeHtml(tx.subcategory)}</span>`;
+              }
+              amountHtml = `<span class="font-bold text-xs sm:text-sm text-emerald-600 whitespace-nowrap">+${formatCurrency(tx.amount)}</span>`;
+            }
 
             return `
               <div class="pt-2.5 pb-1 flex items-start justify-between gap-3 text-xs">
-                <div class="space-y-0.5 flex-1 min-w-0">
-                  <div class="flex items-center gap-1.5 font-semibold text-slate-800">
-                    <span class="truncate">${escapeHtml(tx.note || catName)}</span>
+                <div class="space-y-1 flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5 font-bold text-slate-800">
+                    <span class="truncate">${escapeHtml(tx.note || (tx.type === 'transfer' ? 'Pindah Dana' : catName))}</span>
                   </div>
-                  <div class="text-[11px] text-slate-400 flex items-center gap-2 flex-wrap">
-                    <span>${tx.date}</span>
+                  <div class="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                    <span>${sourceHtml}</span>
                     <span>•</span>
-                    <span class="font-medium text-slate-500">${escapeHtml(accName)}</span>
-                    ${tx.subcategory ? `<span>•</span><span class="bg-slate-100 px-1.5 py-0.2 rounded text-[10px] text-slate-600 font-medium">${escapeHtml(tx.subcategory)}</span>` : ''}
+                    <div>${categoryBadgeHtml}</div>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="font-bold text-xs sm:text-sm ${amtColor}">${amtStr}</span>
+                  ${amountHtml}
                 </div>
               </div>
             `;
@@ -4610,11 +5110,89 @@
       persistState(true);
       closeModal('transaction-modal');
       renderAll();
+	  
+	  if (type === 'expense' && categoryId && subcategory) {
+        checkAndUpdateMatchingRecurringBills(categoryId, subcategory, date, amount);
+      }
 
       // Jika over budget, tampilkan pop-up peringatan detail
       if (budgetWarningInfo) {
         showBudgetOverrunNotification(budgetWarningInfo);
       }
+    }
+	
+	// Memeriksa dan memperbarui reminder tagihan yang cocok
+    function checkAndUpdateMatchingRecurringBills(catId, subcatName, txDate, txAmount) {
+      if (!catId || !subcatName) return;
+
+      const matchedBills = recurringBills.filter(r => 
+        r.categoryId === catId && 
+        (r.subcategory || '').trim().toLowerCase() === subcatName.trim().toLowerCase()
+      );
+
+      if (matchedBills.length === 1) {
+        // KASUS A: HANYA ADA 1 REMINDER COCOK -> LANGSUNG PERBARUI OTOMATIS
+        const bill = matchedBills[0];
+        bill.lastPaidDate = txDate; // Perbarui tanggal pembayaran terakhir ke tanggal transaksi
+        // Masa berlaku (validityDays) TETAP SAMA dengan pengaturan awal
+        persistState(true);
+        renderRecurringBillsWidget();
+      } else if (matchedBills.length > 1) {
+        // KASUS B: ADA >= 2 REMINDER COCOK -> BUKA POP-UP PILIHAN BERDASARKAN DEADLINE TERDEKAT
+        promptSelectRecurringToUpdate(matchedBills, txDate);
+      }
+    }
+
+    function promptSelectRecurringToUpdate(candidates, newTxDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Urutkan prioritas berdasarkan deadline terdekat
+      const sortedCandidates = candidates.map(c => {
+        const dueDate = calcDueDate(c.lastPaidDate, c.validityDays);
+        dueDate.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
+        return { ...c, dueDate, diffDays };
+      }).sort((a, b) => a.diffDays - b.diffDays);
+
+      const listContainer = document.getElementById('rec-conflict-candidates-list');
+      if (!listContainer) return;
+
+      listContainer.innerHTML = sortedCandidates.map((c, idx) => {
+        const isNearest = (idx === 0);
+        return `
+          <div onclick="executeSingleRecurringUpdate('${c.id}', '${newTxDate}')" class="p-3 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
+            isNearest 
+              ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400 shadow-sm' 
+              : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+          }">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-900">${escapeHtml(c.name)}</span>
+                ${isNearest ? '<span class="text-[9px] bg-amber-500 text-white font-extrabold px-1.5 py-0.2 rounded-full uppercase">Deadline Terdekat</span>' : ''}
+              </div>
+              <div class="text-[11px] text-slate-500">
+                <span>Nominal: <strong>${formatCurrency(c.amount)}</strong></span> • 
+                <span>Tempo: <strong>${c.dueDate.toLocaleDateString('id-ID', { dateStyle: 'medium' })}</strong></span>
+              </div>
+            </div>
+            <i data-lucide="check-circle" class="w-5 h-5 ${isNearest ? 'text-amber-600' : 'text-slate-400'} shrink-0 ml-2"></i>
+          </div>
+        `;
+      }).join('');
+
+      openModal('recurring-conflict-modal');
+      lucide.createIcons();
+    }
+
+    function executeSingleRecurringUpdate(recId, newTxDate) {
+      const bill = recurringBills.find(r => r.id === recId);
+      if (bill) {
+        bill.lastPaidDate = newTxDate;
+        persistState(true);
+        renderRecurringBillsWidget();
+      }
+      closeModal('recurring-conflict-modal');
     }
 
     function deleteTransaction(id) {
@@ -4627,6 +5205,10 @@
 
     // ==================== TAB 3: FINANCIAL ANALYSIS ====================
     function setAnalysisScope(scope) {
+      // Reset sorotan kalender dan status expand saat berganti antara mode Bulanan dan Tahunan
+      activeHighlightedHabitItem = null;
+      isHabitTrackerExpanded = false;
+
       analysisScope = scope;
       const btnM = document.getElementById('btn-ana-scope-month');
       const btnY = document.getElementById('btn-ana-scope-year');
@@ -4819,6 +5401,61 @@
           }).join('');
         }
       }
+	  
+	  // ==================== KALKULATOR DANA DARURAT (IDE #5) ====================
+      let totalLiquidAssets = 0;
+      accounts.forEach(a => {
+        if (['Bank', 'E-Wallet', 'Cash'].includes(a.type)) {
+          totalLiquidAssets += (parseFloat(a.initialBalance) || 0);
+        }
+      });
+      // Hitung mutasi aset likuid
+      transactions.forEach(tx => {
+        const amt = parseFloat(tx.amount) || 0;
+        const fee = parseFloat(tx.adminFee) || 0;
+        if (tx.type === 'income') totalLiquidAssets += amt;
+        else if (tx.type === 'expense') totalLiquidAssets -= amt;
+        else if (tx.type === 'transfer' && fee > 0) totalLiquidAssets -= fee;
+      });
+
+      // Biaya hidup wajib per bulan = Pengeluaran Tetap + Pengeluaran Berkala
+      const mandatoryMonthlyCost = (fixedExpense + periodicExpense) || totalOutflow || 1;
+      const survivalMonths = Math.max(0, (totalLiquidAssets / mandatoryMonthlyCost)).toFixed(1);
+
+      setText('emg-fund-liquid', formatCurrency(totalLiquidAssets));
+      setText('emg-fund-cost', formatCurrency(mandatoryMonthlyCost));
+      setText('emg-fund-months', `${survivalMonths} Bulan`);
+
+      const emgBadge = document.getElementById('emg-fund-badge');
+      const emgEval = document.getElementById('emg-fund-eval');
+      const emgProgress = document.getElementById('emg-fund-progress');
+
+      if (emgBadge && emgEval && emgProgress) {
+        const pct = Math.min(100, Math.round((survivalMonths / 6) * 100));
+        emgProgress.style.width = `${pct}%`;
+
+        if (survivalMonths >= 6) {
+          emgBadge.textContent = 'Sangat Kuat (Ideal)';
+          emgBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+          emgEval.textContent = 'Dana darurat sangat kokoh (> 6 bulan biaya hidup).';
+        } else if (survivalMonths >= 3) {
+          emgBadge.textContent = 'Sehat & Cukup';
+          emgBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300';
+          emgEval.textContent = 'Memenuhi standar keamanan darurat (3–6 bulan).';
+        } else if (survivalMonths >= 1) {
+          emgBadge.textContent = 'Perlu Waspada';
+          emgBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300';
+          emgEval.textContent = 'Hanya cukup bertahan 1–2 bulan. Tingkatkan tabungan.';
+        } else {
+          emgBadge.textContent = 'Kritis (< 1 Bulan)';
+          emgBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300';
+          emgEval.textContent = 'Rentan terhadap guncangan finansial mendadak.';
+        }
+      }
+
+      // ==================== RENDER KALENDER DOT & HABIT TRACKER ====================
+      renderAnalysisCalendarDots(filterPrefix, periodTxs);
+      renderAnalysisHabitTracker(periodTxs);
 
       renderAnalysisSummaryBreakdown(filterPrefix, periodTxs);
       lucide.createIcons();
@@ -4889,6 +5526,13 @@
         const incCatSums = {};
         const expSubSums = {};
         const incSubSums = {};
+
+        // Variabel penghitung frekuensi transaksi
+        const expCatCounts = {};
+        const incCatCounts = {};
+        const expSubCounts = {};
+        const incSubCounts = {};
+
         let totalExp = 0, totalInc = 0;
         let totalTransferAdminFee = 0;
 
@@ -4915,13 +5559,22 @@
           if (t.type === 'expense') {
             totalExp += amt;
             expCatSums[catId] = (expCatSums[catId] || 0) + amt;
+            expCatCounts[catId] = (expCatCounts[catId] || 0) + 1;
+
             if (!expSubSums[catId]) expSubSums[catId] = {};
+            if (!expSubCounts[catId]) expSubCounts[catId] = {};
             expSubSums[catId][subKey] = (expSubSums[catId][subKey] || 0) + amt;
+            expSubCounts[catId][subKey] = (expSubCounts[catId][subKey] || 0) + 1;
+
           } else if (t.type === 'income') {
             totalInc += amt;
             incCatSums[catId] = (incCatSums[catId] || 0) + amt;
+            incCatCounts[catId] = (incCatCounts[catId] || 0) + 1;
+
             if (!incSubSums[catId]) incSubSums[catId] = {};
+            if (!incSubCounts[catId]) incSubCounts[catId] = {};
             incSubSums[catId][subKey] = (incSubSums[catId][subKey] || 0) + amt;
+            incSubCounts[catId][subKey] = (incSubCounts[catId][subKey] || 0) + 1;
           }
         });
 
@@ -4947,12 +5600,14 @@
           if (cats.length === 0) {
             return `<div class="py-4 text-center text-slate-400 italic text-xs">Belum ada transaksi ${isExpense ? 'pengeluaran' : 'pemasukan'} di bulan ini.</div>`;
           }
-		  return cats.map(c => {
+
+          return cats.map(c => {
             const val = sumMap[c.id] || 0;
             const pct = totalAmount > 0 ? ((val / totalAmount) * 100).toFixed(1) : 0;
             const isExpanded = (activeExpandedAnalysisCatId === c.id);
             const subMap = subMapCollection[c.id] || {};
             const subKeys = Object.keys(subMap).sort((a, b) => subMap[b] - subMap[a]);
+            const catCount = (isExpense ? expCatCounts[c.id] : incCatCounts[c.id]) || 0;
 
             return `
               <div class="py-1.5 border-b border-slate-100 last:border-b-0">
@@ -4963,10 +5618,10 @@
                     </span>
                     <div>
                       <span class="font-semibold text-slate-800 text-xs sm:text-sm">${escapeHtml(c.name)}</span>
-                      <span class="text-[10px] text-slate-400 block">${pct}% dari total</span>
+                      <span class="text-[10px] text-slate-400 block">${catCount}x transaksi • ${pct}% total</span>
                     </div>
                   </div>
-                  <span class="font-bold text-xs sm:text-sm ${val > 0 ? (isExpense ? 'text-rose-600' : 'text-emerald-600') : 'text-slate-400'}">
+                  <span class="font-bold text-xs sm:text-sm ${isExpense ? 'text-rose-600' : 'text-emerald-600'}">
                     ${dashPrivacy[isExpense ? 'expense' : 'income'] ? 'Rp ••••••' : formatCurrency(val)}
                   </span>
                 </div>
@@ -4977,9 +5632,11 @@
                     ${subKeys.length > 0 ? subKeys.map(subKey => {
                       const subVal = subMap[subKey];
                       const subPct = val > 0 ? ((subVal / val) * 100).toFixed(1) : 0;
+                      const subCount = (isExpense ? expSubCounts[c.id]?.[subKey] : incSubCounts[c.id]?.[subKey]) || 0;
+
                       return `
                         <div class="flex items-center justify-between text-[11px] py-0.5">
-                          <span class="text-slate-600">${escapeHtml(subKey)} <span class="text-[10px] text-slate-400">(${subPct}%)</span></span>
+                          <span class="text-slate-600">${escapeHtml(subKey)} <span class="text-[10px] text-slate-400">(${subCount}x • ${subPct}%)</span></span>
                           <span class="font-semibold text-slate-800">${dashPrivacy[isExpense ? 'expense' : 'income'] ? 'Rp ••••••' : formatCurrency(subVal)}</span>
                         </div>
                       `;
@@ -5165,6 +5822,373 @@
           </div>
         `;
       }
+      lucide.createIcons();
+    }
+	
+    // ==================== STATE PENANDAAN TANGGAL KATEGORI ====================
+    let activeHighlightedHabitItem = null;
+
+    function toggleHabitHighlight(itemName) {
+      if (activeHighlightedHabitItem && activeHighlightedHabitItem.toLowerCase() === itemName.toLowerCase()) {
+        activeHighlightedHabitItem = null; // Batal sorot jika diklik ulang
+      } else {
+        activeHighlightedHabitItem = itemName; // Set item yang disorot
+      }
+
+      // Render ulang kalender dan daftar frekuensi agar efek visual langsung terpasang
+      let filterPrefix = '';
+      if (analysisScope === 'month') {
+        filterPrefix = document.getElementById('analysis-month-picker')?.value || dashboardSelectedMonth;
+      } else {
+        filterPrefix = document.getElementById('analysis-year-picker')?.value || String(curYear);
+      }
+      const periodTxs = transactions.filter(t => t.date && t.date.startsWith(filterPrefix));
+
+      renderAnalysisCalendarDots(filterPrefix, periodTxs);
+      renderAnalysisHabitTracker(periodTxs);
+    }
+
+    function clearHabitHighlight() {
+      activeHighlightedHabitItem = null;
+      let filterPrefix = '';
+      if (analysisScope === 'month') {
+        filterPrefix = document.getElementById('analysis-month-picker')?.value || dashboardSelectedMonth;
+      } else {
+        filterPrefix = document.getElementById('analysis-year-picker')?.value || String(curYear);
+      }
+      const periodTxs = transactions.filter(t => t.date && t.date.startsWith(filterPrefix));
+
+      renderAnalysisCalendarDots(filterPrefix, periodTxs);
+      renderAnalysisHabitTracker(periodTxs);
+    }
+
+    // ==================== KALENDER DOT INTERAKTIF DENGAN BLOK SOROTAN ====================
+    function renderAnalysisCalendarDots(filterPrefix, periodTxs) {
+      const grid = document.getElementById('ana-calendar-grid');
+      if (!grid) return;
+
+      const parts = filterPrefix.split('-').map(Number);
+      const year = parts[0] || curYear;
+      const month = (parts[1] || parseInt(curMonth)) - 1;
+
+      // 1. Tampilkan Nama Bulan & Tahun secara dinamis pada Header Kalender
+      setText('ana-calendar-month-year', `${monthNamesID[month]} ${year}`);
+
+      // 2. Kelola Banner Sorotan
+      const highlightBanner = document.getElementById('ana-calendar-highlight-banner');
+      const highlightNameEl = document.getElementById('ana-calendar-highlight-name');
+      if (highlightBanner && highlightNameEl) {
+        if (activeHighlightedHabitItem) {
+          highlightNameEl.textContent = activeHighlightedHabitItem;
+          highlightBanner.classList.remove('hidden');
+        } else {
+          highlightBanner.classList.add('hidden');
+        }
+      }
+
+      const firstDayIdx = (new Date(year, month, 1).getDay() + 6) % 7; // Mulai Senin (0=Senin, 6=Minggu)
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Kumpulkan transaksi per tanggal
+      const dayTransactionsMap = {};
+      periodTxs.forEach(tx => {
+        if (!tx.date) return;
+        if (!dayTransactionsMap[tx.date]) {
+          dayTransactionsMap[tx.date] = { hasExpense: false, hasIncome: false, hasTransfer: false, txs: [] };
+        }
+        if (tx.type === 'expense') dayTransactionsMap[tx.date].hasExpense = true;
+        else if (tx.type === 'income') dayTransactionsMap[tx.date].hasIncome = true;
+        else if (tx.type === 'transfer') {
+          dayTransactionsMap[tx.date].hasTransfer = true;
+          if (parseFloat(tx.adminFee) > 0) dayTransactionsMap[tx.date].hasExpense = true;
+        }
+        dayTransactionsMap[tx.date].txs.push(tx);
+      });
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      let html = '';
+
+      for (let i = 0; i < firstDayIdx; i++) {
+        html += `<div class="h-11 rounded-xl bg-slate-50/40 opacity-30"></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const data = dayTransactionsMap[dStr];
+        const isToday = (dStr === todayStr);
+
+        // Periksa apakah di tanggal ini terdapat transaksi dari item yang sedang disorot
+        let isHighlightedDate = false;
+        if (activeHighlightedHabitItem && data && data.txs.length > 0) {
+          isHighlightedDate = data.txs.some(tx => {
+            const subMatch = (tx.subcategory || '').trim().toLowerCase() === activeHighlightedHabitItem.trim().toLowerCase();
+            const cat = categories.find(c => c.id === tx.categoryId);
+            const catMatch = cat && cat.name.trim().toLowerCase() === activeHighlightedHabitItem.trim().toLowerCase();
+            return subMatch || catMatch;
+          });
+        }
+
+        let dotsHtml = '';
+        if (data) {
+          const dots = [];
+          if (data.hasExpense) dots.push('<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>');
+          if (data.hasIncome) dots.push('<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>');
+          if (data.hasTransfer) dots.push('<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>');
+
+          if (dots.length > 0) {
+            dotsHtml = `<div class="flex items-center gap-1 mt-0.5">${dots.join('')}</div>`;
+          }
+        }
+
+        const clickable = Boolean(data);
+
+        // Penentuan Hari dalam Minggu (0=Senin, 1=Selasa, ..., 5=Sabtu, 6=Minggu)
+        const dayOfWeek = (firstDayIdx + (d - 1)) % 7;
+        const isSaturday = (dayOfWeek === 5);
+        const isSunday = (dayOfWeek === 6);
+
+        // Penentuan gaya kotak tanggal
+        let cellStyleClass = '';
+        if (isHighlightedDate) {
+          // Sorotan aktif kategori bernilai prioritas tertinggi
+          cellStyleClass = 'cursor-pointer bg-amber-100 border-2 border-amber-500 ring-2 ring-amber-300 text-amber-950 font-black shadow-md scale-102';
+        } else if (clickable) {
+          // Tanggal yang ada transaksinya
+          if (isSunday) {
+            cellStyleClass = 'cursor-pointer bg-rose-50/70 border-rose-200 hover:bg-rose-100 text-rose-900 shadow-2xs';
+          } else if (isSaturday) {
+            cellStyleClass = 'cursor-pointer bg-blue-50/70 border-blue-200 hover:bg-blue-100 text-blue-900 shadow-2xs';
+          } else {
+            cellStyleClass = 'cursor-pointer bg-white border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 text-slate-800 shadow-2xs';
+          }
+        } else {
+          // Tanggal tanpa transaksi (warna pudar lembut)
+          if (isSunday) {
+            cellStyleClass = 'bg-rose-50/40 border-rose-100/70 text-rose-500/80';
+          } else if (isSaturday) {
+            cellStyleClass = 'bg-blue-50/40 border-blue-100/70 text-blue-500/80';
+          } else {
+            cellStyleClass = 'bg-slate-50/60 border-slate-100 text-slate-400';
+          }
+        }
+
+        html += `
+          <div onclick="${clickable ? `openCalendarDateDrillDown('${dStr}')` : ''}" class="h-11 rounded-xl border transition-all flex flex-col items-center justify-center p-0.5 ${cellStyleClass} ${isToday && !isHighlightedDate ? 'ring-2 ring-emerald-500 font-extrabold' : ''}" title="${isHighlightedDate ? `Terdapat transaksi ${escapeHtml(activeHighlightedHabitItem)} di tanggal ini` : ''}">
+            <span class="text-xs ${isHighlightedDate ? 'font-black text-amber-950' : (clickable ? 'font-bold text-slate-800' : 'font-medium')}">${d}</span>
+            ${dotsHtml}
+          </div>
+        `;
+      }
+
+      grid.innerHTML = html;
+      lucide.createIcons();
+	  
+	  // Render evaluasi perilaku belanja harian (Ide 1 & Ide 3)
+      renderCalendarExtraAnalytics(filterPrefix, periodTxs);
+    }
+	
+	// ==================== REKAP HARIAN (IDE 1) & ARUS MINGGUAN (IDE 3) ====================
+    function renderCalendarExtraAnalytics(filterPrefix, periodTxs) {
+      const parts = filterPrefix.split('-').map(Number);
+      const year = parts[0] || curYear;
+      const month = (parts[1] || parseInt(curMonth)) - 1;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // 1. Kumpulkan pengeluaran per hari
+      const dailyExpenseMap = {};
+      let totalMonthExpense = 0;
+
+      periodTxs.forEach(t => {
+        if (!t.date) return;
+        const amt = parseFloat(t.amount) || 0;
+        const fee = parseFloat(t.adminFee) || 0;
+        let expenseAmt = 0;
+
+        if (t.type === 'expense') expenseAmt = amt;
+        else if (t.type === 'transfer' && fee > 0) expenseAmt = fee;
+
+        if (expenseAmt > 0) {
+          dailyExpenseMap[t.date] = (dailyExpenseMap[t.date] || 0) + expenseAmt;
+          totalMonthExpense += expenseAmt;
+        }
+      });
+
+      // Hitung Hari Tanpa Belanja (No-Spend Days)
+      const activeSpendDaysCount = Object.keys(dailyExpenseMap).length;
+      const noSpendDaysCount = Math.max(0, daysInMonth - activeSpendDaysCount);
+      const disciplinePct = Math.round((noSpendDaysCount / daysInMonth) * 100);
+
+      setText('stat-nospend-days', `${noSpendDaysCount} / ${daysInMonth} Hari`);
+      setText('stat-nospend-desc', `${disciplinePct}% hari bebas belanja`);
+
+      // Cari Hari Terboros (Peak Spending Day)
+      let peakDateStr = '';
+      let peakAmount = 0;
+
+      Object.keys(dailyExpenseMap).forEach(d => {
+        if (dailyExpenseMap[d] > peakAmount) {
+          peakAmount = dailyExpenseMap[d];
+          peakDateStr = d;
+        }
+      });
+
+      if (peakAmount > 0) {
+        const dObj = new Date(peakDateStr + 'T00:00:00');
+        const dayName = dObj.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
+        setText('stat-peak-day', dayName);
+        setText('stat-peak-amount', `Puncak: ${formatCurrency(peakAmount)}`);
+      } else {
+        setText('stat-peak-day', 'Belum Ada');
+        setText('stat-peak-amount', 'Pengeluaran: Rp 0');
+      }
+
+      // Rata-rata Belanja pada Hari Aktif
+      const avgActiveSpend = activeSpendDaysCount > 0 ? Math.round(totalMonthExpense / activeSpendDaysCount) : 0;
+      setText('stat-avg-active-day', formatCurrency(avgActiveSpend) + '/hari');
+
+      // ==================== IDE 3: PEMBAGIAN 4 MINGGU (WEEKLY BURN RATE) ====================
+      const weeklyContainer = document.getElementById('stat-weekly-breakdown');
+      if (!weeklyContainer) return;
+
+      const weeks = [
+        { label: 'Minggu 1', range: 'Tgl 1–7', start: 1, end: 7, total: 0 },
+        { label: 'Minggu 2', range: 'Tgl 8–14', start: 8, end: 14, total: 0 },
+        { label: 'Minggu 3', range: 'Tgl 15–21', start: 15, end: 21, total: 0 },
+        { label: 'Minggu 4+', range: `Tgl 22–${daysInMonth}`, start: 22, end: daysInMonth, total: 0 }
+      ];
+
+      Object.keys(dailyExpenseMap).forEach(dStr => {
+        const dayNum = parseInt(dStr.split('-')[2]);
+        const amt = dailyExpenseMap[dStr];
+        if (dayNum <= 7) weeks[0].total += amt;
+        else if (dayNum <= 14) weeks[1].total += amt;
+        else if (dayNum <= 21) weeks[2].total += amt;
+        else weeks[3].total += amt;
+      });
+
+      weeklyContainer.innerHTML = weeks.map(w => {
+        const pct = totalMonthExpense > 0 ? Math.round((w.total / totalMonthExpense) * 100) : 0;
+        return `
+          <div class="p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/70 space-y-1">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-bold text-slate-800">${w.label}</span>
+              <span class="text-[10px] text-slate-400 font-medium">${w.range}</span>
+            </div>
+            <div class="text-xs sm:text-sm font-black text-slate-900">${formatCurrency(w.total)}</div>
+            <div class="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+              <div class="bg-emerald-600 h-full" style="width: ${pct}%"></div>
+            </div>
+            <div class="text-[9px] text-slate-400 text-right font-medium">${pct}% pengeluaran</div>
+          </div>
+        `;
+      }).join('');
+    }
+	
+	// ==================== BUKA POP-UP RINCIAN HARIAN SAAT TANGGAL KALENDER DIKLIK ====================
+    function openCalendarDateDrillDown(dateStr) {
+      showChartDrillDownModal({
+        date: dateStr,
+        type: 'ALL',
+        category: 'ALL'
+      });
+    }
+
+    // ==================== PELACAK KEBIASAAN FREKUENSI INTERAKTIF (> 1x & TOP 5 EXPAND) ====================
+    let isHabitTrackerExpanded = false; // Status apakah daftar sedang dibuka penuh
+
+    function toggleHabitTrackerExpand() {
+      isHabitTrackerExpanded = !isHabitTrackerExpanded;
+
+      let filterPrefix = '';
+      if (analysisScope === 'month') {
+        filterPrefix = document.getElementById('analysis-month-picker')?.value || dashboardSelectedMonth;
+      } else {
+        filterPrefix = document.getElementById('analysis-year-picker')?.value || String(curYear);
+      }
+      const periodTxs = transactions.filter(t => t.date && t.date.startsWith(filterPrefix));
+
+      renderAnalysisHabitTracker(periodTxs);
+      lucide.createIcons();
+    }
+
+    function renderAnalysisHabitTracker(periodTxs) {
+      const container = document.getElementById('ana-top-frequency-list');
+      if (!container) return;
+
+      const subcatStats = {};
+      periodTxs.filter(t => t.type === 'expense' && t.subcategory && t.subcategory.trim()).forEach(t => {
+        const sub = t.subcategory.trim();
+        if (!subcatStats[sub]) {
+          subcatStats[sub] = { count: 0, total: 0, catId: t.categoryId };
+        }
+        subcatStats[sub].count++;
+        subcatStats[sub].total += (parseFloat(t.amount) || 0);
+      });
+
+      // 1. SYARAT WAJIB: FREKUENSI HARUS LEBIH DARI 1x (count > 1)
+      const sorted = Object.keys(subcatStats)
+        .filter(sub => subcatStats[sub].count > 1) // Hanya yang > 1x transaksi
+        .map(sub => ({
+          name: sub,
+          count: subcatStats[sub].count,
+          total: subcatStats[sub].total,
+          avgTicket: subcatStats[sub].total / subcatStats[sub].count
+        }))
+        .sort((a, b) => b.count - a.count || b.total - a.total);
+
+      if (sorted.length === 0) {
+        container.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Belum ada pengeluaran berulang (&gt; 1x) bersubkategori di periode ini.</div>`;
+        return;
+      }
+
+      // 2. DEFAULT 5 ITEM TERATAS, ATAU SEMUA JIKA DI-EXPAND
+      const initialLimit = 5;
+      const displayedItems = isHabitTrackerExpanded ? sorted : sorted.slice(0, initialLimit);
+      const remainingCount = sorted.length - initialLimit;
+
+      let itemsHtml = displayedItems.map((item, idx) => {
+        const isSelected = (activeHighlightedHabitItem && activeHighlightedHabitItem.toLowerCase() === item.name.toLowerCase());
+
+        return `
+          <div onclick="toggleHabitHighlight('${escapeHtml(item.name)}')" class="p-3 rounded-xl border cursor-pointer select-none transition-all ${
+            isSelected 
+              ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-500 shadow-sm' 
+              : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100 hover:border-slate-300'
+          } space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold ${isSelected ? 'text-amber-950 font-black' : 'text-slate-800'} flex items-center gap-1.5 truncate">
+                <span>#${idx + 1} ${escapeHtml(item.name)}</span>
+                ${isSelected ? '<span class="text-[9px] bg-amber-500 text-white px-1.5 py-0.2 rounded-md font-extrabold uppercase shrink-0">Disorot</span>' : ''}
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${isSelected ? 'bg-amber-200 text-amber-950' : 'bg-amber-100 text-amber-800'}">${item.count}x Transaksi</span>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+              <span>Total: <strong>${formatCurrency(item.total)}</strong></span>
+              <span>Rata-rata: <strong>${formatCurrency(item.avgTicket)}</strong>/trx</span>
+            </div>
+
+            <div class="text-[10px] text-slate-400 flex items-center justify-between pt-0.5 border-t ${isSelected ? 'border-amber-200 text-amber-800 font-semibold' : 'border-slate-200/60'}">
+              <span>${isSelected ? 'Klik lagi untuk melepas tanda' : 'Ketuk untuk menandai tanggal di kalender'}</span>
+              <i data-lucide="${isSelected ? 'check-circle-2' : 'crosshair'}" class="w-3.5 h-3.5 ${isSelected ? 'text-amber-600' : 'text-slate-400'}"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 3. TOMBOL EXPAND / COLLAPSE JIKA JUMLAH ITEM LEBIH DARI 5
+      if (sorted.length > initialLimit) {
+        itemsHtml += `
+          <div class="pt-1 border-t border-slate-100">
+            <button type="button" onclick="toggleHabitTrackerExpand()" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-2xs">
+              <span>${isHabitTrackerExpanded ? 'Tampilkan Lebih Sedikit (Top 5)' : `Lihat ${remainingCount} Subkategori Lainnya`}</span>
+              <i data-lucide="${isHabitTrackerExpanded ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-slate-500"></i>
+            </button>
+          </div>
+        `;
+      }
+
+      container.innerHTML = itemsHtml;
       lucide.createIcons();
     }
 
@@ -7465,9 +8489,667 @@
 
       // Terapkan status buka/tutup (collapse) yang tersimpan
       applySettingCategoryCollapseUI();
+	  applyRecurringCollapseUI();
+	  
+	  // Render daftar pengingat tagihan di pengaturan
+      renderRecurringBillsWidget();
 
       renderBackupSettingsView();
       lucide.createIcons();
+    }
+	
+	// ==================== STATE COLLAPSE & FILTER PENGINGAT ====================
+    let isRecurringCollapsed = JSON.parse(localStorage.getItem('vf_setting_rec_collapsed') || 'false');
+
+    function toggleRecurringCollapse() {
+      isRecurringCollapsed = !isRecurringCollapsed;
+      localStorage.setItem('vf_setting_rec_collapsed', JSON.stringify(isRecurringCollapsed));
+      applyRecurringCollapseUI();
+    }
+
+    function applyRecurringCollapseUI() {
+      const body = document.getElementById('setting-recurring-body');
+      const icon = document.getElementById('icon-chevron-rec-setting');
+      if (!body) return;
+
+      if (isRecurringCollapsed) {
+        body.classList.add('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+      } else {
+        body.classList.remove('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+      }
+      lucide.createIcons();
+    }
+
+    function clearRecurringSearch() {
+      setVal('rec-search-input', '');
+      const btn = document.getElementById('rec-search-clear');
+      if (btn) btn.classList.add('hidden');
+      renderRecurringBillsWidget();
+    }
+
+    function resetRecurringFilterAndSort() {
+      setVal('rec-search-input', '');
+      const btn = document.getElementById('rec-search-clear');
+      if (btn) btn.classList.add('hidden');
+      setVal('rec-filter-status', 'ALL');
+      setVal('rec-sort', 'due-asc');
+      renderRecurringBillsWidget();
+    }
+
+    // Menghitung tanggal jatuh tempo (Last Paid + Validity Days)
+    function calcDueDate(lastPaidDateStr, validityDays) {
+      if (!lastPaidDateStr) return new Date();
+      const p = lastPaidDateStr.split('-').map(Number);
+      const d = new Date(p[0], p[1] - 1, p[2]);
+      d.setDate(d.getDate() + parseInt(validityDays || 28));
+      return d;
+    }
+
+    function updateRecDeadlineDisplay() {
+      const lastPaid = document.getElementById('rec-last-paid')?.value;
+      const daysVal = document.getElementById('rec-validity-days')?.value;
+      const days = parseInt(daysVal);
+      const dueInput = document.getElementById('rec-next-due');
+
+      if (!dueInput) return;
+
+      // Jika salah satu field kosong atau tidak valid, kosongkan tampilan deadline
+      if (!lastPaid || isNaN(days) || days <= 0) {
+        dueInput.value = '';
+        dueInput.placeholder = 'Menunggu data transaksi...';
+      } else {
+        const dueDate = calcDueDate(lastPaid, days);
+        dueInput.value = dueDate.toLocaleDateString('id-ID', { dateStyle: 'medium' });
+      }
+    }
+	
+	// ==================== TOGGLE NOTIFIKASI LANGSUNG DARI KARTU ====================
+    function toggleRecurringNotification(id, event) {
+      if (event) event.stopPropagation();
+      const item = recurringBills.find(r => r.id === id);
+      if (!item) return;
+
+      item.notify = !item.notify;
+
+      // Minta izin notifikasi browser jika baru diaktifkan
+      if (item.notify && 'Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+
+      persistState(true);
+      renderRecurringBillsWidget();
+    }
+
+    // ==================== RENDER KARTU PENGINGAT (DENGAN SEARCH, FILTER & IKON EDIT/HAPUS) ====================
+    function renderRecurringBillsWidget() {
+      const container = document.getElementById('recurring-bills-list');
+      const headerBadge = document.getElementById('badge-rec-count-header');
+      const filterCountEl = document.getElementById('rec-filter-count');
+
+      if (headerBadge) headerBadge.textContent = `${recurringBills.length} Reminder`;
+      if (!container) return;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // 1. Filter Pencarian
+      const searchInput = document.getElementById('rec-search-input');
+      const searchQuery = (searchInput?.value || '').trim().toLowerCase();
+      const clearBtn = document.getElementById('rec-search-clear');
+      if (clearBtn) {
+        if (searchQuery) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      // 2. Filter Status Tempo
+      const filterStatus = document.getElementById('rec-filter-status')?.value || 'ALL';
+      const sortOption = document.getElementById('rec-sort')?.value || 'due-asc';
+
+      let items = recurringBills.map(item => {
+        const dueDate = calcDueDate(item.lastPaidDate, item.validityDays);
+        dueDate.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
+        const catName = categories.find(c => c.id === item.categoryId)?.name || 'Kategori';
+        return { ...item, dueDate, diffDays, catName };
+      });
+
+      // Filter Pencarian Teks
+      if (searchQuery) {
+        items = items.filter(it => 
+          it.name.toLowerCase().includes(searchQuery) ||
+          it.catName.toLowerCase().includes(searchQuery) ||
+          (it.subcategory || '').toLowerCase().includes(searchQuery)
+        );
+      }
+
+      // Filter Status
+      if (filterStatus === 'overdue') items = items.filter(it => it.diffDays < 0);
+      else if (filterStatus === 'today') items = items.filter(it => it.diffDays === 0);
+      else if (filterStatus === 'soon') items = items.filter(it => it.diffDays > 0 && it.diffDays <= 3);
+      else if (filterStatus === 'safe') items = items.filter(it => it.diffDays > 3);
+
+      // Pengurutan (Sort)
+      if (sortOption === 'due-asc') items.sort((a, b) => a.diffDays - b.diffDays);
+      else if (sortOption === 'name-asc') items.sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      else if (sortOption === 'amount-desc') items.sort((a, b) => b.amount - a.amount);
+
+      if (filterCountEl) filterCountEl.textContent = `Menampilkan ${items.length} reminder`;
+
+      if (items.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400 italic">Tidak ada pengingat yang cocok dengan pencarian / filter ini.</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        let badgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+        let statusText = `Sisa ${item.diffDays} Hari`;
+        let barColor = 'bg-emerald-500';
+
+        if (item.diffDays < 0) {
+          badgeClass = 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse font-extrabold';
+          statusText = `Lewat ${Math.abs(item.diffDays)} Hari!`;
+          barColor = 'bg-rose-600';
+        } else if (item.diffDays === 0) {
+          badgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-extrabold';
+          statusText = 'Jatuh Tempo Hari Ini!';
+          barColor = 'bg-rose-500';
+        } else if (item.diffDays <= 3) {
+          badgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+          statusText = `Segera! Sisa ${item.diffDays} Hari`;
+          barColor = 'bg-amber-500';
+        }
+
+        const lastPaid = new Date(item.lastPaidDate + 'T00:00:00');
+        const daysElapsed = Math.max(0, Math.round((today.getTime() - lastPaid.getTime()) / 86400000));
+        const progressPct = Math.min(100, Math.round((daysElapsed / item.validityDays) * 100));
+
+        return `
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between space-y-2.5">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <h4 class="font-bold text-slate-900 text-xs sm:text-sm truncate">${escapeHtml(item.name)}</h4>
+                  <span class="text-[10px] text-slate-400 block truncate">${item.catName}${item.subcategory ? ` • ${escapeHtml(item.subcategory)}` : ''} • Siklus ${item.validityDays} Hari</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass} shrink-0">${statusText}</span>
+              </div>
+
+              <div class="flex justify-between items-baseline mt-2 text-xs">
+                <span class="font-extrabold text-slate-900">${formatCurrency(item.amount)}</span>
+                <span class="text-[10px] text-slate-500 font-medium">Tempo: ${item.dueDate.toLocaleDateString('id-ID', { dateStyle: 'medium' })}</span>
+              </div>
+
+              <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1.5">
+                <div class="${barColor} h-full transition-all duration-300" style="width: ${progressPct}%"></div>
+              </div>
+            </div>
+
+            <!-- AKSI KARTU: TOGGLE NOTIFIKASI (LONCENG), EDIT (PENSIL), HAPUS (TONG SAMPAH), DAN BAYAR -->
+            <div class="flex items-center justify-between pt-1.5 border-t border-slate-200/60 text-xs">
+              <div class="flex items-center gap-1">
+                <!-- Tombol Lonceng Notifikasi di Luar Kartu -->
+                <button type="button" onclick="toggleRecurringNotification('${item.id}', event)" title="${item.notify ? 'Notifikasi Aktif (Klik untuk nonaktifkan)' : 'Notifikasi Nonaktif (Klik untuk aktifkan)'}" class="p-1.5 rounded-lg border transition ${
+                  item.notify 
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' 
+                    : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-100'
+                }">
+                  <i data-lucide="${item.notify ? 'bell' : 'bell-off'}" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Tombol Edit -->
+                <button type="button" onclick="openRecurringModal('${item.id}')" title="Ubah Reminder" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-emerald-700 transition">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Tombol Hapus -->
+                <button type="button" onclick="deleteRecurringBill('${item.id}')" title="Hapus Reminder" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-rose-600 transition">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+
+              <!-- Tombol Bayar -->
+              <button type="button" onclick="payRecurringBillQuick('${item.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs flex items-center gap-1">
+                <i data-lucide="check" class="w-3 h-3"></i> Bayar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // ==================== ALUR PENGINGAT CERDAS & AUTO-FILL RIWAYAT ====================
+    function openRecurringModal(editId = null) {
+      const catSelect = document.getElementById('rec-category');
+      const subSelect = document.getElementById('rec-subcategory');
+      const expenseCats = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      
+      if (catSelect) {
+        catSelect.innerHTML = `<option value="">-- Pilih Kategori --</option>` + 
+          expenseCats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      }
+
+      if (subSelect) subSelect.innerHTML = `<option value="">-- Pilih Kategori Dahulu --</option>`;
+
+      const pickerWrap = document.getElementById('rec-history-picker-wrap');
+      if (pickerWrap) pickerWrap.classList.add('hidden');
+
+      if (editId) {
+        // MODE EDIT REMINDER LAMA
+        const item = recurringBills.find(r => r.id === editId);
+        if (!item) return;
+
+        setText('rec-modal-title', 'Ubah Reminder Tagihan');
+        setVal('rec-id', item.id);
+        setVal('rec-name', item.name);
+        setVal('rec-amount', formatNumberWithDots(item.amount));
+        setVal('rec-validity-days', item.validityDays);
+        setVal('rec-last-paid', item.lastPaidDate);
+        setVal('rec-category', item.categoryId);
+
+        // Isi subkategori
+        const cat = categories.find(c => c.id === item.categoryId);
+        if (subSelect && cat) {
+          const sortedSubs = [...(cat.subcategories || [])].sort((a, b) => a.localeCompare(b, 'id'));
+          subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>` + 
+            sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+          subSelect.value = item.subcategory || '';
+        }
+
+        const notifyChk = document.getElementById('rec-notify');
+        if (notifyChk) notifyChk.checked = (item.notify !== false);
+
+        updateRecDeadlineDisplay();
+      } else {
+        // MODE TAMBAH REMINDER BARU
+        setText('rec-modal-title', 'Tambah Reminder Tagihan');
+        setVal('rec-id', '');
+        setVal('rec-name', '');
+        setVal('rec-amount', '');
+        setVal('rec-validity-days', ''); // Kosongkan
+        setVal('rec-last-paid', '');      // Kosongkan
+        setVal('rec-next-due', '');       // Kosongkan
+        updateRecDeadlineDisplay();
+
+        const notifyChk = document.getElementById('rec-notify');
+        if (notifyChk) notifyChk.checked = true;
+      }
+
+      openModal('recurring-bill-modal');
+      lucide.createIcons();
+    }
+
+    function onRecCategoryChange() {
+      const catId = document.getElementById('rec-category')?.value;
+      const subSelect = document.getElementById('rec-subcategory');
+      if (!subSelect) return;
+
+      const cat = categories.find(c => c.id === catId);
+      if (cat && cat.subcategories && cat.subcategories.length > 0) {
+        const sortedSubs = [...cat.subcategories].sort((a, b) => a.localeCompare(b, 'id'));
+        subSelect.innerHTML = `<option value="">-- Pilih Subkategori --</option>` + 
+          sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      } else {
+        subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>`;
+      }
+
+      detectHistoricalRecurringTxs();
+    }
+
+    function onRecSubcategoryChange() {
+      detectHistoricalRecurringTxs();
+    }
+
+    // =========================================================================
+    // LOGIKA PENCARIAN 1 BULAN KE BELAKANG S/D FALLBACK AWAL BULAN SEBELUMNYA
+    // =========================================================================
+    let matchedHistoricalRecurringTxs = [];
+	let detectedAutoValidityDays = null;
+	
+	function detectHistoricalRecurringTxs() {
+      const editId = document.getElementById('rec-id')?.value;
+      if (editId) return; // Mode Edit tidak menimpa data pengguna
+
+      const catId = document.getElementById('rec-category')?.value;
+      const subVal = (document.getElementById('rec-subcategory')?.value || '').trim().toLowerCase();
+      const pickerWrap = document.getElementById('rec-history-picker-wrap');
+      const optionsBox = document.getElementById('rec-history-options');
+
+      // Helper untuk mengosongkan form agar data sebelumnya tidak tertahan
+      const resetFormToBlank = () => {
+        setVal('rec-name', '');
+        setVal('rec-amount', '');
+        setVal('rec-last-paid', '');
+        setVal('rec-validity-days', '');
+        setVal('rec-next-due', '');
+        updateRecDeadlineDisplay();
+        if (pickerWrap) pickerWrap.classList.add('hidden');
+      };
+
+      if (!catId || !subVal) {
+        resetFormToBlank();
+        return;
+      }
+
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+
+      // RENTANG 1: 1 Bulan penuh ke belakang dari tanggal hari ini (contoh: 16 Okt - 16 Nov)
+      const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      const range1Start = oneMonthAgo.toISOString().split('T')[0];
+      const range1End = todayStr;
+
+      let matched = transactions.filter(t => {
+        if (t.type !== 'expense' || t.categoryId !== catId) return false;
+        if ((t.subcategory || '').trim().toLowerCase() !== subVal) return false;
+        return t.date >= range1Start && t.date <= range1End;
+      }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+
+      // RENTANG 2 (FALLBACK): Tanggal 1 s.d. H-1 bulan sebelumnya (contoh: 1 Okt - 15 Okt)
+      if (matched.length === 0) {
+        const prevMonthYear = oneMonthAgo.getFullYear();
+        const prevMonthNum = oneMonthAgo.getMonth();
+        const range2Start = `${prevMonthYear}-${String(prevMonthNum + 1).padStart(2, '0')}-01`;
+        const dayBeforeInPrevMonth = new Date(prevMonthYear, prevMonthNum, Math.max(1, now.getDate() - 1));
+        const range2End = dayBeforeInPrevMonth.toISOString().split('T')[0];
+
+        matched = transactions.filter(t => {
+          if (t.type !== 'expense' || t.categoryId !== catId) return false;
+          if ((t.subcategory || '').trim().toLowerCase() !== subVal) return false;
+          return t.date >= range2Start && t.date <= range2End;
+        }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+      }
+
+      // =========================================================================
+      // FALLBACK MASA BERLAKU HINGGA 3 BULAN KE BELAKANG
+      // =========================================================================
+      const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+      const threeMonthsStr = threeMonthsAgo.toISOString().split('T')[0];
+
+      const history3Months = transactions.filter(t => {
+        if (t.type !== 'expense' || t.categoryId !== catId) return false;
+        if ((t.subcategory || '').trim().toLowerCase() !== subVal) return false;
+        return t.date >= threeMonthsStr && t.date <= todayStr;
+      }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+
+      // Hitung selisih hari jika ada >= 2 transaksi dalam 3 bulan
+      detectedAutoValidityDays = '';
+      if (history3Months.length >= 2) {
+        let totalInterval = 0;
+        let intervalCount = 0;
+        for (let i = 0; i < history3Months.length - 1; i++) {
+          const d1 = new Date(history3Months[i].date + 'T00:00:00');
+          const d2 = new Date(history3Months[i + 1].date + 'T00:00:00');
+          const diff = Math.round(Math.abs(d1 - d2) / 86400000);
+          if (diff >= 5 && diff <= 120) {
+            totalInterval += diff;
+            intervalCount++;
+          }
+        }
+        if (intervalCount > 0) {
+          detectedAutoValidityDays = Math.round(totalInterval / intervalCount);
+        }
+      }
+
+      matchedHistoricalRecurringTxs = matched;
+
+      // 1. JIKA TIDAK DITEMUKAN TRANSAKSI: KOSONGKAN SELURUH FIELD
+      if (matched.length === 0) {
+        resetFormToBlank();
+        return;
+      }
+
+      // 2. JIKA HANYA DITEMUKAN 1 TRANSAKSI:
+      // Terapkan nilainya langsung, sembunyikan kotak pemilih riwayat
+      if (matched.length === 1) {
+        if (pickerWrap) pickerWrap.classList.add('hidden');
+        applyHistoricalRecValues(matched[0], detectedAutoValidityDays);
+        return;
+      }
+
+      // 3. JIKA DITEMUKAN LEBIH DARI 1 TRANSAKSI (> 1):
+      // Tampilkan kotak pemilih riwayat dan auto-fill transaksi teratas
+      if (matched.length > 1) {
+        applyHistoricalRecValues(matched[0], detectedAutoValidityDays);
+
+        if (pickerWrap && optionsBox) {
+          pickerWrap.classList.remove('hidden');
+          optionsBox.innerHTML = matched.map((tx, idx) => `
+            <div onclick="applyHistoricalRecFromIndex(${idx})" class="p-2 rounded-xl bg-white border border-blue-200 hover:border-blue-400 cursor-pointer transition flex items-center justify-between text-xs shadow-2xs">
+              <div>
+                <span class="font-bold text-slate-800 block">${escapeHtml(tx.note || tx.subcategory || 'Tagihan')}</span>
+                <span class="text-[10px] text-slate-400">Tgl: ${tx.date}</span>
+              </div>
+              <span class="font-extrabold text-blue-700">${formatCurrency(tx.amount)}</span>
+            </div>
+          `).join('');
+          lucide.createIcons();
+        }
+      }
+    }
+
+    function applyHistoricalRecFromIndex(idx) {
+      if (matchedHistoricalRecurringTxs && matchedHistoricalRecurringTxs[idx]) {
+        applyHistoricalRecValues(matchedHistoricalRecurringTxs[idx], detectedAutoValidityDays);
+      }
+    }
+
+    function applyHistoricalRecValues(tx, validityDays = '') {
+      const cat = categories.find(c => c.id === tx.categoryId);
+      setVal('rec-name', tx.note || tx.subcategory || cat?.name || 'Tagihan');
+      setVal('rec-amount', formatNumberWithDots(tx.amount));
+      setVal('rec-last-paid', tx.date);
+      setVal('rec-validity-days', validityDays || ''); // Jika tidak ada riwayat >1x, biarkan kosong agar diisi manual
+      updateRecDeadlineDisplay();
+    }
+
+    function saveRecurringBill(e) {
+      e.preventDefault();
+      const id = document.getElementById('rec-id')?.value;
+      const name = document.getElementById('rec-name')?.value?.trim();
+      const amount = parseDotsNumber(document.getElementById('rec-amount')?.value);
+      const validityDays = parseInt(document.getElementById('rec-validity-days')?.value) || 28;
+      const lastPaidDate = document.getElementById('rec-last-paid')?.value || new Date().toISOString().split('T')[0];
+      const categoryId = document.getElementById('rec-category')?.value;
+      const subcategory = (document.getElementById('rec-subcategory')?.value || '').trim();
+      const notify = document.getElementById('rec-notify')?.checked ?? true;
+
+      if (!name || amount <= 0 || !categoryId) return;
+
+      if (notify && 'Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+
+      if (id) {
+        // Update data yang ada (pertahankan tanggal & validity sesuai form)
+        const idx = recurringBills.findIndex(r => r.id === id);
+        if (idx !== -1) {
+          recurringBills[idx] = {
+            ...recurringBills[idx],
+            name,
+            amount,
+            validityDays,
+            lastPaidDate,
+            categoryId,
+            subcategory,
+            notify
+          };
+        }
+      } else {
+        // Buat pengingat baru
+        recurringBills.unshift({
+          id: 'rec-' + Date.now(),
+          name,
+          amount,
+          validityDays,
+          lastPaidDate,
+          categoryId,
+          subcategory,
+          notify
+        });
+      }
+
+      persistState(true);
+      closeModal('recurring-bill-modal');
+      renderRecurringBillsWidget();
+      alert('Pengingat tagihan berhasil disimpan!');
+    }
+
+    // Mendeteksi otomatis transaksi dari bulan sebelumnya / riwayat terakhir
+    function autoDetectRecurringHistory() {
+      const catId = document.getElementById('rec-category')?.value;
+      const subVal = document.getElementById('rec-subcategory')?.value || '';
+      const pickerWrap = document.getElementById('rec-history-picker-wrap');
+      const optionsBox = document.getElementById('rec-history-options');
+
+      if (!catId) {
+        if (pickerWrap) pickerWrap.classList.add('hidden');
+        return;
+      }
+
+      // Cari transaksi yang cocok di riwayat
+      matchedHistoricalRecurringTxs = transactions.filter(t => {
+        if (t.type !== 'expense' || t.categoryId !== catId) return false;
+        if (subVal && (t.subcategory || '').trim().toLowerCase() !== subVal.trim().toLowerCase()) return false;
+        return true;
+      }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+
+      if (matchedHistoricalRecurringTxs.length === 0) {
+        if (pickerWrap) pickerWrap.classList.add('hidden');
+        return;
+      }
+
+      // Hitung otomatis masa berlaku (interval hari antar transaksi terakhir)
+      let calculatedValidity = 28;
+      if (matchedHistoricalRecurringTxs.length >= 2) {
+        const d1 = new Date(matchedHistoricalRecurringTxs[0].date);
+        const d2 = new Date(matchedHistoricalRecurringTxs[1].date);
+        const diffDays = Math.round(Math.abs(d1 - d2) / 86400000);
+        if (diffDays >= 20 && diffDays <= 365) {
+          calculatedValidity = diffDays;
+        }
+      }
+
+      // Terapkan transaksi paling terakhir secara default
+      applyHistoricalRecSuggestion(0, calculatedValidity);
+
+      // Jika ada lebih dari 1 transaksi, tampilkan kotak pemilih
+      if (matchedHistoricalRecurringTxs.length > 1 && pickerWrap && optionsBox) {
+        pickerWrap.classList.remove('hidden');
+        optionsBox.innerHTML = matchedHistoricalRecurringTxs.slice(0, 4).map((tx, idx) => `
+          <div onclick="applyHistoricalRecSuggestion(${idx}, ${calculatedValidity})" class="p-2 rounded-xl bg-white border border-blue-200 hover:border-blue-400 cursor-pointer transition flex items-center justify-between text-xs">
+            <div>
+              <span class="font-bold text-slate-800 block">${escapeHtml(tx.note || tx.subcategory || 'Tagihan')}</span>
+              <span class="text-[10px] text-slate-400">${tx.date}</span>
+            </div>
+            <span class="font-extrabold text-blue-700">${formatCurrency(tx.amount)}</span>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } else if (pickerWrap) {
+        pickerWrap.classList.add('hidden');
+      }
+    }
+
+    function applyHistoricalRecSuggestion(idx, autoValidity = 28) {
+      const tx = matchedHistoricalRecurringTxs[idx];
+      if (!tx) return;
+
+      const cat = categories.find(c => c.id === tx.categoryId);
+      setVal('rec-name', tx.note || tx.subcategory || cat?.name || 'Tagihan Berulang');
+      setVal('rec-amount', formatNumberWithDots(tx.amount));
+      setVal('rec-last-paid', tx.date);
+      setVal('rec-validity-days', autoValidity);
+    }
+
+    function saveRecurringBill(e) {
+      e.preventDefault();
+      const id = document.getElementById('rec-id')?.value;
+      const name = document.getElementById('rec-name')?.value?.trim();
+      const amount = parseDotsNumber(document.getElementById('rec-amount')?.value);
+      const validityDays = parseInt(document.getElementById('rec-validity-days')?.value) || 28;
+      const lastPaidDate = document.getElementById('rec-last-paid')?.value || new Date().toISOString().split('T')[0];
+      const categoryId = document.getElementById('rec-category')?.value;
+      const notify = document.getElementById('rec-notify')?.checked ?? true;
+
+      if (!name || amount <= 0 || !categoryId) return;
+
+      // Minta izin notifikasi jika opsi dicentang
+      if (notify && 'Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+
+      recurringBills.unshift({
+        id: id || ('rec-' + Date.now()),
+        name: toSmartTitleCase(name),
+        amount,
+        validityDays,
+        lastPaidDate,
+        categoryId,
+        notify
+      });
+
+      persistState(true);
+      closeModal('recurring-bill-modal');
+      renderRecurringBillsWidget();
+      alert('Pengingat siklus tagihan berhasil disimpan!');
+    }
+
+    // ==================== PEMERIKSAAN NOTIFIKASI H-1 (HP & PC) ====================
+    function checkDueRecurringNotifications() {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString().split('T')[0];
+
+      recurringBills.forEach(item => {
+        if (!item.notify) return;
+
+        const lastPaid = new Date(item.lastPaidDate);
+        lastPaid.setHours(0, 0, 0, 0);
+        const nextDue = new Date(lastPaid.getTime() + (item.validityDays * 86400000));
+        const diffDays = Math.round((nextDue.getTime() - today.getTime()) / 86400000);
+
+        // Jika H-1 (tepat 1 hari sebelum habis)
+        if (diffDays === 1) {
+          const notifKey = `vf_notif_sent_${item.id}_${todayStr}`;
+          if (!localStorage.getItem(notifKey)) {
+            new Notification('FinTrack: Pengingat Tagihan H-1', {
+              body: `Tagihan "${item.name}" (${formatCurrency(item.amount)}) akan jatuh tempo besok!`,
+              icon: 'icon.svg'
+            });
+            localStorage.setItem(notifKey, 'true');
+          }
+        }
+      });
+    }
+
+    function deleteRecurringBill(id) {
+      if (confirm('Hapus pengingat tagihan berulang ini?')) {
+        recurringBills = recurringBills.filter(r => r.id !== id);
+        persistState(true);
+        renderRecurringBillsWidget();
+      }
+    }
+
+    function payRecurringBillQuick(id) {
+      const item = recurringBills.find(r => r.id === id);
+      if (!item) return;
+
+      // Buka modal transaksi terisi otomatis
+      openTransactionModal();
+      setVal('tx-amount', formatNumberWithDots(item.amount));
+      setVal('tx-category', item.categoryId);
+      populateSubcategoriesDropdown();
+      setVal('tx-note', `Pembayaran ${item.name}`);
+
+      // Perbarui tanggal terakhir dibayar ke hari ini
+      item.lastPaidDate = new Date().toISOString().split('T')[0];
+      persistState(true);
+      renderRecurringBillsWidget();
     }
 	
 	// ==================== FITUR COLLAPSE KATEGORI DI PENGATURAN ====================
@@ -7489,11 +9171,9 @@
       if (isSettingCategoryCollapsed) {
         body.classList.add('hidden');
         if (icon) icon.setAttribute('data-lucide', 'chevron-down');
-        if (text) text.textContent = 'Tampilkan';
       } else {
         body.classList.remove('hidden');
         if (icon) icon.setAttribute('data-lucide', 'chevron-up');
-        if (text) text.textContent = 'Sembunyikan';
       }
       lucide.createIcons();
     }
