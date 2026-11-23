@@ -670,7 +670,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- KALENDER DOT INTERAKTIF DENGAN BULAN/TAHUN & BANNER SOROTAN -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 lg:col-span-2">
+        <div id="ana-calendar-card" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 lg:col-span-2">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
@@ -771,18 +771,22 @@
         </div>
 
         <!-- PELACAK KEBIASAAN BELANJA (TOP FREQUENCY SPENDING) -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div class="border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
-              <span>Frekuensi Tertinggi (Habit)</span>
-            </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Subkategori yang paling sering menyedot uang Anda bulan ini.</p>
+        <!-- PELACAK KEBIASAAN BELANJA (TERKUNCI SEJAJAR KALENDER DI PC) -->
+        <div id="ana-habit-card" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between overflow-hidden">
+          <div id="ana-habit-header" class="shrink-0 border-b border-slate-100 pb-2.5 mb-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
+                <span>Frekuensi Tertinggi (>1x)</span>
+              </h3>
+              <span id="ana-habit-count-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">0 Subkategori</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Subkategori berulang terbanyak dalam periode ini.</p>
           </div>
 
-          <div id="ana-top-frequency-list" class="space-y-3"></div>
+          <!-- DAFTAR ITEM DENGAN KUNCI SCROLL OTOMATIS -->
+          <div id="ana-top-frequency-list" class="space-y-2 max-h-[350px] overflow-y-auto pr-1 select-none flex-1"></div>
         </div>
-
       </div>
 
       <!-- Rekapitulasi Rinci Arus Kategori (Bulanan & Tahunan) -->
@@ -2377,6 +2381,101 @@
       </div>
     </div>
   </div>
+  
+  <!-- MODAL KONFIRMASI PRATINJAU IMPOR TRANSAKSI EXCEL -->
+  <div id="import-tx-preview-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 flex flex-col max-h-[90vh]">
+      <div class="shrink-0 flex items-start justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+            <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Konfirmasi Impor Transaksi</h3>
+            <p class="text-xs text-slate-500">Periksa ringkasan dan pratinjau data sebelum disimpan.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('import-tx-preview-modal')" class="p-1 text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Ringkasan Anti-Duplikat -->
+      <div class="shrink-0 grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <span class="text-[10px] text-slate-400 block uppercase font-bold">Total Baris</span>
+          <span class="text-sm font-extrabold text-slate-800" id="preview-tx-total">0</span>
+        </div>
+        <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+          <span class="text-[10px] text-emerald-700 block uppercase font-bold">Data Baru</span>
+          <span class="text-sm font-extrabold text-emerald-700" id="preview-tx-valid">0</span>
+        </div>
+        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-xl">
+          <span class="text-[10px] text-rose-700 block uppercase font-bold">Duplikat (Lewati)</span>
+          <span class="text-sm font-extrabold text-rose-700" id="preview-tx-duplicate">0</span>
+        </div>
+      </div>
+
+      <!-- List Pratinjau Transaksi Baru -->
+      <div class="flex-1 min-h-[140px] max-h-60 overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100 text-xs border border-slate-200 rounded-2xl p-2.5 bg-slate-50/50" id="preview-tx-list"></div>
+
+      <div class="shrink-0 pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="closeModal('import-tx-preview-modal')" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+          Batal
+        </button>
+        <button type="button" onclick="executeConfirmedTxImport()" id="btn-confirm-import-tx" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl transition shadow-md shadow-emerald-600/20">
+          Impor Data Baru
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI PRATINJAU IMPOR KATEGORI EXCEL -->
+  <div id="import-cat-preview-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 flex flex-col max-h-[90vh]">
+      <div class="shrink-0 flex items-start justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+            <i data-lucide="tag" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Konfirmasi Impor Kategori</h3>
+            <p class="text-xs text-slate-500">Periksa kategori dan subkategori baru sebelum disimpan.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('import-cat-preview-modal')" class="p-1 text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="shrink-0 grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <span class="text-[10px] text-slate-400 block uppercase font-bold">Kategori Baru</span>
+          <span class="text-sm font-extrabold text-emerald-700" id="preview-cat-new">0</span>
+        </div>
+        <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-xl">
+          <span class="text-[10px] text-blue-700 block uppercase font-bold">Subkategori Baru</span>
+          <span class="text-sm font-extrabold text-blue-700" id="preview-sub-new">0</span>
+        </div>
+        <div class="p-2.5 bg-slate-100 border border-slate-200 rounded-xl">
+          <span class="text-[10px] text-slate-500 block uppercase font-bold">Duplikat (Lewati)</span>
+          <span class="text-sm font-extrabold text-slate-600" id="preview-cat-duplicate">0</span>
+        </div>
+      </div>
+
+      <!-- List Pratinjau Kategori Baru -->
+      <div class="flex-1 min-h-[140px] max-h-60 overflow-y-auto space-y-2 pr-1 text-xs border border-slate-200 rounded-2xl p-2.5 bg-slate-50/50" id="preview-cat-list"></div>
+
+      <div class="shrink-0 pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" onclick="closeModal('import-cat-preview-modal')" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+          Batal
+        </button>
+        <button type="button" onclick="executeConfirmedCatImport()" id="btn-confirm-import-cat" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl transition shadow-md shadow-emerald-600/20">
+          Impor Kategori
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- PWA NOTIFIKASI UPDATE BANNER (RESPONSIF, MODERN & DIAM) -->
   <div id="pwa-update-banner" class="fixed bottom-5 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-auto sm:max-w-md z-[120] hidden bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-md transition-all duration-300">
@@ -2404,6 +2503,7 @@
   <!-- MODAL FORMULIR PENGINGAT TAGIHAN BERULANG (IDE #2) -->
   <!-- MODAL FORMULIR REMINDER CERDAS BERBASIS RIWAYAT & NOTIFIKASI H-1 -->
   <!-- MODAL FORMULIR REMINDER CERDAS (READONLY TANGGAL & DEADLINE) -->
+  <!-- MODAL FORMULIR REMINDER CERDAS (DEADLINE BISA DIEDIT MANUAL & AUTO-UPDATE) -->
   <div id="recurring-bill-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 max-h-[92vh] flex flex-col">
       <div class="shrink-0 flex items-center justify-between border-b border-slate-100 pb-3">
@@ -2460,26 +2560,31 @@
             </div>
           </div>
 
-          <!-- MASA BERLAKU HARI (BISA DIEDIT MANUAL) -->
+          <!-- MASA BERLAKU HARI (MANUAL / OTOMATIS) -->
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Masa Berlaku Tagihan (Hari) *</label>
             <div class="flex items-center gap-2">
-              <input type="number" id="rec-validity-days" oninput="updateRecDeadlineDisplay()" required min="1" max="365" value="28" class="w-28 px-3 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center text-sm" />
-              <span class="text-xs text-slate-500">Hari sejak pembayaran terakhir</span>
+              <input type="number" id="rec-validity-days" oninput="onRecValidityDaysInput()" required min="1" max="365" placeholder="Contoh: 28" class="w-28 px-3 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center text-sm" />
+              <span class="text-xs text-slate-500">Hari (kosong jika tidak ada riwayat &gt;1x)</span>
             </div>
           </div>
 
-          <!-- TANGGAL PEMBAYARAN TERAKHIR & DEADLINE BERIKUTNYA (READONLY) -->
-          <div class="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <div>
-              <label class="font-bold text-slate-500 block mb-1 text-[11px]">Terakhir Dibayar (Readonly)</label>
-              <input type="date" id="rec-last-paid" readonly class="w-full px-2 py-1 bg-slate-200/80 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs cursor-not-allowed outline-none" />
-              <span class="text-[9px] text-slate-400 block mt-0.5">Otomatis dari transaksi</span>
-            </div>
-            <div>
-              <label class="font-bold text-emerald-800 block mb-1 text-[11px]">Deadline Berikutnya (Readonly)</label>
-              <input type="text" id="rec-next-due" readonly placeholder="Terhitung otomatis" class="w-full px-2 py-1 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-900 font-bold text-xs cursor-not-allowed outline-none" />
-              <span class="text-[9px] text-emerald-600 block mt-0.5">Jatuh tempo sistem</span>
+          <!-- TANGGAL PEMBAYARAN TERAKHIR (READONLY) & DEADLINE (BISA DIEDIT MANUAL) -->
+          <!-- TANGGAL PEMBAYARAN TERAKHIR & DEADLINE (DEADLINE HANYA MUNCUL SAAT EDIT) -->
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="rec-dates-grid">
+              <div>
+                <label class="font-bold text-slate-500 block mb-1 text-[11px]">Terakhir Dibayar</label>
+                <input type="date" id="rec-last-paid" readonly class="w-full px-2 py-1.5 bg-slate-200/80 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs cursor-not-allowed outline-none" />
+                <span class="text-[9px] text-slate-400 block mt-0.5">Otomatis dari tanggal transaksi</span>
+              </div>
+              
+              <!-- DEADLINE BERIKUTNYA: DISEMBUNYIKAN SAAT TAMBAH BARU, HANYA MUNCUL SAAT EDIT -->
+              <div id="rec-next-due-wrap" class="hidden">
+                <label class="font-bold text-emerald-800 block mb-1 text-[11px]">Deadline Berikutnya</label>
+                <input type="date" id="rec-next-due" class="w-full px-2 py-1.5 bg-white border border-emerald-300 rounded-lg text-emerald-950 font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500" />
+                <span class="text-[9px] text-emerald-600 block mt-0.5">Akhir Deadline</span>
+              </div>
             </div>
           </div>
 
@@ -3003,15 +3108,17 @@
       'budget-overrun-modal',
       'chart-drilldown-modal',
       'recurring-bill-modal',
-	  'recurring-conflict-modal'
+	  'recurring-conflict-modal',
+	  'import-tx-preview-modal',   
+      'import-cat-preview-modal'
     ];
 
     // Data Siklus Tagihan Berulang Berbasis Masa Berlaku Hari
     let recurringBills = [];
     const defaultRecurringBills = [
-      { id: 'rec-1', name: 'Paket Data Internet (28 Hari)', amount: 100000, validityDays: 28, lastPaidDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2' },
-      { id: 'rec-2', name: 'Langganan Wi-Fi Rumah', amount: 350000, validityDays: 30, lastPaidDate: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2' },
-      { id: 'rec-3', name: 'Langganan Streaming Musik', amount: 55000, validityDays: 30, lastPaidDate: new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0], categoryId: 'cat-4' }
+      { id: 'rec-1', name: 'Paket Data Telkomsel', amount: 100000, validityDays: 28, lastPaidDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2', subcategory: 'Internet WiFi', notify: true },
+      { id: 'rec-2', name: 'Langganan Wi-Fi Rumah', amount: 350000, validityDays: 30, lastPaidDate: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2', subcategory: 'Internet WiFi', notify: true },
+      { id: 'rec-3', name: 'Langganan Streaming Musik', amount: 55000, validityDays: 30, lastPaidDate: new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0], categoryId: 'cat-4', subcategory: 'Langganan Streaming', notify: true }
     ];
 
     let navStack = ['dashboard'];
@@ -3101,6 +3208,18 @@
         recurringBills = JSON.parse(localStorage.getItem('vf_recurring_bills')) || defaultRecurringBills;
       } catch(e) { recurringBills = defaultRecurringBills; }
       if (!Array.isArray(recurringBills)) recurringBills = JSON.parse(JSON.stringify(defaultRecurringBills));
+      
+      // Kunci setiap reminder agar memiliki ID unik dan subkategori tidak undefined
+      recurringBills.forEach((r, idx) => {
+        if (!r.id || r.id === 'undefined') r.id = 'rec-' + Date.now() + '-' + idx;
+        if (!r.subcategory) {
+          const cat = categories.find(c => c.id === r.categoryId);
+          r.subcategory = (cat && cat.subcategories && cat.subcategories.length > 0) ? cat.subcategories[0] : '';
+        }
+        if (!r.validityDays) r.validityDays = 28;
+        if (!r.lastPaidDate) r.lastPaidDate = new Date().toISOString().split('T')[0];
+        if (r.notify === undefined) r.notify = true;
+      });
     }
 
     sanitizeState();
@@ -4171,6 +4290,7 @@
 	
 	// ==================== INTERACTIVE CHART DRILL-DOWN ====================
     let isDrillDownFilter = false;
+	let drillDownSpecificDate = null;
 
     function drillDownToTransactions(params) {
       isDrillDownFilter = true;
@@ -4180,11 +4300,15 @@
       const monthWrapper = document.getElementById('month-selector-wrapper');
       if (monthWrapper) monthWrapper.classList.remove('opacity-40', 'pointer-events-none');
 
-      // Set tanggal atau bulan
-      if (params.month) {
-        setVal('filter-month', params.month);
-      } else if (params.date) {
+      // 1. Simpan tanggal spesifik jika dipicu dari Kalender
+      if (params.date) {
+        drillDownSpecificDate = params.date;
         setVal('filter-month', params.date.substring(0, 7));
+      } else {
+        drillDownSpecificDate = null;
+        if (params.month) {
+          setVal('filter-month', params.month);
+        }
       }
 
       setVal('filter-search', '');
@@ -4194,7 +4318,6 @@
       const labelClass = document.getElementById('label-filter-expense-class');
       if (labelClass) labelClass.textContent = 'Semua Klasifikasi';
 
-      // Set Tipe
       const targetType = params.type || 'ALL';
       setVal('filter-type', targetType);
       const typeOpt = (searchableFilterData['filter-type'] || []).find(o => o.value === targetType);
@@ -4203,7 +4326,6 @@
 
       updateDynamicTransactionFilters();
 
-      // Set Kategori
       const targetCat = params.category || 'ALL';
       setVal('filter-category', targetCat);
       const curCatOpt = (searchableFilterData['filter-category'] || []).find(o => o.value === targetCat) 
@@ -4213,7 +4335,6 @@
 
       onFilterCategoryChange();
 
-      // Set Subkategori (jika yang diklik adalah garis subkategori)
       if (params.subcategory && params.subcategory !== 'ALL') {
         setVal('filter-subcategory', params.subcategory);
         const curSubOpt = (searchableFilterData['filter-subcategory'] || []).find(o => o.value === params.subcategory) 
@@ -4228,14 +4349,20 @@
 
       allTimeCurrentPage = 1;
 
+      // Banner pemberitahuan filter khusus
       const banner = document.getElementById('drilldown-banner');
       const desc = document.getElementById('drilldown-desc');
       if (banner && desc) {
-        let text = params.subcategory || (params.category !== 'ALL' ? params.category : '');
-        if (params.type && params.type !== 'ALL') text += (text ? ' (' : '') + (params.type === 'income' ? 'Pemasukan' : 'Pengeluaran') + (text ? ')' : '');
-        if (params.date) text += ' • ' + params.date;
-        else if (params.month) text += ' • ' + params.month;
-        desc.textContent = text || 'Rincian Grafik';
+        let text = '';
+        if (drillDownSpecificDate) {
+          const dObj = new Date(drillDownSpecificDate + 'T00:00:00');
+          text = `Tanggal: ${dObj.toLocaleDateString('id-ID', { dateStyle: 'full' })}`;
+        } else {
+          text = params.subcategory || (params.category !== 'ALL' ? params.category : '');
+          if (params.type && params.type !== 'ALL') text += (text ? ' (' : '') + (params.type === 'income' ? 'Pemasukan' : 'Pengeluaran') + (text ? ')' : '');
+          if (params.month) text += ' • ' + params.month;
+        }
+        desc.textContent = text || 'Rincian Khusus';
         banner.classList.remove('hidden');
       }
 
@@ -4245,12 +4372,11 @@
     function resetDrillDownFilter() {
       if (!isDrillDownFilter) return;
       isDrillDownFilter = false;
+      drillDownSpecificDate = null; // Reset tanggal khusus
 
-      // Sembunyikan banner penanda drill-down
       const banner = document.getElementById('drilldown-banner');
       if (banner) banner.classList.add('hidden');
 
-      // Kembalikan filter transaksi ke bulan aktif di Dashboard
       const defaultMonth = dashboardSelectedMonth || `${curYear}-${curMonth}`;
       setVal('filter-month', defaultMonth);
 
@@ -4259,7 +4385,6 @@
       const monthWrapper = document.getElementById('month-selector-wrapper');
       if (monthWrapper) monthWrapper.classList.remove('opacity-40', 'pointer-events-none');
 
-      // Reset semua filter ke kondisi default bersih
       resetTransactionFilters();
     }
 
@@ -4556,12 +4681,11 @@
     }
 
     function toggleNoteExpand(txId) {
-      const prev = document.getElementById(`note-prev-${txId}`);
-      const full = document.getElementById(`note-full-${txId}`);
-      if (prev && full) {
-        prev.classList.toggle('hidden');
-        full.classList.toggle('hidden');
-      }
+      // Gunakan querySelectorAll pada kelas agar kedua tampilan (Desktop & HP) merespons seketika
+      const prevElements = document.querySelectorAll(`.note-prev-${txId}`);
+      const fullElements = document.querySelectorAll(`.note-full-${txId}`);
+      prevElements.forEach(el => el.classList.toggle('hidden'));
+      fullElements.forEach(el => el.classList.toggle('hidden'));
     }
 
     function toggleMobileIoMenu() {
@@ -4584,7 +4708,11 @@
       const targetAmount = (amountValRaw && amountValRaw.trim() !== '') ? Math.abs(parseDotsNumber(amountValRaw)) : null;
 	  
       const filtered = transactions.filter(tx => {
-        if (!isAllTime && selectedMonth && tx.date && !tx.date.startsWith(selectedMonth)) return false;
+        if (drillDownSpecificDate) {
+          if (tx.date !== drillDownSpecificDate) return false;
+        } else {
+          if (!isAllTime && selectedMonth && tx.date && !tx.date.startsWith(selectedMonth)) return false;
+        }
         if (accFilter !== 'ALL' && tx.accountId !== accFilter && tx.toAccountId !== accFilter) return false;
 
         if (catFilter !== 'ALL') {
@@ -4811,15 +4939,16 @@
           if (!isLongNote) {
             noteHtml = `<div class="whitespace-pre-line text-xs text-slate-700">${escapeHtml(rawNote)}</div>`;
           } else {
+            // Gunakan kelas CSS khusus per ID transaksi agar tombol di HP dan PC 100% responsif
             noteHtml = `
               <div class="text-xs">
-                <div id="note-prev-${tx.id}" class="text-slate-700">
+                <div class="note-prev-${tx.id} text-slate-700">
                   <span>${firstLineNote}</span>
                   <button type="button" onclick="toggleNoteExpand('${tx.id}')" class="ml-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-800 underline">
                     Lihat
                   </button>
                 </div>
-                <div id="note-full-${tx.id}" class="hidden whitespace-pre-line text-slate-800 bg-slate-50 p-2 rounded-lg border border-slate-200 mt-1 shadow-sm leading-relaxed">
+                <div class="note-full-${tx.id} hidden whitespace-pre-line text-slate-800 bg-slate-50 p-2 rounded-lg border border-slate-200 mt-1 shadow-sm leading-relaxed">
                   ${formattedFullNote}
                   <div class="mt-1">
                     <button type="button" onclick="toggleNoteExpand('${tx.id}')" class="text-[10px] font-bold text-rose-600 hover:text-rose-800 underline">
@@ -5131,14 +5260,15 @@
       );
 
       if (matchedBills.length === 1) {
-        // KASUS A: HANYA ADA 1 REMINDER COCOK -> LANGSUNG PERBARUI OTOMATIS
+        // HANYA 1 REMINDER COCOK: UPDATE OTOMATIS
         const bill = matchedBills[0];
-        bill.lastPaidDate = txDate; // Perbarui tanggal pembayaran terakhir ke tanggal transaksi
-        // Masa berlaku (validityDays) TETAP SAMA dengan pengaturan awal
+        bill.lastPaidDate = txDate;
+        // Hitung ulang deadline otomatis (menimpa editan manual lama sesuai pembayaran baru)
+        bill.customDueDate = calcDueDateStr(txDate, bill.validityDays);
         persistState(true);
         renderRecurringBillsWidget();
       } else if (matchedBills.length > 1) {
-        // KASUS B: ADA >= 2 REMINDER COCOK -> BUKA POP-UP PILIHAN BERDASARKAN DEADLINE TERDEKAT
+        // >= 2 REMINDER COCOK: BUKA POP-UP KONFIRMASI DENGAN PRIORITAS DEADLINE TERDEKAT
         promptSelectRecurringToUpdate(matchedBills, txDate);
       }
     }
@@ -5186,9 +5316,10 @@
     }
 
     function executeSingleRecurringUpdate(recId, newTxDate) {
-      const bill = recurringBills.find(r => r.id === recId);
+      const bill = recurringBills.find(r => String(r.id) === String(recId));
       if (bill) {
         bill.lastPaidDate = newTxDate;
+        bill.customDueDate = calcDueDateStr(newTxDate, bill.validityDays);
         persistState(true);
         renderRecurringBillsWidget();
       }
@@ -6082,6 +6213,8 @@
           </div>
         `;
       }).join('');
+	  
+	  setTimeout(syncHabitTrackerHeight, 50);
     }
 	
 	// ==================== BUKA POP-UP RINCIAN HARIAN SAAT TANGGAL KALENDER DIKLIK ====================
@@ -6111,8 +6244,42 @@
       lucide.createIcons();
     }
 
-    function renderAnalysisHabitTracker(periodTxs) {
+    // ==================== PELACAK KEBIASAAN FREKUENSI (> 1x, PAS 4 ITEM DENGAN SCROLL) ====================
+    // ==================== KUNCI TINGGI OTOMATIS SEJAJAR DENGAN KALENDER ====================
+    function syncHabitTrackerHeight() {
+      const calCard = document.getElementById('ana-calendar-card');
+      const habitCard = document.getElementById('ana-habit-card');
+      const habitList = document.getElementById('ana-top-frequency-list');
+      const habitHeader = document.getElementById('ana-habit-header');
+
+      if (!calCard || !habitList || !habitCard) return;
+
+      // Pada layar PC / Desktop (lebar >= 1024px)
+      if (window.innerWidth >= 1024) {
+        // 1. Ambil tinggi riil kartu kalender di sebelah kiri
+        const calHeight = calCard.offsetHeight;
+        const headerHeight = habitHeader ? habitHeader.offsetHeight : 65;
+
+        // 2. Kunci tinggi maksimal daftar agar tidak melebihi kalender (dikurangi header & padding 48px)
+        const availableHeight = Math.max(180, calHeight - headerHeight - 60);
+
+        habitCard.style.height = calHeight + 'px';
+        habitList.style.maxHeight = availableHeight + 'px';
+        habitList.style.height = 'auto';
+      } else {
+        // Pada layar HP / Mobile: kembalikan ke tinggi ringkas bawaan
+        habitCard.style.height = 'auto';
+        habitList.style.maxHeight = '350px';
+        habitList.style.height = 'auto';
+      }
+    }
+
+    // Pasang listener resize agar saat ukuran jendela browser diubah, tinggi langsung menyesuaikan
+    window.addEventListener('resize', syncHabitTrackerHeight);
+	
+	function renderAnalysisHabitTracker(periodTxs) {
       const container = document.getElementById('ana-top-frequency-list');
+      const badgeCount = document.getElementById('ana-habit-count-badge');
       if (!container) return;
 
       const subcatStats = {};
@@ -6125,9 +6292,9 @@
         subcatStats[sub].total += (parseFloat(t.amount) || 0);
       });
 
-      // 1. SYARAT WAJIB: FREKUENSI HARUS LEBIH DARI 1x (count > 1)
+      // Filter hanya yang frekuensinya lebih dari 1x (> 1)
       const sorted = Object.keys(subcatStats)
-        .filter(sub => subcatStats[sub].count > 1) // Hanya yang > 1x transaksi
+        .filter(sub => subcatStats[sub].count > 1)
         .map(sub => ({
           name: sub,
           count: subcatStats[sub].count,
@@ -6136,17 +6303,17 @@
         }))
         .sort((a, b) => b.count - a.count || b.total - a.total);
 
+      if (badgeCount) {
+        badgeCount.textContent = `${sorted.length} Subkategori`;
+      }
+
       if (sorted.length === 0) {
-        container.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs italic">Belum ada pengeluaran berulang (&gt; 1x) bersubkategori di periode ini.</div>`;
+        container.innerHTML = `<div class="py-12 text-center text-slate-400 text-xs italic">Belum ada pengeluaran berulang (&gt; 1x) bersubkategori di periode ini.</div>`;
         return;
       }
 
-      // 2. DEFAULT 5 ITEM TERATAS, ATAU SEMUA JIKA DI-EXPAND
-      const initialLimit = 5;
-      const displayedItems = isHabitTrackerExpanded ? sorted : sorted.slice(0, initialLimit);
-      const remainingCount = sorted.length - initialLimit;
-
-      let itemsHtml = displayedItems.map((item, idx) => {
+      // Tampilkan seluruh item dalam scrollable container (tertampil nyaman 4 item sekaligus)
+      container.innerHTML = sorted.map((item, idx) => {
         const isSelected = (activeHighlightedHabitItem && activeHighlightedHabitItem.toLowerCase() === item.name.toLowerCase());
 
         return `
@@ -6154,7 +6321,7 @@
             isSelected 
               ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-500 shadow-sm' 
               : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100 hover:border-slate-300'
-          } space-y-1.5">
+          } space-y-1">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold ${isSelected ? 'text-amber-950 font-black' : 'text-slate-800'} flex items-center gap-1.5 truncate">
                 <span>#${idx + 1} ${escapeHtml(item.name)}</span>
@@ -6175,21 +6342,9 @@
           </div>
         `;
       }).join('');
-
-      // 3. TOMBOL EXPAND / COLLAPSE JIKA JUMLAH ITEM LEBIH DARI 5
-      if (sorted.length > initialLimit) {
-        itemsHtml += `
-          <div class="pt-1 border-t border-slate-100">
-            <button type="button" onclick="toggleHabitTrackerExpand()" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-2xs">
-              <span>${isHabitTrackerExpanded ? 'Tampilkan Lebih Sedikit (Top 5)' : `Lihat ${remainingCount} Subkategori Lainnya`}</span>
-              <i data-lucide="${isHabitTrackerExpanded ? 'chevron-up' : 'chevron-down'}" class="w-4 h-4 text-slate-500"></i>
-            </button>
-          </div>
-        `;
-      }
-
-      container.innerHTML = itemsHtml;
       lucide.createIcons();
+	  
+	  setTimeout(syncHabitTrackerHeight, 50);
     }
 
     // ==================== EKSPOR & IMPOR DATA ====================
@@ -6504,6 +6659,9 @@
       openExportModal('pdf');
     }
 
+    // ==================== 1. IMPOR TRANSAKSI: ANTI-DUPLIKAT & PRATINJAU ====================
+    let pendingTxImportList = [];
+
     function importFromExcel(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -6513,83 +6671,177 @@
         try {
           const data = new Uint8Array(evt.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
-          let importedCount = 0;
+          let rawRows = [];
 
           workbook.SheetNames.forEach(sheetName => {
             const worksheet = workbook.Sheets[sheetName];
             const rows = XLSX.utils.sheet_to_json(worksheet);
-
-            rows.forEach(r => {
-              const rawAmount = r['Nominal (IDR)'] || r.Nominal || r.Amount;
-              const rawDate = r['Tanggal'] || r.Date;
-              if (rawAmount && rawDate) {
-                const accName = r['Sumber Rekening'] || r.Account || '';
-                let acc = accounts.find(a => a.name.toLowerCase() === String(accName).toLowerCase());
-                if (!acc) acc = accounts[0];
-
-                const rawType = String(r['Tipe'] || r.Type || '').toLowerCase();
-                let type = 'expense';
-                let toAccountId = null;
-
-                if (rawType.includes('transfer')) {
-                  type = 'transfer';
-                  if (String(accName).includes('->')) {
-                    const parts = String(accName).split('->').map(s => s.trim());
-                    const fromA = accounts.find(a => a.name.toLowerCase() === parts[0].toLowerCase());
-                    const toA = accounts.find(a => a.name.toLowerCase() === parts[1].toLowerCase());
-                    if (fromA) acc = fromA;
-                    if (toA) toAccountId = toA.id;
-                  }
-                  if (!toAccountId) toAccountId = accounts.find(a => a.id !== acc.id)?.id || acc.id;
-                } else if (rawType.includes('masuk') || rawType.includes('income')) {
-                  type = 'income';
-                }
-
-                const catName = r['Kategori'] || r.Category || 'Lain-lain';
-                let catId = '';
-                if (type !== 'transfer') {
-                  let cat = categories.find(c => c.name.toLowerCase() === String(catName).toLowerCase() && c.type === type);
-                  if (!cat) {
-                    cat = { 
-                      id: 'cat-' + Date.now() + Math.random().toString().slice(2, 6), 
-                      name: catName, 
-                      type, 
-                      expenseClass: (type === 'income' ? 'fixed' : 'dynamic'), 
-                      subcategories: [] 
-                    };
-                    categories.push(cat);
-                  }
-                  catId = cat.id;
-                }
-
-                const rawFee = r['Biaya Admin (IDR)'] || r['Biaya Admin'] || r.AdminFee || 0;
-                const adminFee = Math.abs(parseFloat(rawFee)) || 0;
-
-                transactions.unshift({
-                  id: 'tx-' + Date.now() + Math.random(),
-                  date: String(rawDate).substring(0, 10),
-                  type,
-                  accountId: acc.id,
-                  toAccountId: toAccountId,
-                  categoryId: catId,
-                  subcategory: r['Subkategori'] || r.Subcategory || '',
-                  amount: Math.abs(parseFloat(rawAmount)) || 0,
-                  adminFee: adminFee,
-                  note: String(r['Catatan'] || r.Description || '')
-                });
-                importedCount++;
-              }
-            });
+            rawRows = rawRows.concat(rows);
           });
 
-          persistState(true);
-          renderAll();
-          alert(`Berhasil mengimpor ${importedCount} transaksi dari ${workbook.SheetNames.length} lembar kerja.`);
+          if (rawRows.length === 0) {
+            alert('File Excel kosong atau tidak memiliki data.');
+            return;
+          }
+
+          const newRows = [];
+          let duplicateCount = 0;
+          const seenInImport = new Set();
+
+          rawRows.forEach(r => {
+            const rawAmount = r['Nominal (IDR)'] || r.Nominal || r.Amount;
+            const rawDate = r['Tanggal'] || r.Date;
+
+            if (rawAmount && rawDate) {
+              const dateStr = String(rawDate).substring(0, 10);
+              const amount = Math.abs(parseFloat(rawAmount)) || 0;
+              const rawFee = r['Biaya Admin (IDR)'] || r['Biaya Admin'] || r.AdminFee || 0;
+              const adminFee = Math.abs(parseFloat(rawFee)) || 0;
+              const rawType = String(r['Tipe'] || r.Type || '').toLowerCase();
+              let type = 'expense';
+              let toAccountId = null;
+
+              const accName = r['Sumber Rekening'] || r.Account || '';
+              let acc = accounts.find(a => a.name.toLowerCase() === String(accName).toLowerCase());
+              if (!acc) acc = accounts[0];
+
+              if (rawType.includes('transfer')) {
+                type = 'transfer';
+                if (String(accName).includes('->')) {
+                  const parts = String(accName).split('->').map(s => s.trim());
+                  const fromA = accounts.find(a => a.name.toLowerCase() === parts[0].toLowerCase());
+                  const toA = accounts.find(a => a.name.toLowerCase() === parts[1].toLowerCase());
+                  if (fromA) acc = fromA;
+                  if (toA) toAccountId = toA.id;
+                }
+                if (!toAccountId) toAccountId = accounts.find(a => a.id !== acc.id)?.id || acc.id;
+              } else if (rawType.includes('masuk') || rawType.includes('income')) {
+                type = 'income';
+              }
+
+              const catName = r['Kategori'] || r.Category || 'Lain-lain';
+              let catId = '';
+              if (type !== 'transfer') {
+                let cat = categories.find(c => c.name.toLowerCase() === String(catName).toLowerCase() && c.type === type);
+                if (!cat) {
+                  cat = { 
+                    id: 'cat-' + Date.now() + Math.random().toString().slice(2, 6), 
+                    name: catName, 
+                    type, 
+                    expenseClass: (type === 'income' ? 'fixed' : 'dynamic'), 
+                    subcategories: [] 
+                  };
+                  categories.push(cat);
+                }
+                catId = cat.id;
+              }
+
+              const subcategory = r['Subkategori'] || r.Subcategory || '';
+              const note = String(r['Catatan'] || r.Description || '');
+
+              // ==================== CEK DUPLIKAT TERHADAP DATABASE LOKAL ====================
+              const isDuplicateLocal = transactions.some(t => 
+                t.date === dateStr &&
+                Math.abs(t.amount - amount) < 0.01 &&
+                t.type === type &&
+                t.accountId === acc.id &&
+                (t.note || '').trim().toLowerCase() === note.trim().toLowerCase() &&
+                (t.subcategory || '').trim().toLowerCase() === subcategory.trim().toLowerCase()
+              );
+
+              // Cek duplikat di dalam file Excel itu sendiri
+              const txFingerprint = `${dateStr}_${amount}_${type}_${acc.id}_${note}_${subcategory}`;
+              const isDuplicateInFile = seenInImport.has(txFingerprint);
+
+              if (isDuplicateLocal || isDuplicateInFile) {
+                duplicateCount++;
+              } else {
+                seenInImport.add(txFingerprint);
+                newRows.push({
+                  id: 'tx-' + Date.now() + Math.random().toString().slice(2, 6),
+                  date: dateStr,
+                  type,
+                  accountId: acc.id,
+                  toAccountId,
+                  categoryId: catId,
+                  subcategory,
+                  amount,
+                  adminFee,
+                  note,
+                  accName: acc.name,
+                  catName
+                });
+              }
+            }
+          });
+
+          // Simpan data yang lolos verifikasi dan buka modal pratinjau konfirmasi
+          pendingTxImportList = newRows;
+
+          setText('preview-tx-total', rawRows.length);
+          setText('preview-tx-valid', newRows.length);
+          setText('preview-tx-duplicate', duplicateCount);
+
+          const listEl = document.getElementById('preview-tx-list');
+          if (listEl) {
+            if (newRows.length === 0) {
+              listEl.innerHTML = `<div class="py-8 text-center text-slate-400 italic">Semua transaksi di file Excel ini sudah ada (duplikat) dan akan dilewati.</div>`;
+              document.getElementById('btn-confirm-import-tx').disabled = true;
+            } else {
+              document.getElementById('btn-confirm-import-tx').disabled = false;
+              listEl.innerHTML = newRows.slice(0, 50).map(t => `
+                <div class="pt-2 pb-1 flex items-start justify-between gap-2">
+                  <div class="space-y-0.5 truncate">
+                    <span class="font-bold text-slate-800 block truncate">${escapeHtml(t.note || t.catName)}</span>
+                    <span class="text-[10px] text-slate-400">${t.date} • ${escapeHtml(t.accName)} ${t.subcategory ? `• ${escapeHtml(t.subcategory)}` : ''}</span>
+                  </div>
+                  <span class="font-bold text-xs ${t.type === 'expense' ? 'text-rose-600' : (t.type === 'transfer' ? 'text-blue-600' : 'text-emerald-600')} shrink-0">
+                    ${formatCurrency(t.amount)}
+                  </span>
+                </div>
+              `).join('') + (newRows.length > 50 ? `<div class="text-center text-[10px] text-slate-400 pt-1">... dan ${newRows.length - 50} data baru lainnya.</div>` : '');
+            }
+          }
+
+          openModal('import-tx-preview-modal');
+          lucide.createIcons();
         } catch (err) {
           alert('Gagal memproses file Excel. Pastikan format kolom sesuai.');
         }
+        e.target.value = '';
       };
       reader.readAsArrayBuffer(file);
+    }
+	
+	function executeConfirmedTxImport() {
+      if (!pendingTxImportList || pendingTxImportList.length === 0) {
+        closeModal('import-tx-preview-modal');
+        return;
+      }
+
+      // Masukkan hanya transaksi baru yang lolos sortir duplikat
+      pendingTxImportList.forEach(t => {
+        transactions.unshift({
+          id: t.id,
+          date: t.date,
+          type: t.type,
+          accountId: t.accountId,
+          toAccountId: t.toAccountId,
+          categoryId: t.categoryId,
+          subcategory: t.subcategory,
+          amount: t.amount,
+          adminFee: t.adminFee,
+          note: t.note
+        });
+      });
+
+      const count = pendingTxImportList.length;
+      pendingTxImportList = [];
+
+      persistState(true);
+      renderAll();
+      closeModal('import-tx-preview-modal');
+      alert(`Berhasil mengimpor ${count} transaksi baru. Seluruh data duplikat berhasil dilewati!`);
     }
 
     function exportCategoriesToExcel() {
@@ -6618,6 +6870,9 @@
       XLSX.writeFile(workbook, `Kategori_Keuangan_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
+    // ==================== 2. IMPOR KATEGORI: ANTI-DUPLIKAT & PRATINJAU ====================
+    let pendingCatImportPlan = { newCategories: [], newSubcategories: [], duplicateCount: 0 };
+
     function importCategoriesFromExcel(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -6629,7 +6884,15 @@
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(firstSheet);
-          let count = 0;
+
+          if (rows.length === 0) {
+            alert('File Excel kategori kosong.');
+            return;
+          }
+
+          const newCategories = [];
+          const newSubcategories = [];
+          let duplicateCount = 0;
 
           rows.forEach(r => {
             const name = (r['Nama Kategori'] || r.Kategori || r.Category || '').toString().trim();
@@ -6647,38 +6910,107 @@
 
               let existing = categories.find(c => 
                 c.name.toLowerCase() === name.toLowerCase() &&
-                c.type.toLowerCase() === type.toLowerCase() &&
-                (c.expenseClass || 'dynamic').toLowerCase() === expenseClass.toLowerCase()
+                c.type.toLowerCase() === type.toLowerCase()
               );
 
               if (existing) {
+                let addedSubCount = 0;
                 subList.forEach(sub => {
-                  if (!existing.subcategories.includes(sub)) existing.subcategories.push(sub);
+                  if (!existing.subcategories.some(s => s.toLowerCase() === sub.toLowerCase())) {
+                    newSubcategories.push({ catName: existing.name, subName: sub });
+                    addedSubCount++;
+                  } else {
+                    duplicateCount++;
+                  }
                 });
-                existing.subcategories.sort((a, b) => a.localeCompare(b, 'id'));
+                if (subList.length === 0 || addedSubCount === 0) {
+                  duplicateCount++;
+                }
               } else {
-                subList.sort((a, b) => a.localeCompare(b, 'id'));
-                categories.push({
-                  id: 'cat-' + Date.now() + Math.random().toString().slice(2, 6),
+                newCategories.push({
                   name,
                   type,
                   expenseClass,
                   subcategories: subList
                 });
-                count++;
               }
             }
           });
 
-          persistState(true);
-          renderAll();
-          alert(`Berhasil memproses file Excel! ${count} kategori baru berhasil ditambahkan.`);
+          pendingCatImportPlan = { newCategories, newSubcategories, duplicateCount };
+
+          setText('preview-cat-new', newCategories.length);
+          setText('preview-sub-new', newSubcategories.length);
+          setText('preview-cat-duplicate', duplicateCount);
+
+          const listEl = document.getElementById('preview-cat-list');
+          if (listEl) {
+            if (newCategories.length === 0 && newSubcategories.length === 0) {
+              listEl.innerHTML = `<div class="py-8 text-center text-slate-400 italic">Semua kategori & subkategori di file ini sudah terdaftar. Tidak ada penambahan.</div>`;
+              document.getElementById('btn-confirm-import-cat').disabled = true;
+            } else {
+              document.getElementById('btn-confirm-import-cat').disabled = false;
+              let html = '';
+              newCategories.forEach(c => {
+                html += `
+                  <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span class="font-bold text-emerald-950 block">+ Kategori Baru: ${escapeHtml(c.name)} (${c.type === 'income' ? 'Pemasukan' : 'Pengeluaran'})</span>
+                    <span class="text-[10px] text-emerald-700">${c.subcategories.length > 0 ? `Sub: ${c.subcategories.join(', ')}` : 'Tanpa subkategori awal'}</span>
+                  </div>
+                `;
+              });
+              newSubcategories.forEach(s => {
+                html += `
+                  <div class="p-2 rounded-xl bg-blue-50 border border-blue-200">
+                    <span class="font-bold text-blue-950 block">+ Subkategori Baru: ${escapeHtml(s.subName)}</span>
+                    <span class="text-[10px] text-blue-700">Ditambahkan ke kategori: ${escapeHtml(s.catName)}</span>
+                  </div>
+                `;
+              });
+              listEl.innerHTML = html;
+            }
+          }
+
+          openModal('import-cat-preview-modal');
+          lucide.createIcons();
         } catch (err) {
-          alert('Gagal membaca file Excel kategori. Pastikan kolom sesuai format: Nama Kategori, Tipe, Klasifikasi Arus, Subkategori.');
+          alert('Gagal membaca file Excel kategori.');
         }
         e.target.value = '';
       };
       reader.readAsArrayBuffer(file);
+    }
+	
+	function executeConfirmedCatImport() {
+      const { newCategories, newSubcategories } = pendingCatImportPlan;
+
+      // 1. Tambah kategori baru
+      newCategories.forEach(c => {
+        categories.push({
+          id: 'cat-' + Date.now() + Math.random().toString().slice(2, 6),
+          name: toSmartTitleCase(c.name),
+          type: c.type,
+          expenseClass: c.expenseClass,
+          subcategories: c.subcategories.map(s => toSmartTitleCase(s)).sort((a, b) => a.localeCompare(b, 'id'))
+        });
+      });
+
+      // 2. Tambah subkategori baru ke kategori yang sudah ada
+      newSubcategories.forEach(s => {
+        const cat = categories.find(c => c.name.toLowerCase() === s.catName.toLowerCase());
+        if (cat) {
+          cat.subcategories.push(toSmartTitleCase(s.subName));
+          cat.subcategories.sort((a, b) => a.localeCompare(b, 'id'));
+        }
+      });
+
+      const totalAdded = newCategories.length + newSubcategories.length;
+      pendingCatImportPlan = { newCategories: [], newSubcategories: [], duplicateCount: 0 };
+
+      persistState(true);
+      renderAll();
+      closeModal('import-cat-preview-modal');
+      alert(`Berhasil mengimpor! ${totalAdded} item baru berhasil ditambahkan.`);
     }
 
     // ==================== ANGGARAN & HISTORIS ====================
@@ -8547,6 +8879,24 @@
       return d;
     }
 
+    // Format tanggal jatuh tempo ke format YYYY-MM-DD
+    function calcDueDateStr(lastPaidDateStr, validityDays) {
+      const d = calcDueDate(lastPaidDateStr, validityDays);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function onRecValidityDaysInput() {
+      const lastPaid = document.getElementById('rec-last-paid')?.value;
+      const days = parseInt(document.getElementById('rec-validity-days')?.value);
+      const dueInput = document.getElementById('rec-next-due');
+      if (dueInput && lastPaid && !isNaN(days) && days > 0) {
+        dueInput.value = calcDueDateStr(lastPaid, days);
+      }
+    }
+
     function updateRecDeadlineDisplay() {
       const lastPaid = document.getElementById('rec-last-paid')?.value;
       const daysVal = document.getElementById('rec-validity-days')?.value;
@@ -8594,7 +8944,7 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // 1. Filter Pencarian
+      // Filter Pencarian Teks
       const searchInput = document.getElementById('rec-search-input');
       const searchQuery = (searchInput?.value || '').trim().toLowerCase();
       const clearBtn = document.getElementById('rec-search-clear');
@@ -8603,19 +8953,22 @@
         else clearBtn.classList.add('hidden');
       }
 
-      // 2. Filter Status Tempo
+      // Filter Status & Sort
       const filterStatus = document.getElementById('rec-filter-status')?.value || 'ALL';
       const sortOption = document.getElementById('rec-sort')?.value || 'due-asc';
 
       let items = recurringBills.map(item => {
-        const dueDate = calcDueDate(item.lastPaidDate, item.validityDays);
+        // Gunakan customDueDate jika user pernah menyetel manual, atau hitung otomatis
+        const dueDateStr = item.customDueDate || calcDueDateStr(item.lastPaidDate, item.validityDays);
+        const p = dueDateStr.split('-').map(Number);
+        const dueDate = new Date(p[0], p[1] - 1, p[2]);
         dueDate.setHours(0, 0, 0, 0);
+
         const diffDays = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
         const catName = categories.find(c => c.id === item.categoryId)?.name || 'Kategori';
-        return { ...item, dueDate, diffDays, catName };
+        return { ...item, dueDate, dueDateStr, diffDays, catName };
       });
 
-      // Filter Pencarian Teks
       if (searchQuery) {
         items = items.filter(it => 
           it.name.toLowerCase().includes(searchQuery) ||
@@ -8624,13 +8977,11 @@
         );
       }
 
-      // Filter Status
       if (filterStatus === 'overdue') items = items.filter(it => it.diffDays < 0);
       else if (filterStatus === 'today') items = items.filter(it => it.diffDays === 0);
       else if (filterStatus === 'soon') items = items.filter(it => it.diffDays > 0 && it.diffDays <= 3);
       else if (filterStatus === 'safe') items = items.filter(it => it.diffDays > 3);
 
-      // Pengurutan (Sort)
       if (sortOption === 'due-asc') items.sort((a, b) => a.diffDays - b.diffDays);
       else if (sortOption === 'name-asc') items.sort((a, b) => a.name.localeCompare(b.name, 'id'));
       else if (sortOption === 'amount-desc') items.sort((a, b) => b.amount - a.amount);
@@ -8671,7 +9022,18 @@
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0 flex-1">
                   <h4 class="font-bold text-slate-900 text-xs sm:text-sm truncate">${escapeHtml(item.name)}</h4>
-                  <span class="text-[10px] text-slate-400 block truncate">${item.catName}${item.subcategory ? ` • ${escapeHtml(item.subcategory)}` : ''} • Siklus ${item.validityDays} Hari</span>
+                  
+                  <!-- SUBKATEGORI DITAMPILKAN JELAS DENGAN BADGE -->
+                  <div class="text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap mt-1">
+                    <span class="font-semibold text-slate-700">${escapeHtml(item.catName)}</span>
+                    <span class="text-slate-300">•</span>
+                    <span class="bg-white text-emerald-800 border border-slate-200 px-1.5 py-0.2 rounded-md font-bold text-[10px] flex items-center gap-1">
+                      <i data-lucide="tag" class="w-2.5 h-2.5 text-emerald-600"></i>
+                      <span>${escapeHtml(item.subcategory || 'Tanpa Subkategori')}</span>
+                    </span>
+                    <span class="text-slate-300">•</span>
+                    <span class="text-slate-400 font-medium">Siklus ${item.validityDays} Hari</span>
+                  </div>
                 </div>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass} shrink-0">${statusText}</span>
               </div>
@@ -8686,11 +9048,9 @@
               </div>
             </div>
 
-            <!-- AKSI KARTU: TOGGLE NOTIFIKASI (LONCENG), EDIT (PENSIL), HAPUS (TONG SAMPAH), DAN BAYAR -->
             <div class="flex items-center justify-between pt-1.5 border-t border-slate-200/60 text-xs">
               <div class="flex items-center gap-1">
-                <!-- Tombol Lonceng Notifikasi di Luar Kartu -->
-                <button type="button" onclick="toggleRecurringNotification('${item.id}', event)" title="${item.notify ? 'Notifikasi Aktif (Klik untuk nonaktifkan)' : 'Notifikasi Nonaktif (Klik untuk aktifkan)'}" class="p-1.5 rounded-lg border transition ${
+                <button type="button" onclick="toggleRecurringNotification('${item.id}', event)" title="${item.notify ? 'Notifikasi Aktif' : 'Notifikasi Nonaktif'}" class="p-1.5 rounded-lg border transition ${
                   item.notify 
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' 
                     : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-100'
@@ -8698,18 +9058,15 @@
                   <i data-lucide="${item.notify ? 'bell' : 'bell-off'}" class="w-3.5 h-3.5"></i>
                 </button>
 
-                <!-- Tombol Edit -->
                 <button type="button" onclick="openRecurringModal('${item.id}')" title="Ubah Reminder" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-emerald-700 transition">
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </button>
 
-                <!-- Tombol Hapus -->
                 <button type="button" onclick="deleteRecurringBill('${item.id}')" title="Hapus Reminder" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-rose-600 transition">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
 
-              <!-- Tombol Bayar -->
               <button type="button" onclick="payRecurringBillQuick('${item.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] transition shadow-xs flex items-center gap-1">
                 <i data-lucide="check" class="w-3 h-3"></i> Bayar
               </button>
@@ -8721,7 +9078,38 @@
     }
 
     // ==================== ALUR PENGINGAT CERDAS & AUTO-FILL RIWAYAT ====================
-    function openRecurringModal(editId = null) {
+    function populateSubcategoryOptionsForReminder(catId, selectedSub = '') {
+      const subSelect = document.getElementById('rec-subcategory');
+      if (!subSelect) return;
+
+      const cat = categories.find(c => c.id === catId);
+      if (cat && cat.subcategories && cat.subcategories.length > 0) {
+        const sortedSubs = [...cat.subcategories].sort((a, b) => a.localeCompare(b, 'id'));
+        subSelect.innerHTML = `<option value="">-- Pilih Subkategori --</option>` + 
+          sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+
+        if (selectedSub) {
+          const matched = sortedSubs.find(s => s.trim().toLowerCase() === selectedSub.trim().toLowerCase());
+          if (matched) {
+            subSelect.value = matched;
+          } else {
+            // Jika subkategori kustom belum ada di daftar kategori, sisipkan agar tidak hilang
+            const opt = document.createElement('option');
+            opt.value = selectedSub;
+            opt.textContent = selectedSub;
+            subSelect.appendChild(opt);
+            subSelect.value = selectedSub;
+          }
+        } else {
+          subSelect.value = '';
+        }
+      } else {
+        subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>`;
+        subSelect.value = '';
+      }
+    }
+	
+	function openRecurringModal(editId = null) {
       const catSelect = document.getElementById('rec-category');
       const subSelect = document.getElementById('rec-subcategory');
       const expenseCats = categories.filter(c => c.type === 'expense').sort((a, b) => a.name.localeCompare(b.name, 'id'));
@@ -8731,47 +9119,52 @@
           expenseCats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
       }
 
-      if (subSelect) subSelect.innerHTML = `<option value="">-- Pilih Kategori Dahulu --</option>`;
-
       const pickerWrap = document.getElementById('rec-history-picker-wrap');
       if (pickerWrap) pickerWrap.classList.add('hidden');
 
+      const nextDueWrap = document.getElementById('rec-next-due-wrap');
+
       if (editId) {
-        // MODE EDIT REMINDER LAMA
-        const item = recurringBills.find(r => r.id === editId);
+        // ==================== MODE EDIT REMINDER LAMA ====================
+        const item = recurringBills.find(r => String(r.id) === String(editId));
         if (!item) return;
 
         setText('rec-modal-title', 'Ubah Reminder Tagihan');
-        setVal('rec-id', item.id);
+        setVal('rec-id', String(item.id));
         setVal('rec-name', item.name);
         setVal('rec-amount', formatNumberWithDots(item.amount));
         setVal('rec-validity-days', item.validityDays);
         setVal('rec-last-paid', item.lastPaidDate);
         setVal('rec-category', item.categoryId);
 
-        // Isi subkategori
-        const cat = categories.find(c => c.id === item.categoryId);
-        if (subSelect && cat) {
-          const sortedSubs = [...(cat.subcategories || [])].sort((a, b) => a.localeCompare(b, 'id'));
-          subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>` + 
-            sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-          subSelect.value = item.subcategory || '';
+        // Populasi Subkategori & PILIH NILAI ASLINYA SECARA AKURAT
+        populateSubcategoryOptionsForReminder(item.categoryId, item.subcategory || '');
+
+        // TAMPILKAN DEADLINE BERIKUTNYA HANYA PADA MODE EDIT
+        if (nextDueWrap) nextDueWrap.classList.remove('hidden');
+
+        const dueInput = document.getElementById('rec-next-due');
+        if (dueInput) {
+          dueInput.value = item.customDueDate || calcDueDateStr(item.lastPaidDate, item.validityDays);
         }
 
         const notifyChk = document.getElementById('rec-notify');
         if (notifyChk) notifyChk.checked = (item.notify !== false);
 
-        updateRecDeadlineDisplay();
       } else {
-        // MODE TAMBAH REMINDER BARU
+        // ==================== MODE TAMBAH REMINDER BARU ====================
         setText('rec-modal-title', 'Tambah Reminder Tagihan');
         setVal('rec-id', '');
         setVal('rec-name', '');
         setVal('rec-amount', '');
-        setVal('rec-validity-days', ''); // Kosongkan
-        setVal('rec-last-paid', '');      // Kosongkan
-        setVal('rec-next-due', '');       // Kosongkan
-        updateRecDeadlineDisplay();
+        setVal('rec-validity-days', '');
+        setVal('rec-last-paid', '');
+        setVal('rec-next-due', '');
+
+        if (subSelect) subSelect.innerHTML = `<option value="">-- Pilih Kategori Dahulu --</option>`;
+
+        // SEMBUNYIKAN FIELD DEADLINE SAAT MENAMBAH BARU AGAR TIDAK RANCU
+        if (nextDueWrap) nextDueWrap.classList.add('hidden');
 
         const notifyChk = document.getElementById('rec-notify');
         if (notifyChk) notifyChk.checked = true;
@@ -8783,18 +9176,7 @@
 
     function onRecCategoryChange() {
       const catId = document.getElementById('rec-category')?.value;
-      const subSelect = document.getElementById('rec-subcategory');
-      if (!subSelect) return;
-
-      const cat = categories.find(c => c.id === catId);
-      if (cat && cat.subcategories && cat.subcategories.length > 0) {
-        const sortedSubs = [...cat.subcategories].sort((a, b) => a.localeCompare(b, 'id'));
-        subSelect.innerHTML = `<option value="">-- Pilih Subkategori --</option>` + 
-          sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-      } else {
-        subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>`;
-      }
-
+      populateSubcategoryOptionsForReminder(catId, '');
       detectHistoricalRecurringTxs();
     }
 
@@ -8810,7 +9192,7 @@
 	
 	function detectHistoricalRecurringTxs() {
       const editId = document.getElementById('rec-id')?.value;
-      if (editId) return; // Mode Edit tidak menimpa data pengguna
+      if (editId) return; // Mode Edit tidak menimpa otomatis
 
       const catId = document.getElementById('rec-category')?.value;
       const subVal = (document.getElementById('rec-subcategory')?.value || '').trim().toLowerCase();
@@ -8824,7 +9206,6 @@
         setVal('rec-last-paid', '');
         setVal('rec-validity-days', '');
         setVal('rec-next-due', '');
-        updateRecDeadlineDisplay();
         if (pickerWrap) pickerWrap.classList.add('hidden');
       };
 
@@ -8836,7 +9217,7 @@
       const now = new Date();
       const todayStr = now.toISOString().split('T')[0];
 
-      // RENTANG 1: 1 Bulan penuh ke belakang dari tanggal hari ini (contoh: 16 Okt - 16 Nov)
+      // 1. Rentang 1: 1 Bulan penuh ke belakang dari tanggal hari ini (contoh: 16 Okt - 16 Nov)
       const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
       const range1Start = oneMonthAgo.toISOString().split('T')[0];
       const range1End = todayStr;
@@ -8847,7 +9228,7 @@
         return t.date >= range1Start && t.date <= range1End;
       }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
 
-      // RENTANG 2 (FALLBACK): Tanggal 1 s.d. H-1 bulan sebelumnya (contoh: 1 Okt - 15 Okt)
+      // 2. Rentang 2 (Fallback): Tanggal 1 s.d. H-1 bulan sebelumnya (contoh: 1 Okt - 15 Okt)
       if (matched.length === 0) {
         const prevMonthYear = oneMonthAgo.getFullYear();
         const prevMonthNum = oneMonthAgo.getMonth();
@@ -8875,7 +9256,7 @@
       }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
 
       // Hitung selisih hari jika ada >= 2 transaksi dalam 3 bulan
-      detectedAutoValidityDays = '';
+      let detectedDays = '';
       if (history3Months.length >= 2) {
         let totalInterval = 0;
         let intervalCount = 0;
@@ -8889,28 +9270,27 @@
           }
         }
         if (intervalCount > 0) {
-          detectedAutoValidityDays = Math.round(totalInterval / intervalCount);
+          detectedDays = Math.round(totalInterval / intervalCount);
         }
       }
 
       matchedHistoricalRecurringTxs = matched;
+      detectedAutoValidityDays = detectedDays;
 
-      // 1. JIKA TIDAK DITEMUKAN TRANSAKSI: KOSONGKAN SELURUH FIELD
+      // 1. JIKA TIDAK DITEMUKAN TRANSAKSI: KOSONGKAN NILAI
       if (matched.length === 0) {
         resetFormToBlank();
         return;
       }
 
-      // 2. JIKA HANYA DITEMUKAN 1 TRANSAKSI:
-      // Terapkan nilainya langsung, sembunyikan kotak pemilih riwayat
+      // 2. JIKA HANYA DITEMUKAN 1 TRANSAKSI: LANGSUNG AUTO-FILL, JANGAN MUNCULKAN PICKER
       if (matched.length === 1) {
         if (pickerWrap) pickerWrap.classList.add('hidden');
         applyHistoricalRecValues(matched[0], detectedAutoValidityDays);
         return;
       }
 
-      // 3. JIKA DITEMUKAN LEBIH DARI 1 TRANSAKSI (> 1):
-      // Tampilkan kotak pemilih riwayat dan auto-fill transaksi teratas
+      // 3. JIKA DITEMUKAN LEBIH DARI 1 TRANSAKSI (> 1): MUNCULKAN PICKER OPSI
       if (matched.length > 1) {
         applyHistoricalRecValues(matched[0], detectedAutoValidityDays);
 
@@ -8941,8 +9321,17 @@
       setVal('rec-name', tx.note || tx.subcategory || cat?.name || 'Tagihan');
       setVal('rec-amount', formatNumberWithDots(tx.amount));
       setVal('rec-last-paid', tx.date);
-      setVal('rec-validity-days', validityDays || ''); // Jika tidak ada riwayat >1x, biarkan kosong agar diisi manual
-      updateRecDeadlineDisplay();
+      setVal('rec-validity-days', validityDays || '');
+
+      // Hitung deadline otomatis jika masa berlaku ada
+      const dueInput = document.getElementById('rec-next-due');
+      if (dueInput) {
+        if (validityDays && parseInt(validityDays) > 0) {
+          dueInput.value = calcDueDateStr(tx.date, validityDays);
+        } else {
+          dueInput.value = '';
+        }
+      }
     }
 
     function saveRecurringBill(e) {
@@ -8952,6 +9341,7 @@
       const amount = parseDotsNumber(document.getElementById('rec-amount')?.value);
       const validityDays = parseInt(document.getElementById('rec-validity-days')?.value) || 28;
       const lastPaidDate = document.getElementById('rec-last-paid')?.value || new Date().toISOString().split('T')[0];
+      const customDueDate = document.getElementById('rec-next-due')?.value || '';
       const categoryId = document.getElementById('rec-category')?.value;
       const subcategory = (document.getElementById('rec-subcategory')?.value || '').trim();
       const notify = document.getElementById('rec-notify')?.checked ?? true;
@@ -8962,29 +9352,45 @@
         Notification.requestPermission();
       }
 
-      if (id) {
-        // Update data yang ada (pertahankan tanggal & validity sesuai form)
-        const idx = recurringBills.findIndex(r => r.id === id);
+      if (id && id.trim() !== '') {
+        // MODE EDIT: Perbarui data yang ada tanpa menambah baru
+        const idx = recurringBills.findIndex(r => String(r.id) === String(id));
         if (idx !== -1) {
           recurringBills[idx] = {
             ...recurringBills[idx],
-            name,
+            id: String(id),
+            name: toSmartTitleCase(name),
             amount,
             validityDays,
             lastPaidDate,
+            customDueDate, // Simpan tanggal deadline yang disetel manual
             categoryId,
             subcategory,
             notify
           };
+        } else {
+          // Fallback jika ID tidak ditemukan
+          recurringBills.unshift({
+            id: 'rec-' + Date.now() + Math.random().toString().slice(2, 6),
+            name: toSmartTitleCase(name),
+            amount,
+            validityDays,
+            lastPaidDate,
+            customDueDate,
+            categoryId,
+            subcategory,
+            notify
+          });
         }
       } else {
-        // Buat pengingat baru
+        // MODE BARU: Tambahkan ke daftar dengan ID unik
         recurringBills.unshift({
-          id: 'rec-' + Date.now(),
-          name,
+          id: 'rec-' + Date.now() + Math.random().toString().slice(2, 6),
+          name: toSmartTitleCase(name),
           amount,
           validityDays,
           lastPaidDate,
+          customDueDate,
           categoryId,
           subcategory,
           notify
@@ -9072,29 +9478,57 @@
       const validityDays = parseInt(document.getElementById('rec-validity-days')?.value) || 28;
       const lastPaidDate = document.getElementById('rec-last-paid')?.value || new Date().toISOString().split('T')[0];
       const categoryId = document.getElementById('rec-category')?.value;
+      const subcategory = (document.getElementById('rec-subcategory')?.value || '').trim();
       const notify = document.getElementById('rec-notify')?.checked ?? true;
 
       if (!name || amount <= 0 || !categoryId) return;
 
-      // Minta izin notifikasi jika opsi dicentang
       if (notify && 'Notification' in window && Notification.permission !== 'granted') {
         Notification.requestPermission();
       }
 
-      recurringBills.unshift({
-        id: id || ('rec-' + Date.now()),
-        name: toSmartTitleCase(name),
-        amount,
-        validityDays,
-        lastPaidDate,
-        categoryId,
-        notify
-      });
+      // Hitung deadline otomatis atau gunakan input manual saat edit
+      let customDueDate = document.getElementById('rec-next-due')?.value;
+      if (!customDueDate || customDueDate.trim() === '') {
+        customDueDate = calcDueDateStr(lastPaidDate, validityDays);
+      }
+
+      if (id && id.trim() !== '') {
+        // ==================== MODE EDIT: PERBARUI DI TEMPAT ====================
+        const idx = recurringBills.findIndex(r => String(r.id) === String(id));
+        if (idx !== -1) {
+          recurringBills[idx] = {
+            ...recurringBills[idx],
+            id: String(id), // Pastikan ID tidak berubah
+            name: toSmartTitleCase(name),
+            amount,
+            validityDays,
+            lastPaidDate,
+            customDueDate,
+            categoryId,
+            subcategory,
+            notify
+          };
+        }
+      } else {
+        // ==================== MODE BARU: BUAT ID UNIK ====================
+        recurringBills.unshift({
+          id: 'rec-' + Date.now() + '-' + Math.random().toString().slice(2, 6),
+          name: toSmartTitleCase(name),
+          amount,
+          validityDays,
+          lastPaidDate,
+          customDueDate,
+          categoryId,
+          subcategory,
+          notify
+        });
+      }
 
       persistState(true);
       closeModal('recurring-bill-modal');
       renderRecurringBillsWidget();
-      alert('Pengingat siklus tagihan berhasil disimpan!');
+      alert('Pengingat tagihan berhasil disimpan!');
     }
 
     // ==================== PEMERIKSAAN NOTIFIKASI H-1 (HP & PC) ====================
@@ -9129,27 +9563,70 @@
 
     function deleteRecurringBill(id) {
       if (confirm('Hapus pengingat tagihan berulang ini?')) {
-        recurringBills = recurringBills.filter(r => r.id !== id);
+        // Hapus HANYA item yang memiliki ID bersangkutan
+        recurringBills = recurringBills.filter(r => String(r.id) !== String(id));
         persistState(true);
         renderRecurringBillsWidget();
       }
     }
 
+    // ==================== TOMBOL CEPAT BAYAR PADA KARTU REMINDER ====================
     function payRecurringBillQuick(id) {
-      const item = recurringBills.find(r => r.id === id);
+      const item = recurringBills.find(r => String(r.id) === String(id));
       if (!item) return;
 
-      // Buka modal transaksi terisi otomatis
+      // 1. Buka modal Catat Transaksi
       openTransactionModal();
-      setVal('tx-amount', formatNumberWithDots(item.amount));
-      setVal('tx-category', item.categoryId);
-      populateSubcategoriesDropdown();
-      setVal('tx-note', `Pembayaran ${item.name}`);
 
-      // Perbarui tanggal terakhir dibayar ke hari ini
-      item.lastPaidDate = new Date().toISOString().split('T')[0];
-      persistState(true);
-      renderRecurringBillsWidget();
+      // 2. Pastikan tipe transaksi adalah Pengeluaran (Expense)
+      const expenseRadio = document.querySelector('input[name="tx-type"][value="expense"]');
+      if (expenseRadio) {
+        expenseRadio.checked = true;
+        onTxTypeChange();
+      }
+
+      // 3. Set Kategori dan OTOMATIS PILIH SUBKATEGORI sesuai kartu reminder
+      if (item.categoryId) {
+        setVal('tx-category', item.categoryId);
+        populateSubcategoriesDropdown();
+
+        const subSelect = document.getElementById('tx-subcategory');
+        if (subSelect && item.subcategory) {
+          // Cari opsi subkategori yang cocok
+          const matchOpt = [...subSelect.options].find(o => 
+            o.value.trim().toLowerCase() === item.subcategory.trim().toLowerCase()
+          );
+
+          if (matchOpt) {
+            subSelect.value = matchOpt.value;
+          } else {
+            // Jika subkategori kustom belum ada di daftar dropdown, sisipkan otomatis
+            const opt = document.createElement('option');
+            opt.value = item.subcategory;
+            opt.textContent = item.subcategory;
+            subSelect.appendChild(opt);
+            subSelect.value = item.subcategory;
+          }
+        }
+      }
+
+      // 4. Set Nominal & Keterangan Transaksi
+      setVal('tx-amount', formatNumberWithDots(item.amount));
+      setVal('tx-note', item.name || (item.subcategory ? `Pembayaran ${item.subcategory}` : 'Pembayaran Tagihan'));
+
+      // 5. Set Tanggal transaksi ke hari ini
+      const todayStr = new Date().toISOString().split('T')[0];
+      setVal('tx-date', todayStr);
+
+      // Jika dibuka di HP, sesuaikan posisi fokus input
+      if (isMobileDevice()) {
+        const amtInput = document.getElementById('tx-amount');
+        if (amtInput) {
+          setTimeout(() => {
+            openInAppNumpad(amtInput, 'Nominal Transaksi');
+          }, 120);
+        }
+      }
     }
 	
 	// ==================== FITUR COLLAPSE KATEGORI DI PENGATURAN ====================
@@ -9665,7 +10142,10 @@
         }
       }
 
-      if (tabName === 'analysis') renderAnalysisView();
+      if (tabName === 'analysis') {
+        renderAnalysisView();
+        setTimeout(syncHabitTrackerHeight, 100);
+      }
       if (tabName === 'trends') {
         if (trendAccordionState.source) renderSourceTrendChart();
         if (trendAccordionState.category) renderTrendsChart();
