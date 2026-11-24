@@ -667,10 +667,27 @@
       </div>
 	  
 	  <!-- 2. KALENDER AKTIVITAS TRANSAKSI (DOT INDICATOR) & PELACAK KEBIASAAN -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 2. KALENDER AKTIVITAS & PELACAK KEBIASAAN (DI HP: FREKUENSI DI ATAS, DI PC: SEJAJAR KIRI-KANAN) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
-        <!-- KALENDER DOT INTERAKTIF DENGAN BULAN/TAHUN & BANNER SOROTAN -->
-        <div id="ana-calendar-card" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 lg:col-span-2">
+        <!-- PELACAK KEBIASAAN BELANJA (DI HP MUNCUL PERTAMA via order-1, DI PC DI KOLOM KANAN via lg:order-2) -->
+        <div id="ana-habit-card" class="order-1 lg:order-2 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between overflow-hidden">
+          <div id="ana-habit-header" class="shrink-0 border-b border-slate-100 pb-2.5 mb-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
+                <span>Frekuensi Tertinggi (>1x)</span>
+              </h3>
+              <span id="ana-habit-count-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 whitespace-nowrap">0 Subkategori</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Subkategori berulang terbanyak dalam periode ini.</p>
+          </div>
+
+          <div id="ana-top-frequency-list" class="space-y-2 max-h-[350px] overflow-y-auto pr-1 select-none flex-1"></div>
+        </div>
+
+        <!-- KALENDER AKTIVITAS TRANSAKSI & ANALISIS HARIAN/MINGGUAN (DI HP MUNCUL KEDUA via order-2, DI PC DI KOLOM KIRI via lg:order-1) -->
+        <div id="ana-calendar-card" class="order-2 lg:order-1 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 lg:col-span-2">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
@@ -678,10 +695,9 @@
                   <i data-lucide="calendar" class="w-4 h-4 text-emerald-600"></i>
                   <span>Kalender Aktivitas Transaksi</span>
                 </h3>
-                <!-- NAMA BULAN & TAHUN DINAMIS -->
-                <span id="ana-calendar-month-year" class="text-xs font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg shadow-2xs">-</span>
+                <span id="ana-calendar-month-year" class="text-xs font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg shadow-2xs whitespace-nowrap">-</span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">Ketuk tanggal bertitik untuk melihat transaksi, atau ketuk item frekuensi untuk menandai tanggalnya.</p>
+              <p class="text-xs text-slate-500 mt-0.5">Ketuk tanggal bertitik untuk rincian, atau ketuk item frekuensi untuk menandai tanggalnya.</p>
             </div>
             
             <div class="flex items-center gap-2 text-[11px] font-medium text-slate-500 self-start sm:self-auto flex-wrap">
@@ -691,18 +707,18 @@
             </div>
           </div>
 
-          <!-- BANNER INDIKATOR SOROTAN KATEGORI (MUNCUL SAAT SALAH SATU ITEM FREKUENSI DIKLIK) -->
+          <!-- BANNER INDIKATOR SOROTAN KATEGORI -->
           <div id="ana-calendar-highlight-banner" class="hidden flex items-center justify-between text-xs p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 font-medium">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-              <span>Menandai tanggal transaksi: <strong id="ana-calendar-highlight-name" class="font-extrabold text-amber-950">-</strong></span>
+            <div class="flex items-center gap-2 truncate">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+              <span class="truncate">Menandai transaksi: <strong id="ana-calendar-highlight-name" class="font-extrabold text-amber-950">-</strong></span>
             </div>
-            <button type="button" onclick="clearHabitHighlight()" class="text-xs font-bold text-amber-800 hover:text-amber-950 underline px-2 py-0.5 rounded transition">
+            <button type="button" onclick="clearHabitHighlight()" class="text-xs font-bold text-amber-800 hover:text-amber-950 underline px-2 py-0.5 rounded transition shrink-0 ml-2">
               Hapus Tanda
             </button>
           </div>
-	  
-		  <!-- GRID HARI (SENIN - MINGGU DENGAN WARNA SABTU BIRU & MINGGU MERAH) -->
+
+          <!-- GRID HARI -->
           <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] py-1 border-b border-slate-100 select-none">
             <div class="text-slate-500">Sen</div>
             <div class="text-slate-500">Sel</div>
@@ -716,15 +732,11 @@
           <!-- GRID TANGGAL -->
           <div id="ana-calendar-grid" class="grid grid-cols-7 gap-1.5 pt-1"></div>
 
-          <!-- ==================== AREA ANALISIS MENGISI SPACE PC (IDE 1 & IDE 3) ==================== -->
+          <!-- REKAP HARIAN (IDE 1) & ARUS MINGGUAN (IDE 3) -->
           <div id="calendar-extra-analytics" class="pt-4 border-t border-slate-100 space-y-4">
-            
-            <!-- IDE 1: METRIK HARI TANPA BELANJA, HARI TERBOROS & RATA-RATA HARIAN -->
             <div>
               <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">Evaluasi Perilaku Belanja Harian</span>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                
-                <!-- No-Spend Days -->
                 <div class="p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl space-y-1">
                   <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-emerald-950 uppercase">Bebas Belanja</span>
@@ -734,7 +746,6 @@
                   <div class="text-[10px] text-emerald-700" id="stat-nospend-desc">Hari tanpa pengeluaran</div>
                 </div>
 
-                <!-- Peak Spending Day -->
                 <div class="p-3 bg-rose-50/60 border border-rose-200/80 rounded-xl space-y-1">
                   <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-rose-950 uppercase">Hari Terboros</span>
@@ -744,7 +755,6 @@
                   <div class="text-[10px] text-rose-700" id="stat-peak-amount">Pengeluaran: Rp 0</div>
                 </div>
 
-                <!-- Average Active Daily Spend -->
                 <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
                   <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-700 uppercase">Rata-Rata Hari Aktif</span>
@@ -753,11 +763,9 @@
                   <div class="text-base sm:text-lg font-bold text-slate-900" id="stat-avg-active-day">Rp 0</div>
                   <div class="text-[10px] text-slate-500">Khusus hari ada transaksi</div>
                 </div>
-
               </div>
             </div>
 
-            <!-- IDE 3: ARUS KAS MINGGUAN (WEEKLY BURN RATE: MINGGU 1 - 4+) -->
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Laju Pengeluaran Mingguan (Weekly Cashflow)</span>
@@ -765,28 +773,10 @@
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="stat-weekly-breakdown"></div>
             </div>
-
-          </div>
-          <!-- ======================================================================================= -->
-        </div>
-
-        <!-- PELACAK KEBIASAAN BELANJA (TOP FREQUENCY SPENDING) -->
-        <!-- PELACAK KEBIASAAN BELANJA (TERKUNCI SEJAJAR KALENDER DI PC) -->
-        <div id="ana-habit-card" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between overflow-hidden">
-          <div id="ana-habit-header" class="shrink-0 border-b border-slate-100 pb-2.5 mb-3">
-            <div class="flex items-center justify-between">
-              <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
-                <span>Frekuensi Tertinggi (>1x)</span>
-              </h3>
-              <span id="ana-habit-count-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">0 Subkategori</span>
-            </div>
-            <p class="text-xs text-slate-500 mt-0.5">Subkategori berulang terbanyak dalam periode ini.</p>
           </div>
 
-          <!-- DAFTAR ITEM DENGAN KUNCI SCROLL OTOMATIS -->
-          <div id="ana-top-frequency-list" class="space-y-2 max-h-[350px] overflow-y-auto pr-1 select-none flex-1"></div>
         </div>
+
       </div>
 
       <!-- Rekapitulasi Rinci Arus Kategori (Bulanan & Tahunan) -->
@@ -1236,88 +1226,95 @@
     </div>
 
     <!-- ==================== TAB 6: SETTINGS ==================== -->
-    <div id="view-settings" class="hidden space-y-8">
+    <div id="view-settings" class="hidden space-y-6">
       
-      <!-- 1. MANAGE MONEY SOURCES -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="landmark" class="w-5 h-5 text-emerald-600"></i> Rekening & Sumber Dana (Money Source)
-            </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Kendali privasi dikelola secara independen di sini. Klik ikon mata untuk membuka/menutup saldo.</p>
+      <!-- 1. MANAGE MONEY SOURCES (DILENGKAPI FITUR COLLAPSE) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleSettingAccountCollapse()" class="cursor-pointer select-none group flex items-center gap-2.5 flex-1" title="Buka/Tutup Sumber Dana">
+            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-100 transition shrink-0">
+              <i data-lucide="landmark" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">Rekening & Sumber Dana</h3>
+                <span id="badge-acc-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 whitespace-nowrap">0 Akun</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Kelola rekening bank, e-wallet, dan dompet tunai Anda.</p>
+            </div>
           </div>
           
-          <button onclick="openAccountModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition self-start sm:self-auto">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Tambah Rekening</span>
-          </button>
-        </div>
-
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-500 font-semibold">Jenis:</span>
-              <select id="setting-account-filter-type" onchange="changeAccountFilter(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
-                <option value="ALL">Semua Jenis</option>
-                <option value="Bank">Bank</option>
-                <option value="E-Wallet">E-Wallet</option>
-                <option value="Cash">Cash (Tunai)</option>
-                <option value="Credit Card">Credit Card</option>
-              </select>
-            </div>
-
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-500 font-semibold">Urutkan:</span>
-              <select id="setting-account-sort" onchange="changeAccountSort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
-                <option value="default">Default (Urutan Input)</option>
-                <option value="name-asc">Nama (A &rarr; Z)</option>
-                <option value="name-desc">Nama (Z &rarr; A)</option>
-                <option value="type-asc">Jenis / Tipe</option>
-              </select>
-            </div>
-
-            <button onclick="resetAccountFilterAndSort()" title="Kembalikan filter & urutan rekening ke awal" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="openAccountModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Tambah Rekening</span>
+            </button>
+            <button type="button" onclick="toggleSettingAccountCollapse()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition" title="Buka/Tutup">
+              <i data-lucide="chevron-up" id="icon-chevron-acc-setting" class="w-5 h-5 transition-transform duration-200"></i>
             </button>
           </div>
-
-          <div id="setting-account-count" class="text-slate-400 text-[11px] font-medium ml-auto"></div>
         </div>
 
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-          <div>
-            <span class="text-xs font-bold text-slate-800">Privasi Total Kekayaan Bersih (Net Worth) di Dashboard</span>
-            <p class="text-[11px] text-slate-500">Tentukan apakah angka total kekayaan bersih di dashboard disamarkan atau ditampilkan.</p>
+        <div id="setting-account-body" class="p-4 sm:p-6 space-y-4">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold">Jenis:</span>
+                <select id="setting-account-filter-type" onchange="changeAccountFilter(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                  <option value="ALL">Semua Jenis</option>
+                  <option value="Bank">Bank</option>
+                  <option value="E-Wallet">E-Wallet</option>
+                  <option value="Cash">Cash (Tunai)</option>
+                  <option value="Credit Card">Credit Card</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold">Urutkan:</span>
+                <select id="setting-account-sort" onchange="changeAccountSort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                  <option value="default">Default</option>
+                  <option value="name-asc">Nama (A &rarr; Z)</option>
+                  <option value="name-desc">Nama (Z &rarr; A)</option>
+                  <option value="type-asc">Jenis / Tipe</option>
+                </select>
+              </div>
+
+              <button onclick="resetAccountFilterAndSort()" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+              </button>
+            </div>
+            <div id="setting-account-count" class="text-slate-400 text-[11px] font-medium ml-auto"></div>
           </div>
-          <button onclick="toggleNetWorthPrivacyFromSettings()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition border" id="btn-settings-nw-toggle"></button>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="accounts-settings-list"></div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+            <div>
+              <span class="font-bold text-slate-800 block">Privasi Total Kekayaan Bersih di Dashboard</span>
+              <p class="text-[11px] text-slate-500">Tentukan apakah angka total kekayaan bersih di dashboard disamarkan atau ditampilkan.</p>
+            </div>
+            <button onclick="toggleNetWorthPrivacyFromSettings()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition border" id="btn-settings-nw-toggle"></button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="accounts-settings-list"></div>
+        </div>
       </div>
 
       <!-- 2. MANAGE CATEGORIES & SUBCATEGORIES -->
-      <!-- 2. MANAGE CATEGORIES & SUBCATEGORIES (DILENGKAPI FITUR COLLAPSE) -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        
-        <!-- HEADER KATEGORI DENGAN TOMBOL COLLAPSE / EXPAND -->
-        <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
-          <div onclick="toggleSettingCategoryCollapse()" class="cursor-pointer select-none group flex items-start sm:items-center gap-2.5 flex-1" title="Klik untuk melipat / membuka daftar kategori">
-            <div class="p-2 bg-emerald-100 text-emerald-700 rounded-lg shrink-0 mt-0.5 sm:mt-0 group-hover:bg-emerald-200 transition">
+        <div class="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleSettingCategoryCollapse()" class="cursor-pointer select-none group flex items-center gap-2.5 flex-1" title="Buka/Tutup Kategori">
+            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-100 transition shrink-0">
               <i data-lucide="tag" class="w-5 h-5"></i>
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">
-                  Kategori & Subkategori Kustom
-                </h3>
-                <span id="badge-cat-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 Kategori</span>
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">Kategori & Subkategori Kustom</h3>
+                <span id="badge-cat-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 whitespace-nowrap">0 Kategori</span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">Klik area ini untuk menyembunyikan / menampilkan daftar kartu.</p>
+              <p class="text-xs text-slate-500 mt-0.5">Kelola kategori pemasukan & pengeluaran.</p>
             </div>
           </div>
           
-          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+          <div class="flex items-center gap-2 shrink-0">
             <label class="cursor-pointer bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition border border-slate-200 shadow-sm">
               <i data-lucide="file-up" class="w-3.5 h-3.5 text-emerald-600"></i>
               <span class="hidden sm:inline">Impor</span>
@@ -1334,20 +1331,15 @@
               <span>Tambah</span>
             </button>
 
-            <!-- TOMBOL TOGGLE LIPAT / BUKA -->
-            <button type="button" onclick="toggleSettingCategoryCollapse()" id="btn-toggle-cat-collapse" title="Buka/Tutup Daftar Kategori" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition flex items-center gap-1.5 text-xs font-bold shadow-sm ml-1">
-              <i data-lucide="chevron-up" id="icon-chevron-cat-setting" class="w-4 h-4 transition-transform duration-200"></i>
+            <button type="button" onclick="toggleSettingCategoryCollapse()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition" title="Buka/Tutup">
+              <i data-lucide="chevron-up" id="icon-chevron-cat-setting" class="w-5 h-5 transition-transform duration-200"></i>
             </button>
           </div>
         </div>
 
-        <!-- ISI DAFTAR KATEGORI YANG DAPAT DI-COLLAPSE -->
         <div id="setting-category-body" class="p-4 sm:p-6 space-y-4">
-          <!-- TOOLBAR SEARCH, FILTER & URUTKAN KATEGORI -->
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
             <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full md:w-auto flex-1">
-              
-              <!-- KOLOM PENCARIAN KATEGORI & SUBKATEGORI -->
               <div class="relative w-full sm:w-64">
                 <input type="text" id="setting-category-search-input" oninput="renderSettings()" placeholder="Cari kategori / subkategori..." class="w-full pl-8 pr-7 py-1.5 border border-slate-300 rounded-lg text-xs bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
                 <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none"></i>
@@ -1356,7 +1348,6 @@
                 </button>
               </div>
 
-              <!-- FILTER TIPE, KLASIFIKASI, URUTKAN & RESET -->
               <div class="flex flex-wrap items-center gap-2">
                 <div class="flex items-center gap-1.5">
                   <span class="text-slate-500 font-semibold text-[11px]">Tipe:</span>
@@ -1371,9 +1362,9 @@
                   <span class="text-slate-500 font-semibold text-[11px]">Klasifikasi:</span>
                   <select id="setting-category-filter-class" onchange="changeCategoryFilterClass(this.value)" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
                     <option value="ALL">Semua</option>
-                    <option value="fixed">Tetap (Fixed)</option>
-                    <option value="periodic">Berkala (Periodic)</option>
-                    <option value="dynamic">Dinamis (Dynamic)</option>
+                    <option value="fixed">Tetap</option>
+                    <option value="periodic">Berkala</option>
+                    <option value="dynamic">Dinamis</option>
                   </select>
                 </div>
 
@@ -1381,14 +1372,13 @@
                   <span class="text-slate-500 font-semibold text-[11px]">Urutkan:</span>
                   <select id="setting-category-sort" onchange="changeCategorySort(this.value)" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
                     <option value="default">Default</option>
-                    <option value="name-asc">Nama (A &rarr; Z)</option>
-                    <option value="name-desc">Nama (Z &rarr; A)</option>
-                    <option value="class-fixed">Klasifikasi (Tetap &rarr; Dinamis)</option>
-                    <option value="class-dynamic">Klasifikasi (Dinamis &rarr; Tetap)</option>
+                    <option value="name-asc">A &rarr; Z</option>
+                    <option value="name-desc">Z &rarr; A</option>
+                    <option value="class-fixed">Tetap &rarr; Dinamis</option>
                   </select>
                 </div>
 
-                <button type="button" onclick="resetCategoryFilterAndSort()" title="Kembalikan pencarian, filter & urutan ke awal" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <button type="button" onclick="resetCategoryFilterAndSort()" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
                   <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
                 </button>
               </div>
@@ -1397,54 +1387,41 @@
             <div id="setting-category-count" class="text-slate-400 text-[11px] font-medium self-end md:self-auto shrink-0"></div>
           </div>
 
-          <!-- GRID DAFTAR KARTU KATEGORI -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="category-settings-list"></div>
         </div>
-
       </div>
-	  
-	  <!-- WIDGET PENGINGAT TAGIHAN BERULANG DI PENGATURAN (COLLAPSIBLE, SEARCH, FILTER & SORT) -->
+
+      <!-- 3. PENGINGAT TAGIHAN & SIKLUS BERULANG -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        
-        <!-- HEADER DENGAN TOMBOL COLLAPSE & TAMBAH REMINDER -->
-        <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
-          <div onclick="toggleRecurringCollapse()" class="cursor-pointer select-none group flex items-start sm:items-center gap-2.5 flex-1" title="Klik untuk melipat / membuka pengingat">
-            <div class="p-2 bg-amber-100 text-amber-800 rounded-lg shrink-0 mt-0.5 sm:mt-0 group-hover:bg-amber-200 transition">
+        <div class="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleRecurringCollapse()" class="cursor-pointer select-none group flex items-center gap-2.5 flex-1" title="Buka/Tutup Pengingat">
+            <div class="p-2 bg-amber-100 text-amber-800 rounded-lg group-hover:bg-amber-200 transition shrink-0">
               <i data-lucide="bell-ring" class="w-5 h-5"></i>
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-amber-700 transition">
-                  Pengingat Tagihan & Siklus Berulang
-                </h3>
-                <span id="badge-rec-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 Reminder</span>
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-amber-700 transition">Pengingat Tagihan & Siklus Berulang</h3>
+                <!-- BADGE RAPI SEJAJAR 1 BARIS DI HP -->
+                <span id="badge-rec-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 whitespace-nowrap shrink-0">0 Reminder</span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">Pantau tagihan dengan masa berlaku dinamis (misal: kuota 28 hari, Wi-Fi 30 hari).</p>
+              <p class="text-xs text-slate-500 mt-0.5">Pantau tagihan dengan masa berlaku dinamis.</p>
             </div>
           </div>
           
           <div class="flex items-center gap-2 shrink-0">
-            <!-- TOMBOL TAMBAH REMINDER -->
-            <button type="button" onclick="openRecurringModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-              <i data-lucide="plus" class="w-4 h-4"></i>
+            <button type="button" onclick="openRecurringModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
               <span>Tambah Reminder</span>
             </button>
-
-            <!-- TOMBOL TOGGLE COLLAPSE -->
-            <button type="button" onclick="toggleRecurringCollapse()" id="btn-toggle-rec-collapse" title="Buka/Tutup Pengingat" class="p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition">
-              <i data-lucide="chevron-up" id="icon-chevron-rec-setting" class="w-4 h-4 transition-transform duration-200"></i>
+            <button type="button" onclick="toggleRecurringCollapse()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition" title="Buka/Tutup">
+              <i data-lucide="chevron-up" id="icon-chevron-rec-setting" class="w-5 h-5 transition-transform duration-200"></i>
             </button>
           </div>
         </div>
 
-        <!-- ISI KONTEN PENGINGAT (COLLAPSIBLE BODY) -->
         <div id="setting-recurring-body" class="p-4 sm:p-6 space-y-4">
-          
-          <!-- TOOLBAR SEARCH, FILTER & SORT REMINDER -->
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-2.5 text-xs">
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:w-auto flex-1">
-              
-              <!-- SEARCH BOX -->
               <div class="relative w-full sm:w-60">
                 <input type="text" id="rec-search-input" oninput="renderRecurringBillsWidget()" placeholder="Cari tagihan / subkategori..." class="w-full pl-8 pr-7 py-1.5 border border-slate-300 rounded-lg text-xs bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
                 <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none"></i>
@@ -1453,19 +1430,17 @@
                 </button>
               </div>
 
-              <!-- FILTER STATUS TEMPO -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-500 font-semibold text-[11px]">Status:</span>
                 <select id="rec-filter-status" onchange="renderRecurringBillsWidget()" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
-                  <option value="ALL">Semua Status</option>
+                  <option value="ALL">Semua</option>
                   <option value="overdue">Lewat Tempo</option>
-                  <option value="today">Jatuh Tempo Hari Ini</option>
+                  <option value="today">Hari Ini</option>
                   <option value="soon">Segera (H-3)</option>
-                  <option value="safe">Masih Aman</option>
+                  <option value="safe">Aman</option>
                 </select>
               </div>
 
-              <!-- URUTKAN (SORT) -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-500 font-semibold text-[11px]">Urutkan:</span>
                 <select id="rec-sort" onchange="renderRecurringBillsWidget()" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
@@ -1475,206 +1450,337 @@
                 </select>
               </div>
 
-              <button type="button" onclick="resetRecurringFilterAndSort()" title="Reset pencarian & filter" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+              <button type="button" onclick="resetRecurringFilterAndSort()" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
               </button>
             </div>
-
             <div id="rec-filter-count" class="text-slate-400 text-[11px] font-medium self-end md:self-auto shrink-0"></div>
           </div>
 
-          <!-- GRID DAFTAR KARTU PENGINGAT -->
           <div id="recurring-bills-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
+      </div>
+	  
+	  <!-- 4. PARAMETER KUSTOM PANDUAN CATATAN (COLLAPSIBLE, SEARCH, FILTER & SORT) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleCustomParamCollapse()" class="cursor-pointer select-none group flex items-center gap-2.5 flex-1" title="Buka/Tutup Parameter Kustom">
+            <div class="p-2 bg-indigo-50 text-indigo-700 rounded-lg group-hover:bg-indigo-100 transition shrink-0">
+              <i data-lucide="list-plus" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-700 transition">Parameter Kustom (Panduan Catatan)</h3>
+                <span id="badge-param-count-header" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 whitespace-nowrap">0 Parameter</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Atur panduan penulisan catatan per subkategori (misal: Bensin &rarr; SPBU, Harga/Liter).</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="openCustomParamModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Tambah Parameter</span>
+            </button>
+            <button type="button" onclick="toggleCustomParamCollapse()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition" title="Buka/Tutup">
+              <i data-lucide="chevron-up" id="icon-chevron-param-setting" class="w-5 h-5 transition-transform duration-200"></i>
+            </button>
+          </div>
+        </div>
 
+        <div id="setting-custom-param-body" class="p-4 sm:p-6 space-y-4">
+          <!-- TOOLBAR SEARCH, FILTER & SORT -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-2.5 text-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:w-auto flex-1">
+              <div class="relative w-full sm:w-60">
+                <input type="text" id="param-search-input" oninput="renderCustomParameters()" placeholder="Cari subkategori / parameter..." class="w-full pl-8 pr-7 py-1.5 border border-slate-300 rounded-lg text-xs bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none"></i>
+                <button type="button" id="param-search-clear" onclick="clearCustomParamSearch()" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold text-[11px]">Kategori:</span>
+                <select id="param-filter-category" onchange="renderCustomParameters()" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
+                  <option value="ALL">Semua Kategori</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-500 font-semibold text-[11px]">Urutkan:</span>
+                <select id="param-sort" onchange="renderCustomParameters()" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm">
+                  <option value="subcat-asc">Subkategori (A &rarr; Z)</option>
+                  <option value="subcat-desc">Subkategori (Z &rarr; A)</option>
+                  <option value="count-desc">Parameter Terbanyak</option>
+                </select>
+              </div>
+
+              <button type="button" onclick="resetCustomParamFilterAndSort()" class="text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+              </button>
+            </div>
+            <div id="param-filter-count" class="text-slate-400 text-[11px] font-medium self-end md:self-auto shrink-0"></div>
+          </div>
+
+          <!-- GRID DAFTAR PARAMETER -->
+          <div id="custom-parameters-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
       </div>
 
-      <!-- 5. BACKUP & RESTORE SECTION WITH GOOGLE DRIVE E2EE & FILE EXPLORER AUTO-SYNC -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+      <!-- 4. PREFERENSI FORM TRANSAKSI BARU -->
+      <div class="bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-5 h-5 text-emerald-600"></i> Preferensi Default Form Transaksi Baru
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Pilih sumber dana dan kategori utama yang otomatis terpilih saat pop-up pencatatan transaksi dibuka.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i> Cadangan & Pemulihan Data (Backup & Restore)
-            </h3>
-            <p class="text-xs text-slate-500">Mencadangkan seluruh data transaksi, akun, kategori, dan preferensi privasi ke dalam 1 file <code>.backup</code>.</p>
+            <label class="font-semibold text-slate-600 block mb-1">Default Sumber Dana (Rekening)</label>
+            <select id="pref-default-account" onchange="updateDefaultTxPreferences()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"></select>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <button onclick="createManualBackup(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition">
-              <i data-lucide="download" class="w-4 h-4"></i> Unduh File (.backup)
+          <div>
+            <label class="font-semibold text-slate-600 block mb-1">Default Kategori Utama</label>
+            <select id="pref-default-category" onchange="updateDefaultTxPreferences()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. KUNCI LAYAR PIN APPLOCK -->
+      <div class="bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="lock" class="w-5 h-5 text-emerald-600"></i> Kunci Layar Aplikasi (PIN AppLock)
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Kunci otomatis aplikasi saat ditinggal agar tidak dibuka orang lain.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold" id="applock-status-badge">Nonaktif</span>
+            <input type="checkbox" id="applock-toggle" onchange="toggleAppLockEnable()" class="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+          </div>
+        </div>
+
+        <div id="applock-settings-detail" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Ubah / Pasang PIN Baru (4-6 Angka):</label>
+            <div class="flex gap-2">
+              <input type="password" id="applock-new-pin" maxlength="6" placeholder="Masukkan 4-6 angka" class="border border-slate-300 rounded-lg px-3 py-1.5 w-full font-mono text-center tracking-widest text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+              <button onclick="saveAppLockPin()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-sm">
+                Simpan PIN
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Kunci Otomatis Saat Tidak Ada Aktivitas (Idle):</label>
+            <select id="applock-timeout-select" onchange="updateAppLockTimeout()" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="1">1 Menit</option>
+              <option value="2">2 Menit</option>
+              <option value="5">5 Menit</option>
+              <option value="10">10 Menit</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. BACKUP & RESTORE SECTION (DILENGKAPI FITUR COLLAPSE) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+          <div onclick="toggleSettingBackupCollapse()" class="cursor-pointer select-none group flex items-center gap-2.5 flex-1" title="Buka/Tutup Backup & Restore">
+            <div class="p-2 bg-blue-100 text-blue-700 rounded-lg group-hover:bg-blue-200 transition shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-blue-700 transition">Cadangan & Pemulihan Data (Backup & Restore)</h3>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap">Cloud & Lokal</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Cadangkan seluruh transaksi, akun, kategori, dan pengingat ke Google Drive / File.</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="createManualBackup(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Unduh .backup</span>
             </button>
-            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition">
-              <i data-lucide="upload" class="w-4 h-4"></i> Pulihkan (.backup)
+            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition border border-slate-200">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+              <span>Pulihkan</span>
               <input type="file" id="backup-file-input" accept=".backup,.json" class="hidden" onchange="handleRestoreFromFile(event)" />
             </label>
-          </div>
-        </div>
-
-        <!-- GOOGLE DRIVE E2EE SYNC SECTION -->
-        <div class="p-4 bg-blue-50/60 border border-blue-200 rounded-xl space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <span class="text-sm font-bold text-blue-950 flex items-center gap-1.5">
-                <i data-lucide="cloud" class="w-4 h-4 text-blue-600"></i> Sinkronisasi Cloud Google Drive (Terenkripsi E2EE)
-              </span>
-              <p class="text-[11px] text-blue-800 mt-0.5">
-                Sinkronkan transaksi antar PC & HP melalui folder tersembunyi Google Drive (diacak dengan AES-256).
-              </p>
-            </div>
-            <div id="gdrive-status-badge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-slate-500 border border-slate-300 shrink-0 self-start sm:self-auto">
-              Belum Login
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-            <div>
-              <label class="font-semibold text-slate-700 block mb-1">Google OAuth Client ID:</label>
-              <input type="text" id="gdrive-client-id" placeholder="xxxx.apps.googleusercontent.com" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-mono text-[11px] outline-none focus:ring-2 focus:ring-blue-500" onchange="saveGdrivePrefs()" />
-            </div>
-            <div>
-              <label class="font-semibold text-slate-700 block mb-1">PIN / Kata Sandi Enkripsi (Kunci Brankas):</label>
-              <input type="password" id="gdrive-encryption-pin" placeholder="Masukkan PIN/Password rahasia Anda" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-semibold text-xs outline-none focus:ring-2 focus:ring-blue-500" onchange="saveGdrivePrefs()" />
-            </div>
-          </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-blue-200/60">
-            <span class="text-[11px] text-slate-500 font-medium" id="gdrive-last-sync-label">
-              Sinkronisasi Cloud: Belum pernah
-            </span>
-            <div class="flex flex-wrap items-center gap-2">
-              <button onclick="disconnectGdrive()" id="btn-gdrive-logout" class="hidden text-xs text-rose-700 hover:text-rose-900 font-semibold px-2.5 py-1.5 rounded-lg border border-rose-300 bg-white hover:bg-rose-50 transition">
-                Logout Google
-              </button>
-              <button onclick="loginGdrive()" id="btn-gdrive-login" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
-                <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Login Akun Google
-              </button>
-              <button onclick="syncUploadToGdrive()" id="btn-gdrive-upload" class="hidden text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
-                <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i> Unggah ke Cloud
-              </button>
-              <button onclick="syncDownloadFromGdrive()" id="btn-gdrive-download" class="hidden text-xs font-bold text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                <i data-lucide="cloud-download" class="w-3.5 h-3.5"></i> Unduh & Pulihkan
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- AUTO BACKUP TO FILE EXPLORER CONFIGURATION -->
-        <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <span class="text-sm font-bold text-emerald-950 flex items-center gap-1.5">
-                <i data-lucide="folder-sync" class="w-4 h-4 text-emerald-600"></i> Sinkronisasi Auto-Backup ke File Explorer Komputer
-              </span>
-              <p class="text-[11px] text-emerald-800 mt-0.5">
-                Menyimpan dan menimpa otomatis 1 file <code>.backup</code> di folder komputer Anda setelah jeda pengetikan transaksi.
-              </p>
-            </div>
-            <div id="fs-status-badge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-slate-600 border border-emerald-200 shrink-0 self-start sm:self-auto">
-              Belum Terhubung
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
-            <div class="sm:col-span-2 flex flex-col justify-between">
-              <div>
-                <label class="font-semibold text-slate-700 block mb-1">Target Berkas di Komputer:</label>
-                <div class="text-xs font-mono bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-700 truncate" id="fs-target-display">
-                  (Belum ada file dipilih)
-                </div>
-              </div>
-              <div class="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
-                <i data-lucide="info" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
-                <span>Jeda awal 5 detik untuk konfirmasi izin browser, selanjutnya mengikuti waktu siklus.</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="font-semibold text-slate-700 block mb-1">Jeda Waktu Auto-Save (Siklus Idle)</label>
-              <select id="fs-delay-select" onchange="updateFsConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
-                <option value="15">15 Detik setelah selesai input</option>
-                <option value="30">30 Detik setelah selesai input</option>
-                <option value="60">1 Menit setelah selesai input</option>
-                <option value="120">2 Menit setelah selesai input</option>
-                <option value="300">5 Menit setelah selesai input</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-200/60">
-            <span class="text-[11px] text-slate-500 font-medium" id="fs-last-sync-label">
-              Sinkronisasi Terakhir: Belum pernah
-            </span>
-            <div class="flex items-center gap-2">
-              <button onclick="disconnectFsTarget()" id="btn-fs-disconnect" class="hidden text-xs text-rose-700 hover:text-rose-900 font-semibold px-2.5 py-1.5 rounded-lg border border-rose-300 bg-white hover:bg-rose-50 transition">
-                Putuskan Sambungan
-              </button>
-              <button onclick="connectFsTarget()" id="btn-fs-connect" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
-                <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> Hubungkan Berkas di File Explorer
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Automatic Internal Snapshot Configuration -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-              <i data-lucide="clock" class="w-4 h-4 text-emerald-600"></i> Konfigurasi Cadangan Otomatis Internal (Snapshot)
-            </span>
-            <span class="text-xs text-slate-400 font-medium" id="last-backup-status">Terakhir: Belum ada cadangan</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-            <div>
-              <label class="font-semibold text-slate-600 block mb-1">Jadwal Cadangan Otomatis</label>
-              <select id="backup-freq-select" onchange="updateBackupConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800">
-                <option value="disabled">Nonaktif (Hanya Manual)</option>
-                <option value="on_change">Setiap Perubahan Data (Real-time)</option>
-                <option value="daily">Harian (Setiap Hari Dibuka)</option>
-                <option value="weekly">Mingguan</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="font-semibold text-slate-600 block mb-1">Aturan Penghapusan File Cadangan</label>
-              <select id="backup-retention-select" onchange="updateBackupConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800">
-                <option value="auto_remove">Hapus Otomatis Jika Melebihi Batas (Auto-Remove)</option>
-                <option value="keep_all">Simpan Semua Cadangan (Keep It All)</option>
-              </select>
-            </div>
-
-            <div id="retention-limit-wrap">
-              <label class="font-semibold text-slate-600 block mb-1">Batas Maksimal Cadangan Yang Disimpan</label>
-              <select id="backup-limit-select" onchange="updateBackupConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800">
-                <option value="3">Maksimal 3 File Cadangan</option>
-                <option value="5">Maksimal 5 File Cadangan</option>
-                <option value="10">Maksimal 10 File Cadangan</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Daftar Cadangan Tersimpan di Perangkat Ini</h4>
-            <button onclick="createManualBackup(false)" class="text-xs font-semibold text-emerald-600 hover:underline flex items-center gap-1">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Simpan Cadangan Baru Sekarang
+            <button type="button" onclick="toggleSettingBackupCollapse()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 transition" title="Buka/Tutup">
+              <i data-lucide="chevron-up" id="icon-chevron-backup-setting" class="w-5 h-5 transition-transform duration-200"></i>
             </button>
           </div>
-          <div class="overflow-x-auto border border-slate-200 rounded-xl">
-            <table class="w-full text-left text-xs text-slate-600">
-              <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-2.5">Waktu Cadangan</th>
-                  <th class="px-4 py-2.5">Tipe Cadangan</th>
-                  <th class="px-4 py-2.5">Isi Data</th>
-                  <th class="px-4 py-2.5 text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="backup-snapshots-body" class="divide-y divide-slate-100 bg-white"></tbody>
-            </table>
+        </div>
+
+        <div id="setting-backup-body" class="p-4 sm:p-6 space-y-6">
+          <!-- GOOGLE DRIVE E2EE SYNC SECTION -->
+          <div class="p-4 bg-blue-50/60 border border-blue-200 rounded-xl space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-sm font-bold text-blue-950 flex items-center gap-1.5">
+                  <i data-lucide="cloud" class="w-4 h-4 text-blue-600"></i> Sinkronisasi Cloud Google Drive (Terenkripsi E2EE)
+                </span>
+                <p class="text-[11px] text-blue-800 mt-0.5">
+                  Sinkronkan transaksi antar PC & HP melalui folder tersembunyi Google Drive (diacak dengan AES-256).
+                </p>
+              </div>
+              <div id="gdrive-status-badge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-slate-500 border border-slate-300 shrink-0 self-start sm:self-auto">
+                Belum Login
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Google OAuth Client ID:</label>
+                <input type="text" id="gdrive-client-id" placeholder="xxxx.apps.googleusercontent.com" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-mono text-[11px] outline-none focus:ring-2 focus:ring-blue-500" onchange="saveGdrivePrefs()" />
+              </div>
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">PIN / Kata Sandi Enkripsi (Kunci Brankas):</label>
+                <input type="password" id="gdrive-encryption-pin" placeholder="Masukkan PIN/Password rahasia Anda" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-semibold text-xs outline-none focus:ring-2 focus:ring-blue-500" onchange="saveGdrivePrefs()" />
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-blue-200/60">
+              <span class="text-[11px] text-slate-500 font-medium" id="gdrive-last-sync-label">
+                Sinkronisasi Cloud: Belum pernah
+              </span>
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="disconnectGdrive()" id="btn-gdrive-logout" class="hidden text-xs text-rose-700 hover:text-rose-900 font-semibold px-2.5 py-1.5 rounded-lg border border-rose-300 bg-white hover:bg-rose-50 transition">
+                  Logout Google
+                </button>
+                <button onclick="loginGdrive()" id="btn-gdrive-login" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+                  <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Login Akun Google
+                </button>
+                <button onclick="syncUploadToGdrive()" id="btn-gdrive-upload" class="hidden text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+                  <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i> Unggah ke Cloud
+                </button>
+                <button onclick="syncDownloadFromGdrive()" id="btn-gdrive-download" class="hidden text-xs font-bold text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                  <i data-lucide="cloud-download" class="w-3.5 h-3.5"></i> Unduh & Pulihkan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- AUTO BACKUP TO FILE EXPLORER CONFIGURATION -->
+          <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-sm font-bold text-emerald-950 flex items-center gap-1.5">
+                  <i data-lucide="folder-sync" class="w-4 h-4 text-emerald-600"></i> Sinkronisasi Auto-Backup ke File Explorer Komputer
+                </span>
+                <p class="text-[11px] text-emerald-800 mt-0.5">
+                  Menyimpan dan menimpa otomatis 1 file <code>.backup</code> di folder komputer Anda setelah jeda pengetikan transaksi.
+                </p>
+              </div>
+              <div id="fs-status-badge" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white text-slate-600 border border-emerald-200 shrink-0 self-start sm:self-auto">
+                Belum Terhubung
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+              <div class="sm:col-span-2 flex flex-col justify-between">
+                <div>
+                  <label class="font-semibold text-slate-700 block mb-1">Target Berkas di Komputer:</label>
+                  <div class="text-xs font-mono bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-700 truncate" id="fs-target-display">
+                    (Belum ada file dipilih)
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-semibold text-slate-700 block mb-1">Jeda Waktu Auto-Save</label>
+                <select id="fs-delay-select" onchange="updateFsConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 bg-white font-medium text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500">
+                  <option value="15">15 Detik</option>
+                  <option value="30">30 Detik</option>
+                  <option value="60">1 Menit</option>
+                  <option value="120">2 Menit</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-200/60">
+              <span class="text-[11px] text-slate-500 font-medium" id="fs-last-sync-label">
+                Sinkronisasi Terakhir: Belum pernah
+              </span>
+              <div class="flex items-center gap-2">
+                <button onclick="disconnectFsTarget()" id="btn-fs-disconnect" class="hidden text-xs text-rose-700 hover:text-rose-900 font-semibold px-2.5 py-1.5 rounded-lg border border-rose-300 bg-white hover:bg-rose-50 transition">
+                  Putuskan Sambungan
+                </button>
+                <button onclick="connectFsTarget()" id="btn-fs-connect" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+                  <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> Hubungkan Berkas di File Explorer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SNAPSHOTS INTERNAL -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-4 h-4 text-emerald-600"></i> Konfigurasi Cadangan Otomatis Internal (Snapshot)
+              </span>
+              <span class="text-xs text-slate-400 font-medium" id="last-backup-status">Terakhir: Belum ada cadangan</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label class="font-semibold text-slate-600 block mb-1">Jadwal Cadangan Otomatis</label>
+                <select id="backup-freq-select" onchange="updateBackupConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800">
+                  <option value="disabled">Nonaktif</option>
+                  <option value="on_change">Setiap Perubahan Data</option>
+                  <option value="daily">Harian</option>
+                  <option value="weekly">Mingguan</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="font-semibold text-slate-600 block mb-1">Aturan Retensi</label>
+                <select id="backup-retention-select" onchange="updateBackupConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800">
+                  <option value="auto_remove">Hapus Otomatis Melebihi Batas</option>
+                  <option value="keep_all">Simpan Semua</option>
+                </select>
+              </div>
+
+              <div id="retention-limit-wrap">
+                <label class="font-semibold text-slate-600 block mb-1">Batas Maksimal File</label>
+                <select id="backup-limit-select" onchange="updateBackupConfig()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-800">
+                  <option value="3">Maksimal 3 File</option>
+                  <option value="5">Maksimal 5 File</option>
+                  <option value="10">Maksimal 10 File</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Daftar Cadangan Tersimpan di Perangkat Ini</h4>
+              <button onclick="createManualBackup(false)" class="text-xs font-semibold text-emerald-600 hover:underline flex items-center gap-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Simpan Cadangan Baru Sekarang
+              </button>
+            </div>
+            <div class="overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 uppercase text-[10px] text-slate-400 border-b border-slate-200">
+                  <tr>
+                    <th class="px-4 py-2.5">Waktu Cadangan</th>
+                    <th class="px-4 py-2.5">Tipe Cadangan</th>
+                    <th class="px-4 py-2.5">Isi Data</th>
+                    <th class="px-4 py-2.5 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="backup-snapshots-body" class="divide-y divide-slate-100 bg-white"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   </main>
 
@@ -1857,8 +1963,20 @@
           </div>
           <div>
             <label class="text-xs font-semibold text-slate-600 block mb-1">Subkategori</label>
-            <select id="tx-subcategory" tabindex="5" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></select>
+            <select id="tx-subcategory" tabindex="5" onchange="updateTxCustomParameterFields()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></select>
           </div>
+        </div>
+		
+		<!-- WADAH PARAMETER PANDUAN OTOMATIS SESUAI SUBKATEGORI -->
+        <div id="tx-custom-params-wrap" class="hidden p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+          <div class="flex items-center justify-between border-b border-slate-200/70 pb-1.5 text-xs">
+            <span class="font-bold text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="list-plus" class="w-4 h-4 text-emerald-600"></i>
+              <span>Panduan Catatan: <strong id="tx-custom-params-subname" class="text-emerald-800">-</strong></span>
+            </span>
+            <span class="text-[10px] text-slate-400">Otomatis tersusun multiline</span>
+          </div>
+          <div id="tx-custom-params-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs"></div>
         </div>
 
         <!-- Note (Multiline with Shift+Enter) -->
@@ -2657,6 +2775,61 @@
     <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
     <span id="toast-update-text">FinTrack berhasil diperbarui ke versi terbaru!</span>
   </div>
+  
+  <!-- MODAL FORMULIR PARAMETER KUSTOM -->
+  <div id="custom-parameter-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-slate-100 max-h-[92vh] flex flex-col">
+      <div class="shrink-0 flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
+            <i data-lucide="list-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="param-modal-title">Tambah Parameter Kustom</h3>
+            <p class="text-xs text-slate-500">Pilih subkategori dan buat parameter panduan catatan.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('custom-parameter-modal')" class="p-1 text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveCustomParameter(event)" class="flex-1 overflow-y-auto space-y-3.5 pr-1 text-xs">
+        <input type="hidden" id="param-id" />
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Kategori *</label>
+            <select id="param-modal-category" onchange="onParamModalCategoryChange()" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium bg-white"></select>
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Subkategori *</label>
+            <select id="param-modal-subcategory" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium bg-white"></select>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="font-bold text-slate-700">Daftar Kolom Parameter & Satuan *</label>
+            <button type="button" onclick="addParamInputField()" class="text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 text-[11px]">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+              <span>Tambah Kolom</span>
+            </button>
+          </div>
+          
+          <div id="param-modal-fields-list" class="space-y-2"></div>
+          <span class="text-[10px] text-slate-400 block mt-1.5">
+            Nama parameter dan satuan (opsional). Contoh: [Jarak Tempuh] [km], [Volume] [Liter], [SPBU] [-].
+          </span>
+        </div>
+
+        <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('custom-parameter-modal')" class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-sm">Simpan Parameter</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- LAYAR KUNCI APLIKASI (APP LOCK OVERLAY) -->
   <div id="app-lock-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
@@ -2812,7 +2985,6 @@
     function toSmartTitleCase(str) {
       if (!str || typeof str !== 'string') return '';
 
-      // Proses per baris agar baris baru (\n) pada catatan transaksi tetap terjaga
       return str.split('\n').map(line => {
         const words = line.split(/(\s+)/);
         let isFirstWordInLine = true;
@@ -2820,25 +2992,31 @@
         return words.map(token => {
           if (/^\s+$/.test(token)) return token;
 
-          // Tangkap tanda baca depan & belakang kata, misal "(makan," -> "(", "makan", ","
           const match = token.match(/^([^a-zA-Z0-9]*)([a-zA-Z0-9'-]+)([^a-zA-Z0-9]*)$/);
           if (!match) return token;
 
           const leadingPunct = match[1];
           const word = match[2];
           const trailingPunct = match[3];
+
+          // ==================== PENGECUALIAN SINGKATAN (ALL-CAPS) ====================
+          // Jika kata diketik kapital semua dengan panjang 2 s.d. 5 karakter (misal: SPBU, BCA, PLN, PDAM, IDR)
+          // pertahankan huruf kapital penuh, jangan diubah menjadi Title Case
+          if (/^[A-Z0-9]{2,5}$/.test(word)) {
+            isFirstWordInLine = false;
+            return leadingPunct + word + trailingPunct;
+          }
+          // =========================================================================
+
           const lowerWord = word.toLowerCase();
 
           let formattedWord;
           if (isFirstWordInLine) {
-            // Kata pertama pada baris selalu kapital
             formattedWord = lowerWord.charAt(0).toUpperCase() + lowerWord.slice(1);
             isFirstWordInLine = false;
           } else if (SMART_LOWERCASE_WORDS.has(lowerWord)) {
-            // Kata sambung/depan di tengah kalimat tetap huruf kecil
             formattedWord = lowerWord;
           } else {
-            // Kata reguler diawali huruf besar
             formattedWord = lowerWord.charAt(0).toUpperCase() + lowerWord.slice(1);
           }
 
@@ -3110,7 +3288,8 @@
       'recurring-bill-modal',
 	  'recurring-conflict-modal',
 	  'import-tx-preview-modal',   
-      'import-cat-preview-modal'
+      'import-cat-preview-modal',
+	  'custom-parameter-modal'
     ];
 
     // Data Siklus Tagihan Berulang Berbasis Masa Berlaku Hari
@@ -3119,6 +3298,22 @@
       { id: 'rec-1', name: 'Paket Data Telkomsel', amount: 100000, validityDays: 28, lastPaidDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2', subcategory: 'Internet WiFi', notify: true },
       { id: 'rec-2', name: 'Langganan Wi-Fi Rumah', amount: 350000, validityDays: 30, lastPaidDate: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0], categoryId: 'cat-2', subcategory: 'Internet WiFi', notify: true },
       { id: 'rec-3', name: 'Langganan Streaming Musik', amount: 55000, validityDays: 30, lastPaidDate: new Date(Date.now() - 28 * 86400000).toISOString().split('T')[0], categoryId: 'cat-4', subcategory: 'Langganan Streaming', notify: true }
+    ];
+	
+	// Data Parameter Kustom Panduan Catatan Transaksi
+    let customParameters = [];
+    // Default parameter awal dengan satuan
+    const defaultCustomParameters = [
+      {
+        id: 'param-1',
+        categoryId: 'cat-3',
+        subcategory: 'Bensin',
+        parameters: [
+          { name: 'Harga/Liter', unit: 'Rp' },
+          { name: 'SPBU', unit: '' },
+          { name: 'Jarak Tempuh', unit: 'km' }
+        ]
+      }
     ];
 
     let navStack = ['dashboard'];
@@ -3219,6 +3414,15 @@
         if (!r.validityDays) r.validityDays = 28;
         if (!r.lastPaidDate) r.lastPaidDate = new Date().toISOString().split('T')[0];
         if (r.notify === undefined) r.notify = true;
+      });
+	  
+	  try {
+        customParameters = JSON.parse(localStorage.getItem('vf_custom_parameters')) || defaultCustomParameters;
+      } catch(e) { customParameters = defaultCustomParameters; }
+      if (!Array.isArray(customParameters)) customParameters = JSON.parse(JSON.stringify(defaultCustomParameters));
+      customParameters.forEach((cp, idx) => {
+        if (!cp.id) cp.id = 'param-' + Date.now() + '-' + idx;
+        if (!Array.isArray(cp.parameters)) cp.parameters = [];
       });
     }
 
@@ -3405,6 +3609,7 @@
       localStorage.setItem('vf_tx_prefs', JSON.stringify(txPreferences));
       localStorage.setItem('vf_fs_backup_config', JSON.stringify(fsBackupConfig));
 	  localStorage.setItem('vf_recurring_bills', JSON.stringify(recurringBills));
+	  localStorage.setItem('vf_custom_parameters', JSON.stringify(customParameters));
 
       if (triggerAutoBackup) {
         if (backupConfig.frequency === 'on_change') {
@@ -5108,6 +5313,11 @@
           setVal('tx-category', tx.categoryId);
           populateSubcategoriesDropdown();
           setVal('tx-subcategory', tx.subcategory || '');
+
+          // PISAHKAN CATATAN UTAMA & NILAI PARAMETER SECARA TUNTAS
+          const parsed = parseNoteAndParameters(tx.note || '');
+          setVal('tx-note', parsed.mainNote); 
+          updateTxCustomParameterFields(parsed.paramValues); 
         }
         setVal('tx-note', tx.note || '');
       } else {
@@ -5129,6 +5339,7 @@
         if (defaultCat) {
           setVal('tx-category', defaultCat.id);
           populateSubcategoriesDropdown();
+		  updateTxCustomParameterFields();
         }
       }
 
@@ -5162,8 +5373,31 @@
       const adminFee = (type === 'transfer') ? parseDotsNumber(document.getElementById('tx-admin-fee')?.value) : 0;
       const categoryId = document.getElementById('tx-category')?.value;
       const subcategory = document.getElementById('tx-subcategory')?.value || '';
-      const note = document.getElementById('tx-note')?.value || '';
+      
+	  // ==================== SUSUN CATATAN MULTILINE DENGAN PARAMETER & SATUAN ====================
+      let rawMainNote = (document.getElementById('tx-note')?.value || '').trim();
+      const paramInputs = document.querySelectorAll('.tx-param-field-val');
+      const paramLines = [];
 
+      paramInputs.forEach(inp => {
+        const pName = inp.getAttribute('data-param-name');
+        const pUnit = inp.getAttribute('data-param-unit') || '';
+        const pVal = inp.value.trim();
+
+        if (pName && pVal) {
+          // Format otomatis: "• Jarak Tempuh: 45 km" atau "• SPBU: Pertamina" jika tanpa satuan
+          const formattedLine = `• ${pName}: ${pVal}${pUnit ? ' ' + pUnit : ''}`;
+          paramLines.push(formattedLine);
+        }
+      });
+
+      let finalCompiledNote = rawMainNote;
+      if (paramLines.length > 0) {
+        finalCompiledNote = rawMainNote ? `${rawMainNote}\n${paramLines.join('\n')}` : paramLines.join('\n');
+      }
+      const note = finalCompiledNote;
+      // ===========================================================================================
+	  
       if (type === 'transfer') {
         if (!toAccountId || accountId === toAccountId) {
           alert('Rekening asal dan rekening tujuan transfer tidak boleh sama!');
@@ -8818,15 +9052,70 @@
       if (headerBadge) {
         headerBadge.textContent = `${categories.length} Kategori`;
       }
+	  
+	  // Perbarui badge jumlah rekening di header
+	  const accHeaderBadge = document.getElementById('badge-acc-count-header');
+      if (accHeaderBadge) {
+        accHeaderBadge.textContent = `${accounts.length} Akun`;
+      }
 
       // Terapkan status buka/tutup (collapse) yang tersimpan
+	  applySettingAccountCollapseUI();
       applySettingCategoryCollapseUI();
 	  applyRecurringCollapseUI();
+	  applyCustomParamCollapseUI();
+	  applySettingBackupCollapseUI();
 	  
 	  // Render daftar pengingat tagihan di pengaturan
       renderRecurringBillsWidget();
-
+	  renderCustomParameters();
       renderBackupSettingsView();
+      lucide.createIcons();
+    }
+	
+	// ==================== FITUR BUKA/TUTUP (COLLAPSE) SERAGAM DI PENGATURAN ====================
+    let isSettingAccountCollapsed = JSON.parse(localStorage.getItem('vf_setting_acc_collapsed') || 'false');
+    let isSettingBackupCollapsed = JSON.parse(localStorage.getItem('vf_setting_backup_collapsed') || 'false');
+
+    function toggleSettingAccountCollapse() {
+      isSettingAccountCollapsed = !isSettingAccountCollapsed;
+      localStorage.setItem('vf_setting_acc_collapsed', JSON.stringify(isSettingAccountCollapsed));
+      applySettingAccountCollapseUI();
+    }
+
+    function applySettingAccountCollapseUI() {
+      const body = document.getElementById('setting-account-body');
+      const icon = document.getElementById('icon-chevron-acc-setting');
+      if (!body) return;
+
+      if (isSettingAccountCollapsed) {
+        body.classList.add('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+      } else {
+        body.classList.remove('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+      }
+      lucide.createIcons();
+    }
+
+    function toggleSettingBackupCollapse() {
+      isSettingBackupCollapsed = !isSettingBackupCollapsed;
+      localStorage.setItem('vf_setting_backup_collapsed', JSON.stringify(isSettingBackupCollapsed));
+      applySettingBackupCollapseUI();
+    }
+
+    function applySettingBackupCollapseUI() {
+      const body = document.getElementById('setting-backup-body');
+      const icon = document.getElementById('icon-chevron-backup-setting');
+      if (!body) return;
+
+      if (isSettingBackupCollapsed) {
+        body.classList.add('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+      } else {
+        body.classList.remove('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+      }
       lucide.createIcons();
     }
 	
@@ -9641,8 +9930,6 @@
     function applySettingCategoryCollapseUI() {
       const body = document.getElementById('setting-category-body');
       const icon = document.getElementById('icon-chevron-cat-setting');
-      const text = document.getElementById('text-toggle-cat-collapse');
-
       if (!body) return;
 
       if (isSettingCategoryCollapsed) {
@@ -9653,6 +9940,402 @@
         if (icon) icon.setAttribute('data-lucide', 'chevron-up');
       }
       lucide.createIcons();
+    }
+	
+	// ==================== PENGENDALI PARAMETER KUSTOM DI PENGATURAN ====================
+    let isCustomParamCollapsed = JSON.parse(localStorage.getItem('vf_setting_param_collapsed') || 'false');
+
+    function toggleCustomParamCollapse() {
+      isCustomParamCollapsed = !isCustomParamCollapsed;
+      localStorage.setItem('vf_setting_param_collapsed', JSON.stringify(isCustomParamCollapsed));
+      applyCustomParamCollapseUI();
+    }
+
+    function applyCustomParamCollapseUI() {
+      const body = document.getElementById('setting-custom-param-body');
+      const icon = document.getElementById('icon-chevron-param-setting');
+      if (!body) return;
+
+      if (isCustomParamCollapsed) {
+        body.classList.add('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+      } else {
+        body.classList.remove('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+      }
+      lucide.createIcons();
+    }
+
+    function clearCustomParamSearch() {
+      setVal('param-search-input', '');
+      const btn = document.getElementById('param-search-clear');
+      if (btn) btn.classList.add('hidden');
+      renderCustomParameters();
+    }
+
+    function resetCustomParamFilterAndSort() {
+      setVal('param-search-input', '');
+      const btn = document.getElementById('param-search-clear');
+      if (btn) btn.classList.add('hidden');
+      setVal('param-filter-category', 'ALL');
+      setVal('param-sort', 'subcat-asc');
+      renderCustomParameters();
+    }
+
+    function renderCustomParameters() {
+      const container = document.getElementById('custom-parameters-list');
+      const headerBadge = document.getElementById('badge-param-count-header');
+      const filterCountEl = document.getElementById('param-filter-count');
+      const catFilterSelect = document.getElementById('param-filter-category');
+
+      normalizeCustomParametersData();
+
+      if (headerBadge) headerBadge.textContent = `${customParameters.length} Parameter`;
+
+      if (catFilterSelect && catFilterSelect.options.length <= 1) {
+        const uniqueCatIds = Array.from(new Set(customParameters.map(cp => cp.categoryId)));
+        uniqueCatIds.forEach(cId => {
+          const c = categories.find(cat => cat.id === cId);
+          if (c) {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            catFilterSelect.appendChild(opt);
+          }
+        });
+      }
+
+      if (!container) return;
+
+      const searchInput = document.getElementById('param-search-input');
+      const query = (searchInput?.value || '').trim().toLowerCase();
+      const clearBtn = document.getElementById('param-search-clear');
+      if (clearBtn) {
+        if (query) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      const selectedCatFilter = catFilterSelect?.value || 'ALL';
+      const sortOpt = document.getElementById('param-sort')?.value || 'subcat-asc';
+
+      let items = customParameters.map(cp => {
+        const cat = categories.find(c => c.id === cp.categoryId);
+        return { ...cp, catName: cat?.name || 'Kategori' };
+      });
+
+      if (selectedCatFilter !== 'ALL') {
+        items = items.filter(it => it.categoryId === selectedCatFilter);
+      }
+
+      if (query) {
+        items = items.filter(it => 
+          it.subcategory.toLowerCase().includes(query) ||
+          it.catName.toLowerCase().includes(query) ||
+          it.parameters.some(p => p.name.toLowerCase().includes(query) || (p.unit && p.unit.toLowerCase().includes(query)))
+        );
+      }
+
+      if (sortOpt === 'subcat-asc') items.sort((a, b) => a.subcategory.localeCompare(b.subcategory, 'id'));
+      else if (sortOpt === 'subcat-desc') items.sort((a, b) => b.subcategory.localeCompare(a.subcategory, 'id'));
+      else if (sortOpt === 'count-desc') items.sort((a, b) => b.parameters.length - a.parameters.length);
+
+      if (filterCountEl) filterCountEl.textContent = `Menampilkan ${items.length} parameter`;
+
+      if (items.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400 italic">Belum ada parameter kustom yang cocok.</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-slate-900 text-xs sm:text-sm">${escapeHtml(item.subcategory)}</h4>
+                <span class="text-[10px] text-slate-400 block">${escapeHtml(item.catName)}</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 shrink-0">
+                ${item.parameters.length} Kolom
+              </span>
+            </div>
+
+            <!-- TAGS PARAMETER DENGAN SATUAN -->
+            <div class="flex flex-wrap gap-1 mt-2.5">
+              ${item.parameters.map(p => `
+                <span class="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium text-[10px] flex items-center gap-1 shadow-2xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>${escapeHtml(p.name)}${p.unit ? ` <strong class="text-slate-400">(${escapeHtml(p.unit)})</strong>` : ''}</span>
+                </span>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-1 pt-2 border-t border-slate-200/60">
+            <button type="button" onclick="openCustomParamModal('${item.id}')" title="Ubah Parameter" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-emerald-700 transition">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+            <button type="button" onclick="deleteCustomParameter('${item.id}')" title="Hapus Parameter" class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-rose-600 transition">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // Modal Create / Edit Parameter
+    function openCustomParamModal(editId = null) {
+      const catSelect = document.getElementById('param-modal-category');
+      const subSelect = document.getElementById('param-modal-subcategory');
+      const fieldsList = document.getElementById('param-modal-fields-list');
+
+      if (catSelect) {
+        catSelect.innerHTML = `<option value="">-- Pilih Kategori --</option>` + 
+          categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${c.type === 'income' ? 'Pemasukan' : 'Pengeluaran'})</option>`).join('');
+      }
+
+      if (fieldsList) fieldsList.innerHTML = '';
+
+      if (editId) {
+        const item = customParameters.find(cp => String(cp.id) === String(editId));
+        if (!item) return;
+
+        setText('param-modal-title', 'Ubah Parameter Kustom');
+        setVal('param-id', item.id);
+        setVal('param-modal-category', item.categoryId);
+
+        onParamModalCategoryChange(item.subcategory);
+
+        (item.parameters || []).forEach(p => {
+          const pName = typeof p === 'string' ? p : (p.name || '');
+          const pUnit = typeof p === 'string' ? '' : (p.unit || '');
+          addParamInputField(pName, pUnit);
+        });
+      } else {
+        setText('param-modal-title', 'Tambah Parameter Kustom');
+        setVal('param-id', '');
+        if (subSelect) subSelect.innerHTML = `<option value="">-- Pilih Kategori Dahulu --</option>`;
+        addParamInputField('', '');
+      }
+
+      openModal('custom-parameter-modal');
+      lucide.createIcons();
+    }
+
+    function onParamModalCategoryChange(selectedSub = '') {
+      const catId = document.getElementById('param-modal-category')?.value;
+      const subSelect = document.getElementById('param-modal-subcategory');
+      if (!subSelect) return;
+
+      const cat = categories.find(c => c.id === catId);
+      if (cat && cat.subcategories && cat.subcategories.length > 0) {
+        const sortedSubs = [...cat.subcategories].sort((a, b) => a.localeCompare(b, 'id'));
+        subSelect.innerHTML = `<option value="">-- Pilih Subkategori --</option>` + 
+          sortedSubs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        if (selectedSub) subSelect.value = selectedSub;
+      } else {
+        subSelect.innerHTML = `<option value="">Tidak ada subkategori pada kategori ini</option>`;
+      }
+    }
+	
+    // Sanitasi data lama (jika sebelumnya parameter berupa string biasa, ubah ke objek { name, unit })
+    function normalizeCustomParametersData() {
+      customParameters.forEach((cp, idx) => {
+        if (!cp.id) cp.id = 'param-' + Date.now() + '-' + idx;
+        if (!Array.isArray(cp.parameters)) cp.parameters = [];
+        cp.parameters = cp.parameters.map(p => {
+          if (typeof p === 'string') {
+            return { name: p, unit: '' };
+          }
+          return { name: p.name || '', unit: p.unit || '' };
+        }).filter(p => p.name.trim() !== '');
+      });
+    }
+
+    function addParamInputField(name = '', unit = '') {
+      const container = document.getElementById('param-modal-fields-list');
+      if (!container) return;
+
+      const rowId = 'param-row-' + Date.now() + '-' + Math.random().toString().slice(2, 6);
+      const div = document.createElement('div');
+      div.id = rowId;
+      div.className = 'flex items-center gap-2';
+      div.innerHTML = `
+        <div class="relative flex-1">
+          <input type="text" value="${escapeHtml(name)}" placeholder="Nama Parameter (misal: Jarak Tempuh)" class="param-input-name w-full px-3 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-xs" required />
+        </div>
+        <div class="w-24 shrink-0">
+          <input type="text" value="${escapeHtml(unit)}" placeholder="Satuan (km, L)" class="param-input-unit w-full px-2.5 py-1.5 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-xs text-center" />
+        </div>
+        <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0" title="Hapus Kolom">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      `;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function saveCustomParameter(e) {
+      e.preventDefault();
+      const id = document.getElementById('param-id')?.value;
+      const categoryId = document.getElementById('param-modal-category')?.value;
+      const subcategory = document.getElementById('param-modal-subcategory')?.value;
+
+      if (!categoryId || !subcategory) {
+        alert('Harap pilih Kategori dan Subkategori terlebih dahulu!');
+        return;
+      }
+
+      const rows = document.querySelectorAll('#param-modal-fields-list > div');
+      const paramsList = [];
+
+      rows.forEach(r => {
+        const nameInp = r.querySelector('.param-input-name');
+        const unitInp = r.querySelector('.param-input-unit');
+        const nameVal = nameInp ? toSmartTitleCase(nameInp.value.trim()) : '';
+        const unitVal = unitInp ? unitInp.value.trim() : '';
+
+        if (nameVal) {
+          paramsList.push({ name: nameVal, unit: unitVal });
+        }
+      });
+
+      if (paramsList.length === 0) {
+        alert('Harap masukkan setidaknya satu nama parameter!');
+        return;
+      }
+
+      const duplicate = customParameters.find(cp => 
+        String(cp.id) !== String(id) && 
+        cp.categoryId === categoryId && 
+        cp.subcategory.toLowerCase() === subcategory.toLowerCase()
+      );
+
+      if (duplicate) {
+        alert(`Subkategori "${subcategory}" sudah memiliki pengaturan parameter. Gunakan tombol ubah untuk mengeditnya.`);
+        return;
+      }
+
+      if (id && id.trim() !== '') {
+        const idx = customParameters.findIndex(cp => String(cp.id) === String(id));
+        if (idx !== -1) {
+          customParameters[idx] = {
+            id: String(id),
+            categoryId,
+            subcategory,
+            parameters: paramsList
+          };
+        }
+      } else {
+        customParameters.unshift({
+          id: 'param-' + Date.now() + '-' + Math.random().toString().slice(2, 6),
+          categoryId,
+          subcategory,
+          parameters: paramsList
+        });
+      }
+
+      persistState(true);
+      closeModal('custom-parameter-modal');
+      renderCustomParameters();
+      alert('Parameter kustom berhasil disimpan!');
+    }
+
+    function deleteCustomParameter(id) {
+      if (confirm('Hapus pengaturan parameter kustom untuk subkategori ini?')) {
+        customParameters = customParameters.filter(cp => String(cp.id) !== String(id));
+        persistState(true);
+        renderCustomParameters();
+      }
+    }
+	
+	// ==================== INTEGRASI PARAMETER DI FORM TRANSAKSI ====================
+    function updateTxCustomParameterFields(existingParamValues = {}) {
+      const catId = document.getElementById('tx-category')?.value;
+      const subVal = (document.getElementById('tx-subcategory')?.value || '').trim();
+      const wrap = document.getElementById('tx-custom-params-wrap');
+      const subNameEl = document.getElementById('tx-custom-params-subname');
+      const fieldsContainer = document.getElementById('tx-custom-params-fields');
+
+      if (!wrap || !fieldsContainer) return;
+
+      if (!catId || !subVal) {
+        wrap.classList.add('hidden');
+        fieldsContainer.innerHTML = '';
+        return;
+      }
+
+      const config = customParameters.find(cp => 
+        cp.categoryId === catId && 
+        cp.subcategory.toLowerCase() === subVal.toLowerCase()
+      );
+
+      if (config && config.parameters && config.parameters.length > 0) {
+        wrap.classList.remove('hidden');
+        if (subNameEl) subNameEl.textContent = config.subcategory;
+
+        fieldsContainer.innerHTML = config.parameters.map((p) => {
+          const pName = typeof p === 'string' ? p : (p.name || '');
+          const pUnit = typeof p === 'string' ? '' : (p.unit || '');
+          const cleanKey = pName.toLowerCase().trim();
+          const val = existingParamValues[cleanKey] || '';
+
+          return `
+            <div>
+              <label class="font-semibold text-slate-700 block mb-0.5 text-[11px] truncate">
+                ${escapeHtml(pName)} ${pUnit ? `<span class="text-slate-400 font-normal">(${escapeHtml(pUnit)})</span>` : ''}
+              </label>
+              <div class="relative">
+                <input type="text" data-param-name="${escapeHtml(pName)}" data-param-unit="${escapeHtml(pUnit)}" value="${escapeHtml(val)}" placeholder="Isi ${escapeHtml(pName)}..." class="tx-param-field-val w-full ${pUnit ? 'pr-9' : 'pr-2.5'} pl-2.5 py-1.5 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-medium" />
+                ${pUnit ? `<span class="absolute right-2.5 top-2 text-[11px] text-slate-400 font-semibold pointer-events-none">${escapeHtml(pUnit)}</span>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+        lucide.createIcons();
+      } else {
+        wrap.classList.add('hidden');
+        fieldsContainer.innerHTML = '';
+      }
+    }
+
+    // Fungsi pemisah catatan utama dan baris-baris parameter saat mode edit
+    function parseNoteAndParameters(fullNote) {
+      if (!fullNote) return { mainNote: '', paramValues: {} };
+
+      const lines = fullNote.split('\n');
+      const mainLines = [];
+      const paramValues = {};
+
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        // Deteksi pola bullet point: "• NamaParam: Nilai [Satuan]"
+        const match = trimmed.match(/^[•\-*]\s*([^:]+):\s*(.*)$/);
+        if (match) {
+          const pName = match[1].trim().toLowerCase();
+          let pVal = match[2].trim();
+
+          // Cari jika ada satuan yang menempel di belakang nilai dan bersihkan
+          customParameters.forEach(cp => {
+            (cp.parameters || []).forEach(p => {
+              const unit = typeof p === 'string' ? '' : (p.unit || '').trim();
+              if (unit && pVal.toLowerCase().endsWith(' ' + unit.toLowerCase())) {
+                pVal = pVal.slice(0, -(unit.length + 1)).trim();
+              }
+            });
+          });
+
+          paramValues[pName] = pVal;
+        } else {
+          // Baris ini adalah catatan utama asli
+          mainLines.push(line);
+        }
+      });
+
+      return {
+        mainNote: mainLines.join('\n').trim(),
+        paramValues
+      };
     }
 
     // ==================== CADANGAN & PEMULIHAN (BACKUP & RESTORE) ====================
@@ -9669,6 +10352,8 @@
           transactions: transactions,
           budgets: budgets,
           budgetHistory: budgetHistory,
+		  recurringBills: recurringBills,
+		  customParameters: customParameters,
           backupConfig: backupConfig,
           isNetWorthHidden: isNetWorthHidden,
           dashPrivacy: dashPrivacy,
@@ -9836,7 +10521,9 @@
       transactions = pendingRestoreData.data.transactions || [];
       budgets = pendingRestoreData.data.budgets || {};
       budgetHistory = pendingRestoreData.data.budgetHistory || [];
-      
+	  recurringBills = pendingRestoreData.data.recurringBills || defaultRecurringBills;
+      customParameters = pendingRestoreData.data.customParameters || defaultCustomParameters;
+	  
       if (pendingRestoreData.data.backupConfig) {
         backupConfig = Object.assign({}, defaultBackupConfig, pendingRestoreData.data.backupConfig);
       }
@@ -10047,6 +10734,7 @@
       } else {
         subSelect.innerHTML = `<option value="">Tanpa Subkategori</option>`;
       }
+	  updateTxCustomParameterFields();
     }
 
     function toggleMobileMenu() {
@@ -10704,6 +11392,8 @@
             categories = decryptedPayload.data.categories || categories;
             transactions = decryptedPayload.data.transactions || transactions;
             budgets = decryptedPayload.data.budgets || budgets;
+			recurringBills = decryptedPayload.data.recurringBills || recurringBills;
+			customParameters = decryptedPayload.data.customParameters || customParameters;
 
             const cloudSyncIso = new Date(cloudModifiedTime).toISOString();
             localStorage.setItem('vf_last_sync_timestamp', String(cloudModifiedTime));
@@ -10893,6 +11583,8 @@
           categories = payload.data.categories || categories;
           transactions = payload.data.transactions || transactions;
           budgets = payload.data.budgets || budgets;
+		  recurringBills = payload.data.recurringBills || recurringBills;
+		  customParameters = decryptedPayload.data.customParameters || customParameters;
 
           const cloudTime = pendingConflictPayload?.modifiedTime ? new Date(pendingConflictPayload.modifiedTime).getTime() : Date.now();
           const syncTimeIso = new Date(cloudTime).toISOString();
