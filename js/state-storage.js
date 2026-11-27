@@ -214,6 +214,8 @@ const allModalIds = [
   'budget-modal',
   'restore-confirm-modal',
   'export-options-modal',
+  'analysis-export-modal',
+  'export-preview-modal',
   'calendar-picker-modal',
   'sync-badge-modal',
   'sync-conflict-modal',
@@ -222,10 +224,10 @@ const allModalIds = [
   'budget-overrun-modal',
   'chart-drilldown-modal',
   'recurring-bill-modal',
-	  'recurring-conflict-modal',
-	  'import-tx-preview-modal',   
+  'recurring-conflict-modal',
+  'import-tx-preview-modal',
   'import-cat-preview-modal',
-	  'custom-parameter-modal'
+  'custom-parameter-modal'
 ];
 
 // Data Siklus Tagihan Berulang Berbasis Masa Berlaku Hari
@@ -405,11 +407,15 @@ function openModal(id) {
   }
 }
 
-function closeModal(id) { 
-	  closeInAppNumpad();
-  const el = document.getElementById(id); 
+function closeModal(id) {
+  closeInAppNumpad();
+  if (id === 'export-preview-modal' && typeof cleanupPendingExportPreviewUrl === 'function') {
+    cleanupPendingExportPreviewUrl();
+    if (typeof pendingExportPreviewState !== 'undefined') pendingExportPreviewState = null;
+  }
+  const el = document.getElementById(id);
   if (el) {
-    el.classList.add('hidden'); 
+    el.classList.add('hidden');
   }
   if (history.state && history.state.modalId === id) {
     suppressNextPopstate = true;
@@ -419,6 +425,10 @@ function closeModal(id) {
 
 function closeAllOpenModals() {
   closeMobileMenu();
+  if (typeof cleanupPendingExportPreviewUrl === 'function') {
+    cleanupPendingExportPreviewUrl();
+    if (typeof pendingExportPreviewState !== 'undefined') pendingExportPreviewState = null;
+  }
   allModalIds.forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.classList.contains('hidden')) {
@@ -426,6 +436,50 @@ function closeAllOpenModals() {
     }
   });
 }
+
+// Tutup pop-up otomatis saat user mengklik area gelap (backdrop) di luar kartu pop-up
+const BACKDROP_CLOSABLE_MODALS = new Set([
+  ...allModalIds,
+  'exit-confirm-modal',
+  'app-dialog-modal'
+]);
+
+let lastModalBackdropPointerDown = null;
+
+document.addEventListener('pointerdown', (e) => {
+  const target = e.target;
+  if (target && target.id && BACKDROP_CLOSABLE_MODALS.has(target.id)) {
+    lastModalBackdropPointerDown = target;
+  } else {
+    lastModalBackdropPointerDown = null;
+  }
+}, true);
+
+document.addEventListener('click', (e) => {
+  const target = e.target;
+  if (!target || !target.id || !BACKDROP_CLOSABLE_MODALS.has(target.id)) return;
+  if (lastModalBackdropPointerDown !== target) return;
+  lastModalBackdropPointerDown = null;
+
+  if (target.id === 'export-preview-modal') {
+    if (typeof closeExportPreviewModal === 'function') closeExportPreviewModal();
+    else closeModal('export-preview-modal');
+    return;
+  }
+  if (target.id === 'exit-confirm-modal') {
+    if (typeof closeExitConfirmModal === 'function') closeExitConfirmModal();
+    else target.classList.add('hidden');
+    return;
+  }
+  if (target.id === 'app-dialog-modal') {
+    const cancelBtn = document.getElementById('app-dialog-cancel');
+    const okBtn = document.getElementById('app-dialog-ok');
+    if (cancelBtn && !cancelBtn.classList.contains('hidden')) cancelBtn.click();
+    else if (okBtn) okBtn.click();
+    return;
+  }
+  closeModal(target.id);
+});
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' || e.key === 'Esc') {

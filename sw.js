@@ -34,9 +34,11 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/chart.js',
   // Mesin Impor & Ekspor Excel (dengan Styling)
   'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js',
-  // Mesin Pembuat PDF & Tabel PDF
+  // Mesin Pembuat PDF & Tabel PDF + Pratinjau PDF
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   // Ikon Aplikasi
   'https://unpkg.com/lucide@latest'
 ];

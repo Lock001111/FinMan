@@ -230,6 +230,8 @@ function applyWorksheetStyling(ws, aoa, opts = {}) {
     blankRows = new Set(),
     headerFill = '059669',
     bannerFill = '065F46',
+    rowHeaderFills = {},
+    rowBannerFills = {},
     rightCols = new Set(),
     centerCols = new Set(),
     signedCols = new Set(),
@@ -336,18 +338,20 @@ function applyWorksheetStyling(ws, aoa, opts = {}) {
 
       // Terapkan styling sel lengkap (warna background, font, rata teks, border)
       if (isBanner) {
+        const activeBannerFill = rowBannerFills[r] || bannerFill;
         cell.s = {
-          fill: { patternType: 'solid', fgColor: { rgb: bannerFill } },
+          fill: { patternType: 'solid', fgColor: { rgb: activeBannerFill } },
           font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
           alignment: { horizontal: isRight ? 'right' : 'left', vertical: 'center', wrapText: true },
           border: headerBorder
         };
       } else if (isHeader) {
+        const activeHeaderFill = rowHeaderFills[r] || headerFill;
         cell.s = {
-          fill: { patternType: 'solid', fgColor: { rgb: headerFill } },
+          fill: { patternType: 'solid', fgColor: { rgb: activeHeaderFill } },
           font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
           alignment: { horizontal: isRight ? 'right' : (isCenter ? 'center' : 'left'), vertical: 'center', wrapText: true },
-          border: headerFill === '059669' ? headerBorder : darkHeaderBorder
+          border: activeHeaderFill === '059669' ? headerBorder : darkHeaderBorder
         };
       } else if (isBalance) {
         let txtColor = '065F46';
@@ -551,7 +555,7 @@ function buildExcelExportPackage(type, layoutMode) {
   const sheets = [];
   let filename = '';
   let scopeTxsAll = [];
-  const suffixLayout = layoutMode === 'per_account' ? '_PerRekening' : '';
+  const suffixLayout = layoutMode === 'per_account' ? '_Format_Rekening' : '_Format_Standar';
 
   const buildSheetEntry = (sheetName, txList) => {
     const sorted = sortTxsDescByDate(txList);
@@ -740,7 +744,7 @@ function buildExcelExportPackage(type, layoutMode) {
       const monthTxs = scopeTxsAll.filter(t => t.date && t.date.startsWith(monthKey));
       sheets.push(buildSheetEntry(monthName, monthTxs));
     }
-    filename = `Laporan_Keuangan_Tahunan_${year}_PerBulan${suffixLayout}.xlsx`;
+    filename = `FinTrack_Laporan_Transaksi_Tahunan_${year}${suffixLayout}.xlsx`;
   } else if (type === 'monthly') {
     const monthVal = document.getElementById('export-month-input')?.value || dashboardSelectedMonth;
     const parts = monthVal.split('-').map(Number);
@@ -748,11 +752,11 @@ function buildExcelExportPackage(type, layoutMode) {
     const m = parts[1] || 1;
     scopeTxsAll = transactions.filter(t => t.date && t.date.startsWith(monthVal));
     sheets.push(buildSheetEntry(`${monthNamesID[m - 1]} ${y}`, scopeTxsAll));
-    filename = `Laporan_Keuangan_${monthVal}${suffixLayout}.xlsx`;
+    filename = `FinTrack_Laporan_Transaksi_Bulanan_${monthVal}${suffixLayout}.xlsx`;
   } else {
     scopeTxsAll = [...transactions];
     sheets.push(buildSheetEntry('Semua Transaksi', scopeTxsAll));
-    filename = `Laporan_Keuangan_SemuaWaktu_${getLocalDateStr()}${suffixLayout}.xlsx`;
+    filename = `FinTrack_Laporan_Transaksi_Semua_Waktu_${getLocalDateStr()}${suffixLayout}.xlsx`;
   }
 
   const activeAccounts = layoutMode === 'per_account' ? getExportAccountsUsedInTxs(scopeTxsAll) : [];
@@ -783,14 +787,14 @@ function buildPdfExportPackage(type, layoutMode) {
   let periodBadge = '';
   let filename = '';
   let monthlyRows = [];
-  const suffixLayout = isPerAccount ? '_PerRekening' : '';
+  const suffixLayout = isPerAccount ? '_Format_Rekening' : '_Format_Standar';
 
   if (type === 'yearly') {
     const year = document.getElementById('export-year-select')?.value || String(curYear);
     scopeTxs = transactions.filter(t => t.date && t.date.startsWith(year));
     title = `Laporan Keuangan Tahunan (${year})`;
     periodBadge = `Tahun ${year}`;
-    filename = `Laporan_Keuangan_Tahunan_${year}${suffixLayout}.pdf`;
+    filename = `FinTrack_Laporan_Transaksi_Tahunan_${year}${suffixLayout}.pdf`;
 
     for (let m = 1; m <= 12; m++) {
       const mKey = `${year}-${String(m).padStart(2, '0')}`;
@@ -814,12 +818,12 @@ function buildPdfExportPackage(type, layoutMode) {
     scopeTxs = transactions.filter(t => t.date && t.date.startsWith(monthVal));
     title = `Laporan Keuangan Bulanan — ${monthName}`;
     periodBadge = monthName;
-    filename = `Laporan_Keuangan_${monthVal}${suffixLayout}.pdf`;
+    filename = `FinTrack_Laporan_Transaksi_Bulanan_${monthVal}${suffixLayout}.pdf`;
   } else {
     scopeTxs = [...transactions];
     title = 'Laporan Riwayat Keuangan (Semua Waktu)';
     periodBadge = 'Semua Waktu';
-    filename = `Laporan_Keuangan_SemuaWaktu_${getLocalDateStr()}${suffixLayout}.pdf`;
+    filename = `FinTrack_Laporan_Transaksi_Semua_Waktu_${getLocalDateStr()}${suffixLayout}.pdf`;
   }
 
   // Filter rekening HANYA yang melakukan transaksi pada periode ini (termasuk rekening tersembunyi)
@@ -1156,20 +1160,32 @@ function renderExportPreviewModal() {
   const fnEl = document.getElementById('export-preview-filename');
   const dlLbl = document.getElementById('export-preview-download-label');
 
+  const backBtn = document.getElementById('export-preview-back-btn');
+  if (backBtn) backBtn.classList.toggle('hidden', Boolean(state.isCategoryExport));
+
   if (iconWrap) iconWrap.className = `p-2 rounded-xl shrink-0 ${isExcel ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`;
   if (iconEl) iconEl.setAttribute('data-lucide', isExcel ? 'file-spreadsheet' : 'file-text');
-  if (titleEl) titleEl.textContent = isExcel ? 'Preview Ekspor Excel (.xlsx)' : 'Preview Ekspor PDF (.pdf)';
+  if (titleEl) {
+    titleEl.textContent = state.isCategoryExport
+      ? 'Preview Ekspor Daftar Kategori (.xlsx)'
+      : (isExcel ? 'Preview Ekspor Excel (.xlsx)' : 'Preview Ekspor PDF (.pdf)');
+  }
   if (badgeEl) {
-    if (state.isAnalysisExport) {
+    if (state.isCategoryExport) {
+      badgeEl.textContent = 'Daftar Kategori';
+      badgeEl.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200';
+    } else if (state.isAnalysisExport) {
       badgeEl.textContent = state.scopeType === 'year' ? 'Analisa Tahunan' : 'Analisa Bulanan';
       badgeEl.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200';
     } else {
-      badgeEl.textContent = isPerAccount ? 'Versi 2: Kolom Rekening (+/-)' : 'Versi 1: Format Standar';
+      badgeEl.textContent = isPerAccount ? 'Format Rekening (+/-)' : 'Format Standar';
       badgeEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${isPerAccount ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-700 border-slate-200'}`;
     }
   }
   if (subEl) {
-    if (state.isAnalysisExport) {
+    if (state.isCategoryExport) {
+      subEl.textContent = 'Pratinjau daftar kategori & subkategori sebelum mengunduh file Excel.';
+    } else if (state.isAnalysisExport) {
       subEl.textContent = `Pratinjau laporan analisa finansial (${state.analysisData?.periodLabel || ''}) sebelum mengunduh file.`;
     } else {
       subEl.textContent = isPerAccount
@@ -1180,10 +1196,32 @@ function renderExportPreviewModal() {
   if (fnEl) fnEl.textContent = state.filename;
   if (dlLbl) dlLbl.textContent = isExcel ? 'Unduh Excel (.xlsx)' : 'Unduh PDF (.pdf)';
 
-  // Ringkasan KPI + Info Analisa / Saldo Rekening Bertransaksi (untuk Versi 2)
+  // Ringkasan KPI + Info Analisa / Saldo Rekening Bertransaksi / Daftar Kategori
   const summaryWrap = document.getElementById('export-preview-summary');
   if (summaryWrap) {
-    if (state.isAnalysisExport && state.analysisData) {
+    if (state.isCategoryExport && state.categorySummary) {
+      const cs = state.categorySummary;
+      summaryWrap.innerHTML = `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] text-slate-500 font-semibold block">Total Kategori</span>
+            <strong class="text-sm text-slate-900">${cs.totalCategories} Kategori</strong>
+          </div>
+          <div class="p-2.5 rounded-xl bg-rose-50/70 border border-rose-200">
+            <span class="text-[10px] text-rose-700 font-semibold block">Kategori Pengeluaran</span>
+            <strong class="text-sm text-rose-700">${cs.expenseCount} Kategori</strong>
+          </div>
+          <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <span class="text-[10px] text-emerald-700 font-semibold block">Kategori Pemasukan</span>
+            <strong class="text-sm text-emerald-700">${cs.incomeCount} Kategori</strong>
+          </div>
+          <div class="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-200">
+            <span class="text-[10px] text-indigo-700 font-semibold block">Total Subkategori</span>
+            <strong class="text-sm text-indigo-700">${cs.totalSubcategories} Subkategori</strong>
+          </div>
+        </div>
+      `;
+    } else if (state.isAnalysisExport && state.analysisData) {
       const a = state.analysisData;
       summaryWrap.innerHTML = `
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -1375,24 +1413,124 @@ function renderMergedRowCellsHtml(rowCells, rowIdx, merges, renderCellFn) {
   return html;
 }
 
+let pdfPreviewZoom = 1.0;
+let pdfPreviewRenderSeq = 0;
+
+function adjustPdfPreviewZoom(delta) {
+  pdfPreviewZoom = Math.max(0.6, Math.min(2.0, Number((pdfPreviewZoom + delta).toFixed(2))));
+  const zoomLbl = document.getElementById('export-preview-pdf-zoom-label');
+  if (zoomLbl) zoomLbl.textContent = `${Math.round(pdfPreviewZoom * 100)}%`;
+  if (pendingExportPreviewState && pendingExportPreviewState.format === 'pdf' && pendingExportPreviewState.viewMode === 'pdf') {
+    renderPdfPagesPreview(pendingExportPreviewState);
+  }
+}
+
+async function renderPdfPagesPreview(state) {
+  const pagesWrap = document.getElementById('export-preview-pdf-pages');
+  const pageInfoEl = document.getElementById('export-preview-pdf-page-info');
+  const zoomLbl = document.getElementById('export-preview-pdf-zoom-label');
+  if (!pagesWrap || !state || !state.doc) return;
+
+  const seq = ++pdfPreviewRenderSeq;
+  if (zoomLbl) zoomLbl.textContent = `${Math.round(pdfPreviewZoom * 100)}%`;
+
+  if (typeof window.pdfjsLib === 'undefined') {
+    if (pageInfoEl) pageInfoEl.textContent = 'Pratinjau Dokumen PDF (Offline Fallback)';
+    pagesWrap.innerHTML = `
+      <div class="max-w-md w-full my-auto p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-3">
+        <div class="text-sm font-bold text-slate-800">Renderer PDF Sedang Offline</div>
+        <p class="text-xs text-slate-500">Halaman PDF lengkap siap diunduh, atau gunakan pratinjau tabel terstruktur untuk memeriksa seluruh isi laporan.</p>
+        <button type="button" onclick="switchPdfPreviewMode('table')" class="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition">Buka Pratinjau Tabel &amp; Halaman</button>
+      </div>
+    `;
+    return;
+  }
+
+  if (pageInfoEl) pageInfoEl.textContent = 'Merender halaman A4...';
+  pagesWrap.innerHTML = `<div class="py-12 text-xs text-slate-500 font-semibold">Menyiapkan halaman A4...</div>`;
+
+  try {
+    const rawBuf = state.doc.output('arraybuffer');
+    const pdfBytes = new Uint8Array(rawBuf);
+    const loadingTask = window.pdfjsLib.getDocument({
+      data: pdfBytes,
+      disableWorker: Boolean(window.pdfjsWorker)
+    });
+    const pdfDoc = await loadingTask.promise;
+    if (seq !== pdfPreviewRenderSeq) return;
+
+    const totalPages = pdfDoc.numPages;
+    if (pageInfoEl) pageInfoEl.textContent = `Dokumen A4 • ${totalPages} Halaman`;
+    pagesWrap.innerHTML = '';
+
+    const containerWidth = Math.max(260, (pagesWrap.clientWidth || 720) - 36);
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+
+    for (let p = 1; p <= totalPages; p++) {
+      if (seq !== pdfPreviewRenderSeq) return;
+      const page = await pdfDoc.getPage(p);
+      if (seq !== pdfPreviewRenderSeq) return;
+
+      const baseViewport = page.getViewport({ scale: 1 });
+      const fitScale = Math.min(1.35, containerWidth / baseViewport.width);
+      const cssScale = Math.max(0.4, fitScale * pdfPreviewZoom);
+      const viewport = page.getViewport({ scale: cssScale * dpr });
+
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-md shadow-md border border-slate-300 overflow-hidden shrink-0 flex flex-col items-center';
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      canvas.style.width = `${Math.floor(baseViewport.width * cssScale)}px`;
+      canvas.style.height = `${Math.floor(baseViewport.height * cssScale)}px`;
+      canvas.className = 'block bg-white';
+
+      const pageCaption = document.createElement('div');
+      pageCaption.className = 'w-full px-3 py-1 bg-slate-50 border-t border-slate-200 text-[10px] font-semibold text-slate-500 flex justify-between';
+      pageCaption.innerHTML = `<span>Format A4</span><span>Halaman ${p} dari ${totalPages}</span>`;
+
+      card.appendChild(canvas);
+      card.appendChild(pageCaption);
+      pagesWrap.appendChild(card);
+
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    }
+  } catch (err) {
+    console.error('Gagal merender pratinjau PDF:', err);
+    if (seq !== pdfPreviewRenderSeq) return;
+    if (pageInfoEl) pageInfoEl.textContent = 'Pratinjau Dokumen PDF';
+    pagesWrap.innerHTML = `
+      <div class="max-w-md w-full my-auto p-5 rounded-2xl bg-white border border-rose-200 shadow-sm text-center space-y-3">
+        <div class="text-sm font-bold text-rose-700">Gagal Menampilkan Canvas PDF</div>
+        <p class="text-xs text-slate-500">Anda tetap dapat memeriksa isi lengkap di tab Pratinjau Tabel atau langsung mengunduh file PDF.</p>
+        <button type="button" onclick="switchPdfPreviewMode('table')" class="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition">Buka Pratinjau Tabel &amp; Halaman</button>
+      </div>
+    `;
+  }
+}
+
 function renderExportPreviewBody() {
   const state = pendingExportPreviewState;
   const tableWrap = document.getElementById('export-preview-table-wrap');
   const frameWrap = document.getElementById('export-preview-pdf-frame-wrap');
-  const iframe = document.getElementById('export-preview-pdf-iframe');
   if (!state || !tableWrap) return;
 
   if (state.format === 'pdf' && state.viewMode === 'pdf') {
     tableWrap.classList.add('hidden');
     if (frameWrap) frameWrap.classList.remove('hidden');
-    if (iframe && state.pdfBlobUrl && iframe.src !== state.pdfBlobUrl) {
-      iframe.src = state.pdfBlobUrl;
-    }
+    renderPdfPagesPreview(state);
     return;
   }
 
   if (frameWrap) frameWrap.classList.add('hidden');
   tableWrap.classList.remove('hidden');
+
+  if (state.isCategoryExport) {
+    renderCategoryExportPreviewBody(state, tableWrap);
+    return;
+  }
 
   if (state.isAnalysisExport) {
     renderAnalysisExportPreviewBody(state, tableWrap);
@@ -1581,8 +1719,9 @@ function renderExportPreviewBody() {
 }
 
 function closeExportPreviewModal() {
-  const iframe = document.getElementById('export-preview-pdf-iframe');
-  if (iframe) iframe.src = 'about:blank';
+  pdfPreviewRenderSeq++;
+  const pagesWrap = document.getElementById('export-preview-pdf-pages');
+  if (pagesWrap) pagesWrap.innerHTML = '';
   cleanupPendingExportPreviewUrl();
   pendingExportPreviewState = null;
   closeModal('export-preview-modal');
@@ -1710,7 +1849,9 @@ function buildAnalysisExcelPackage(scope, filterPrefix) {
       merges: opts.merges || [],
       bannerRows: opts.bannerRows || new Set(),
       headerRows: opts.headerRows || new Set(),
-      summaryRows: opts.summaryRows || new Set()
+      summaryRows: opts.summaryRows || new Set(),
+      rowBannerFills: opts.rowBannerFills || {},
+      rowHeaderFills: opts.rowHeaderFills || {}
     });
   };
 
@@ -1804,35 +1945,85 @@ function buildAnalysisExcelPackage(scope, filterPrefix) {
       minColWidths: { 0: 26, 1: 18, 2: 20, 3: 20, 4: 22 }
     });
   } else {
+    // Sheet 2 Bulanan: Dikelompokkan & dipisah jelas per masing-masing kategori beserta Total Kategori
     const s2Aoa = [
-      [`RINCIAN KATEGORI & SUBKATEGORI — ${data.periodLabel}`, '', '', '', ''],
-      ['Jenis', 'Kategori', 'Subkategori', 'Frekuensi', 'Nominal (IDR)']
+      [`RINCIAN KATEGORI & SUBKATEGORI — ${data.periodLabel}`, '', '', '', '']
     ];
-    data.expenseCategories.forEach(cat => {
-      s2Aoa.push(['Pengeluaran', cat.name, '(Total Kategori)', `${cat.count}x`, cat.total]);
-      cat.subcategories.forEach(sub => {
-        s2Aoa.push(['Pengeluaran', cat.name, sub.name, `${sub.count}x`, sub.total]);
+    const s2Merges = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+    const s2BannerRows = new Set([0]);
+    const s2HeaderRows = new Set();
+    const s2SummaryRows = new Set();
+    const s2RowBannerFills = {};
+    const s2RowHeaderFills = {};
+
+    const appendCategoryGroupsSection = (sectionTitle, sectionBannerRgb, catHeaderRgb, catList, jenisLabel) => {
+      if (!catList || catList.length === 0) return;
+      s2Aoa.push([]);
+      const secIdx = s2Aoa.length;
+      s2Aoa.push([sectionTitle, '', '', '', '']);
+      s2Merges.push({ s: { r: secIdx, c: 0 }, e: { r: secIdx, c: 4 } });
+      s2BannerRows.add(secIdx);
+      s2RowBannerFills[secIdx] = sectionBannerRgb;
+
+      catList.forEach(cat => {
+        s2Aoa.push([]);
+        const hdrIdx = s2Aoa.length;
+        s2Aoa.push([jenisLabel, `Kategori: ${cat.name}`, 'Subkategori', 'Frekuensi', 'Nominal (IDR)']);
+        s2HeaderRows.add(hdrIdx);
+        s2RowHeaderFills[hdrIdx] = catHeaderRgb;
+
+        if (cat.subcategories && cat.subcategories.length > 0) {
+          cat.subcategories.forEach(sub => {
+            s2Aoa.push([jenisLabel, cat.name, sub.name, `${sub.count}x`, sub.total]);
+          });
+        } else {
+          s2Aoa.push([jenisLabel, cat.name, 'Tanpa Subkategori', `${cat.count}x`, cat.total]);
+        }
+
+        const totalIdx = s2Aoa.length;
+        s2Aoa.push([`TOTAL KATEGORI: ${cat.name.toUpperCase()}`, '', '', `${cat.count}x (${cat.pct.toFixed(1)}%)`, cat.total]);
+        s2Merges.push({ s: { r: totalIdx, c: 0 }, e: { r: totalIdx, c: 2 } });
+        s2SummaryRows.add(totalIdx);
       });
-    });
+    };
+
+    appendCategoryGroupsSection('A. KELOMPOK KATEGORI PENGELUARAN', '9F1239', 'E11D48', data.expenseCategories, 'Pengeluaran');
+
     if (data.totalTransferAdminFee > 0) {
-      s2Aoa.push(['Pengeluaran', 'Biaya Admin Transfer', '-', '-', data.totalTransferAdminFee]);
+      s2Aoa.push([]);
+      const admHdrIdx = s2Aoa.length;
+      s2Aoa.push(['Pengeluaran', 'Kategori: Biaya Admin Transfer', 'Rincian', 'Frekuensi', 'Nominal (IDR)']);
+      s2HeaderRows.add(admHdrIdx);
+      s2RowHeaderFills[admHdrIdx] = 'D97706';
+      s2Aoa.push(['Pengeluaran', 'Biaya Admin Transfer', 'Biaya Admin Pindah Dana', '-', data.totalTransferAdminFee]);
+      const admTotIdx = s2Aoa.length;
+      s2Aoa.push(['TOTAL KATEGORI: BIAYA ADMIN TRANSFER', '', '', '-', data.totalTransferAdminFee]);
+      s2Merges.push({ s: { r: admTotIdx, c: 0 }, e: { r: admTotIdx, c: 2 } });
+      s2SummaryRows.add(admTotIdx);
     }
-    data.incomeCategories.forEach(cat => {
-      s2Aoa.push(['Pemasukan', cat.name, '(Total Kategori)', `${cat.count}x`, cat.total]);
-      cat.subcategories.forEach(sub => {
-        s2Aoa.push(['Pemasukan', cat.name, sub.name, `${sub.count}x`, sub.total]);
-      });
-    });
+
+    appendCategoryGroupsSection('B. KELOMPOK KATEGORI PEMASUKAN', '065F46', '059669', data.incomeCategories, 'Pemasukan');
+
+    if (s2Aoa.length === 1) {
+      s2Aoa.push([]);
+      s2Aoa.push(['Jenis', 'Kategori', 'Subkategori', 'Frekuensi', 'Nominal (IDR)']);
+      s2HeaderRows.add(2);
+      s2Aoa.push(['-', 'Belum ada kategori transaksi pada periode ini', '-', '-', 0]);
+    }
+
     addStyledAnalysisSheet('Rincian Kategori', s2Aoa, {
-      merges: [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }],
-      bannerRows: new Set([0]),
-      headerRows: new Set([1]),
+      merges: s2Merges,
+      bannerRows: s2BannerRows,
+      headerRows: s2HeaderRows,
+      summaryRows: s2SummaryRows,
+      rowBannerFills: s2RowBannerFills,
+      rowHeaderFills: s2RowHeaderFills,
       headerFill: '2563EB',
       bannerFill: '1E3A8A',
       rightCols: new Set([4]),
-      centerCols: new Set([0, 3]),
+      centerCols: (r, c) => (c === 0 && !s2SummaryRows.has(r)) || c === 3,
       colCount: 5,
-      minColWidths: { 0: 15, 1: 24, 2: 26, 3: 14, 4: 20 }
+      minColWidths: { 0: 15, 1: 26, 2: 26, 3: 18, 4: 20 }
     });
   }
 
@@ -1882,7 +2073,7 @@ function buildAnalysisExcelPackage(scope, filterPrefix) {
   });
 
   const safePeriodSlug = data.filterPrefix.replace(/[^a-zA-Z0-9_-]/g, '');
-  const filename = `Laporan_Analisa_${data.isYear ? 'Tahunan' : 'Bulanan'}_${safePeriodSlug}.xlsx`;
+  const filename = `FinTrack_Laporan_Analisa_${data.isYear ? 'Tahunan' : 'Bulanan'}_${safePeriodSlug}.xlsx`;
 
   return {
     format: 'excel',
@@ -2150,7 +2341,7 @@ function buildAnalysisPdfPackage(scope, filterPrefix) {
   const pdfBlob = doc.output('blob');
   const pdfBlobUrl = URL.createObjectURL(pdfBlob);
   const safePeriodSlug = data.filterPrefix.replace(/[^a-zA-Z0-9_-]/g, '');
-  const filename = `Laporan_Analisa_${data.isYear ? 'Tahunan' : 'Bulanan'}_${safePeriodSlug}.pdf`;
+  const filename = `FinTrack_Laporan_Analisa_${data.isYear ? 'Tahunan' : 'Bulanan'}_${safePeriodSlug}.pdf`;
 
   return {
     format: 'pdf',
@@ -2165,6 +2356,53 @@ function buildAnalysisPdfPackage(scope, filterPrefix) {
     pdfBlobUrl,
     viewMode: 'table'
   };
+}
+
+function getPreviewRowClassFromExcelHex(hex, fallbackCls) {
+  if (hex === '9F1239') return 'bg-rose-800 text-white font-bold';
+  if (hex === 'E11D48') return 'bg-rose-600 text-white font-bold';
+  if (hex === '065F46' || hex === '064E3B') return 'bg-emerald-800 text-white font-bold';
+  if (hex === '059669') return 'bg-emerald-600 text-white font-bold';
+  if (hex === 'D97706') return 'bg-amber-600 text-white font-bold';
+  if (hex === '92400E') return 'bg-amber-800 text-white font-bold';
+  if (hex === '1E3A8A') return 'bg-blue-900 text-white font-bold';
+  if (hex === '2563EB') return 'bg-blue-600 text-white font-bold';
+  return fallbackCls;
+}
+
+function renderCategoryExportPreviewBody(state, tableWrap) {
+  const sheet = state.sheets[0];
+  if (!sheet || !sheet.rows || sheet.rows.length === 0) {
+    tableWrap.innerHTML = `<div class="py-10 text-center text-xs text-slate-400">Belum ada kategori untuk diekspor.</div>`;
+    return;
+  }
+
+  tableWrap.innerHTML = `
+    <table class="w-full text-left text-[11px] sm:text-xs border-collapse bg-white">
+      <thead class="sticky top-0 z-10 bg-emerald-600 text-white shadow-2xs">
+        <tr>
+          ${sheet.headers.map((h, idx) => `
+            <th class="px-3 py-2.5 font-bold whitespace-nowrap border border-white/20 ${idx === 1 || idx === 2 ? 'text-center' : ''}">${escapeHtml(h)}</th>
+          `).join('')}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200">
+        ${sheet.rows.map((r, rIdx) => {
+          const isIncome = r[1] === 'Pemasukan';
+          return `
+            <tr class="${rIdx % 2 === 1 ? 'bg-slate-50/70' : 'bg-white'} hover:bg-emerald-50/40 transition">
+              <td class="px-3 py-2 border border-slate-200 font-semibold text-slate-900">${escapeHtml(r[0])}</td>
+              <td class="px-3 py-2 border border-slate-200 text-center">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isIncome ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${escapeHtml(r[1])}</span>
+              </td>
+              <td class="px-3 py-2 border border-slate-200 text-center text-slate-600 font-medium">${escapeHtml(r[2])}</td>
+              <td class="px-3 py-2 border border-slate-200 text-slate-700">${escapeHtml(r[3])}</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
 }
 
 function renderAnalysisExportPreviewBody(state, tableWrap) {
@@ -2184,15 +2422,17 @@ function renderAnalysisExportPreviewBody(state, tableWrap) {
         <tbody class="divide-y divide-slate-200">
           ${sheet.aoa.map((row, rIdx) => {
             if (!row || row.length === 0) {
-              return `<tr class="h-3 bg-slate-100/70"><td colspan="${totalCols}"></td></tr>`;
+              return `<tr class="h-3.5 bg-slate-100/80"><td colspan="${totalCols}"></td></tr>`;
             }
             const isBanner = sheet.bannerRows && sheet.bannerRows.has(rIdx);
             const isHeader = sheet.headerRows && sheet.headerRows.has(rIdx);
             const isSummary = sheet.summaryRows && sheet.summaryRows.has(rIdx);
+            const customBannerHex = sheet.rowBannerFills ? sheet.rowBannerFills[rIdx] : '';
+            const customHeaderHex = sheet.rowHeaderFills ? sheet.rowHeaderFills[rIdx] : '';
             const rowCls = isBanner
-              ? 'bg-emerald-800 text-white font-bold'
+              ? getPreviewRowClassFromExcelHex(customBannerHex, 'bg-emerald-800 text-white font-bold')
               : (isHeader
-                  ? 'bg-emerald-600 text-white font-bold'
+                  ? getPreviewRowClassFromExcelHex(customHeaderHex, 'bg-emerald-600 text-white font-bold')
                   : (isSummary ? 'bg-slate-200 text-slate-900 font-bold border-t-2 border-slate-400' : (rIdx % 2 === 1 ? 'bg-slate-50/70 hover:bg-emerald-50/30' : 'bg-white hover:bg-emerald-50/30')));
 
             return `
@@ -2526,24 +2766,36 @@ function importFromExcel(e) {
   alert(`Berhasil mengimpor ${count} transaksi baru. Seluruh data duplikat berhasil dilewati!`);
 }
 
-function exportCategoriesToExcel() {
+function buildCategoryExcelPackage() {
   const headers = ['Nama Kategori', 'Tipe', 'Klasifikasi Arus', 'Subkategori'];
   const aoa = [headers];
+  const rows = [];
+
+  let expenseCount = 0;
+  let incomeCount = 0;
+  let totalSubcategories = 0;
 
   categories.forEach(c => {
+    if (c.type === 'income') incomeCount++;
+    else expenseCount++;
+
+    const subsList = Array.isArray(c.subcategories) ? c.subcategories : [];
+    totalSubcategories += subsList.length;
+
     let classLabel = 'Dinamis';
     if (c.expenseClass === 'fixed') classLabel = 'Tetap';
     else if (c.expenseClass === 'periodic') classLabel = 'Berkala';
 
-    const subs = (c.subcategories && c.subcategories.length > 0) ? c.subcategories : ['-'];
-
+    const subs = subsList.length > 0 ? subsList : ['-'];
     subs.forEach(sub => {
-      aoa.push([
+      const rowArr = [
         c.name,
         c.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
         classLabel,
         sub
-      ]);
+      ];
+      aoa.push(rowArr);
+      rows.push(rowArr);
     });
   });
 
@@ -2556,8 +2808,43 @@ function exportCategoriesToExcel() {
     minColWidths: { 0: 24, 1: 15, 2: 18, 3: 28 }
   });
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Daftar_Kategori");
-  XLSX.writeFile(workbook, `Kategori_Keuangan_${getLocalDateStr()}.xlsx`);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Daftar Kategori');
+
+  return {
+    format: 'excel',
+    isCategoryExport: true,
+    scopeType: 'category',
+    layoutMode: 'category',
+    filename: `FinTrack_Daftar_Kategori_${getLocalDateStr()}.xlsx`,
+    categorySummary: {
+      totalCategories: categories.length,
+      expenseCount,
+      incomeCount,
+      totalSubcategories
+    },
+    sheets: [{
+      name: 'Daftar Kategori',
+      txCount: rows.length,
+      headers,
+      rows
+    }],
+    activeSheetIndex: 0,
+    workbook
+  };
+}
+
+function exportCategoriesToExcel() {
+  cleanupPendingExportPreviewUrl();
+  try {
+    pendingExportPreviewState = buildCategoryExcelPackage();
+  } catch (err) {
+    console.error('Gagal menyusun pratinjau ekspor kategori:', err);
+    showAppAlert('Gagal menyiapkan pratinjau ekspor kategori. Silakan coba lagi.');
+    return;
+  }
+  renderExportPreviewModal();
+  openModal('export-preview-modal');
+  lucide.createIcons();
 }
 
 // ==================== 2. IMPOR KATEGORI: ANTI-DUPLIKAT & PRATINJAU ====================

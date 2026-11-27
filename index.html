@@ -25,6 +25,9 @@
   <!-- jsPDF & AutoTable (PDF Export) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- PDF.js (Pratinjau Dokumen PDF A4 Lintas Browser & Mobile) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Google Identity Services (OAuth2) -->
@@ -1406,7 +1409,7 @@
               <input type="file" id="category-excel-input" accept=".xlsx, .xls" class="hidden" onchange="importCategoriesFromExcel(event)" />
             </label>
 
-            <button type="button" onclick="exportCategoriesToExcel()" data-tooltip="Ekspor kategori ke Excel" class="h-9 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-3 rounded-xl inline-flex items-center gap-1.5 transition shadow-2xs">
+            <button type="button" onclick="exportCategoriesToExcel()" data-tooltip="Pratinjau & ekspor kategori ke Excel" class="h-9 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-3 rounded-xl inline-flex items-center gap-1.5 transition shadow-2xs">
               <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
               <span class="hidden sm:inline">Ekspor</span>
             </button>
@@ -2111,12 +2114,17 @@
 
       <!-- Konten Pratinjau -->
       <div class="flex-1 min-h-0 flex flex-col overflow-hidden border border-slate-200 rounded-xl bg-slate-50/40">
-        <div id="export-preview-table-wrap" class="flex-1 overflow-auto p-0"></div>
-        <div id="export-preview-pdf-frame-wrap" class="hidden flex-1 flex flex-col min-h-[380px] sm:min-h-[480px] bg-slate-200">
-          <iframe id="export-preview-pdf-iframe" title="Pratinjau Dokumen PDF" class="w-full flex-1 border-0 bg-white"></iframe>
-          <div class="px-3 py-2 bg-slate-100 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between gap-2">
-            <span>Jika browser HP tidak menampilkan PDF tertanam, gunakan tab <strong>Pratinjau Tabel &amp; Halaman</strong>.</span>
+        <div id="export-preview-table-wrap" class="flex-1 min-h-0 overflow-auto p-0"></div>
+        <div id="export-preview-pdf-frame-wrap" class="hidden flex-1 min-h-0 flex flex-col bg-slate-200/80">
+          <div class="shrink-0 px-3 py-2 bg-slate-100 border-b border-slate-200 flex items-center justify-between gap-2 flex-wrap">
+            <span id="export-preview-pdf-page-info" class="text-[11px] font-bold text-slate-700">Memuat halaman A4...</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="adjustPdfPreviewZoom(-0.2)" aria-label="Perkecil pratinjau PDF" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition">−</button>
+              <span id="export-preview-pdf-zoom-label" class="text-[11px] font-semibold text-slate-600 min-w-[42px] text-center">100%</span>
+              <button type="button" onclick="adjustPdfPreviewZoom(0.2)" aria-label="Perbesar pratinjau PDF" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition">+</button>
+            </div>
           </div>
+          <div id="export-preview-pdf-pages" class="flex-1 min-h-0 overflow-auto p-3 sm:p-5 space-y-4 flex flex-col items-center"></div>
         </div>
       </div>
 
@@ -2126,7 +2134,7 @@
           Nama file: <strong id="export-preview-filename" class="text-slate-700">-</strong>
         </div>
         <div class="flex items-center justify-end gap-2 shrink-0">
-          <button type="button" onclick="backToExportOptionsFromPreview()" class="h-9 px-3.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition inline-flex items-center gap-1.5">
+          <button type="button" id="export-preview-back-btn" onclick="backToExportOptionsFromPreview()" class="h-9 px-3.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition inline-flex items-center gap-1.5">
             <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
             <span>Ubah Opsi</span>
           </button>
